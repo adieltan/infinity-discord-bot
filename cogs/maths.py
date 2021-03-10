@@ -42,7 +42,7 @@ class MathsCog(commands.Cog, name='Maths'):
         """Evaluates a maths equation."""
         out = parser.parse(input).evaluate({})
         formatted = format(out, ',')
-        await ctx.reply(f'```{input} = \n{out}\nFormatted: {formatted}```', mention_author=True)
+        await ctx.reply(f'```json\n{input} = \n{out}\nFormatted: {formatted}```', mention_author=True)
 
     @commands.command(name='calchelp')
     @commands.cooldown(1,2)

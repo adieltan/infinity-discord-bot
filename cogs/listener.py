@@ -60,8 +60,8 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         elif before.author == self.bot.user:
             return
-        elif before == after:
-            return
+        elif before != after:
+            pass
         fmt = '**{0.author}** edited their message:\n```{0.content} ```'
         await before.channel.send(fmt.format(before, after), delete_after=8)
 

@@ -20,7 +20,7 @@ def get_prefix(bot, message):
         pass
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, intents=intents)
+bot = commands.AutoShardedBot(shard_count=2,command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, intents=intents)
 nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
 hex_int = random.randint(0,16777215)
 bot.help_command = PrettyHelp(navigation=nav, color=hex_int, active_time=20, no_category='Others')
@@ -36,7 +36,7 @@ initial_extensions = ['cogs.info',
                       'cogs.moderation',
                       'cogs.listener',
                       'cogs.conversion',
-                      'cogs.image']
+                      'cogs.rh']
 
 if __name__ == '__main__':
     for extension in initial_extensions:

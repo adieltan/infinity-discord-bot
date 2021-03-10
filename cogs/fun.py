@@ -32,12 +32,12 @@ class FunCog(commands.Cog, name='Fun'):
         await msg.edit(content=f'I choose **{ran}**')
 
     @commands.command()
-    @commands.cooldown(1,5)
+    @commands.cooldown(1,10)
     async def gift(self, ctx):
         """Generates few alphanumeric letters to join to become a discord gift code. You are VERY lucky if you managed to get one."""
         letters_and_digits = string.ascii_letters + string.digits
         result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
-        await ctx.reply('discord.gift/' + result_str, mention_author=True)
+        await ctx.reply('https://discord.gift/' + result_str, mention_author=True)
 
     @commands.command(name='type', aliases=['say'])
     @commands.cooldown(1,3)
@@ -57,8 +57,8 @@ class FunCog(commands.Cog, name='Fun'):
     @commands.command(name='dm')
     @commands.cooldown(1,3)
     async def dm(self,ctx, member: discord.Member, *args):
-        hex_int = random.randint(0,16777215)
         """Gets the bot to DM your friend."""
+        hex_int = random.randint(0,16777215)
         mes = " ".join(args)
         embed=discord.Embed(title="Message from your friend", color=hex_int)
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)

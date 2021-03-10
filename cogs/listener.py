@@ -37,14 +37,18 @@ class ListenerCog(commands.Cog, name='Listener'):
     @commands.Cog.listener()
     async def on_command_error (self, ctx, error):
         await ctx.reply(f'<@{ctx.author.id}>\n{error}')
-        owner = await self.bot.application_info()
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Error", description="An error was recorded", color=hex_int)
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-        embed.add_field(name="Trigger", value=ctx.message.content)
-        embed.add_field(name="Error", value=error)
-        embed.add_field(name="User", value=f"User: {ctx.author.name} <@{ctx.author.id}>\nChannel: <#{ctx.channel.id}>\n[Message]({ctx.message.jump_url})")
-        await owner.owner.send(embed=embed)
+        er = str(error)
+        if ("cooldown", "is not found") in er:
+            pass
+        else:
+            owner = await self.bot.application_info()
+            hex_int = random.randint(0,16777215)
+            embed=discord.Embed(title="Error", description="An error was recorded", color=hex_int)
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+            embed.add_field(name="Trigger", value=ctx.message.content)
+            embed.add_field(name="Error", value=er)
+            embed.add_field(name="User", value=f"User: {ctx.author.name} <@{ctx.author.id}>\nChannel: <#{ctx.channel.id}>\n[Message]({ctx.message.jump_url})")
+            await owner.owner.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):

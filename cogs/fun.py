@@ -1,4 +1,5 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, praw
+import discord, random, string, asyncio, discord.voice_client
+from discord import message
 from discord.ext import commands, tasks
 
 class FunCog(commands.Cog, name='Fun'):
@@ -53,6 +54,25 @@ class FunCog(commands.Cog, name='Fun'):
         await ctx.send(embed=embed)
         await ctx.message.delete()
 
+    @commands.command(name='dm')
+    @commands.cooldown(1,3)
+    async def dm(self,ctx, member: discord.Member, *args):
+        hex_int = random.randint(0,16777215)
+        """Gets the bot to DM your friend."""
+        mes = " ".join(args)
+        embed=discord.Embed(title="Message from your friend", color=hex_int)
+        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
+        embed.add_field(name="Message", value=mes, inline=False)
+        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}>", inline=False)
+        embed.set_footer(text=f"DM function.")
+        try:
+            await member.send(embed=embed)
+        except:
+            await ctx.message.add_reaction("\U0000274c")
+        else:
+            await ctx.message.add_reaction("\U00002705")
+
+
     @commands.command(name='guess')
     @commands.cooldown(1,5)
     async def guess(self, ctx):
@@ -71,22 +91,6 @@ class FunCog(commands.Cog, name='Fun'):
             await guess.reply('Congrats!', mention_author=True)
         else:
             await guess.reply(f'No It is actually **__{answer}__**.', mention_author=True)
-
-
-    @commands.command(name="meme")
-    @commands.cooldown(1,10)
-    async def meme(self, ctx):
-        reddit = praw.Reddit(client_id="aRbjQwEeostgnA", client_secret="xfJPQMz1GjAgBqm7vuxDW2_xa_X7gw", user_agent="Infinity Discord Bot")
-        reddit.read_only = True
-        subreddit = reddit.subreddit("memes")
-
-        top = subreddit.top(limit=1)
-        name = top.title
-        url = top.url
-
-        embed=discord.Embed(title=(name)[url])
-        embed.set_image(url)
-        await ctx.reply(embed=embed, mention_author=True)
 
 
 def setup(bot):

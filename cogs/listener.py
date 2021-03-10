@@ -38,8 +38,10 @@ class ListenerCog(commands.Cog, name='Listener'):
     async def on_command_error (self, ctx, error):
         await ctx.reply(f'<@{ctx.author.id}>\n{error}')
         er = str(error)
-        if ("cooldown", "is not found") in er:
-            pass
+        if ("cooldown") in er:
+            return
+        elif ("is not found") in er:
+            return
         else:
             owner = await self.bot.application_info()
             hex_int = random.randint(0,16777215)

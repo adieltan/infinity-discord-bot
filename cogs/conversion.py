@@ -14,28 +14,28 @@ class ConversionCog(commands.Cog, name='Conversion'):
         """Defines a word."""
         arg = word.lower()
         out = str(dictionary.meaning(arg))
-        await ctx.reply(out, mention_author=True)
+        await ctx.reply(out, mention_author=False)
 
     @commands.command(name="translate", aliases=['tr'])
     @commands.cooldown(1,6)
     async def translate(self, ctx,language:str, arg):
         """Translates a term."""
         out = str(dictionary.translate(arg, language))
-        await ctx.reply(out, mention_author=True)
+        await ctx.reply(out, mention_author=False)
 
     @commands.command(name="synonym", aliases=['sy'])
     @commands.cooldown(1,6)
     async def synonym(self, ctx, arg):
         """Gets the synonym of a term"""
         out = str(dictionary.synonym(arg))
-        await ctx.reply(out, mention_author=True)
+        await ctx.reply(out, mention_author=False)
 
     @commands.command(name="antonym", aliases=['an'])
     @commands.cooldown(1,6)
     async def antonym(self, ctx, arg):
         """Gets the antonym of a term"""
         out = str(dictionary.antonym(arg))
-        await ctx.reply(out, mention_author=True)
+        await ctx.reply(out, mention_author=False)
 
     @commands.command(name='qrcode', aliases=['qr'])
     @commands.cooldown(1,6)
@@ -52,7 +52,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         img = qr.make_image(fill_color="black", back_color="white")
         img.save('dqr.jpg')
         q = discord.File('D:\\TRH\\code\dqr.jpg')
-        await ctx.reply(file=q, mention_author=True)
+        await ctx.reply(file=q, mention_author=False)
 
     @commands.command(name='silentqr', aliases=['sqr'])
     @commands.cooldown(1,6)
@@ -76,7 +76,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
     @commands.cooldown(1,4)
     async def decode(self,ctx):
         """Decodes a qr code"""
-        await ctx.reply("No I don't do that. Go google it ||https://zxing.org/w/decode.jspx||", mention_author=True)
+        await ctx.reply("No I don't do that. Go google it ||https://zxing.org/w/decode.jspx||", mention_author=False)
 
 
 def setup(bot):

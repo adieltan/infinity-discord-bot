@@ -3,7 +3,7 @@ from discord.ext import commands
 
 
 class rhCog(commands.Cog, name='rh'):
-    """*Image Generation.*"""
+    """*Commands specially for RH server.*"""
     def __init__(self, bot):
         self.bot = bot
     

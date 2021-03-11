@@ -19,7 +19,7 @@ class FunCog(commands.Cog, name='Fun'):
         embed.set_author(icon_url=ctx.author.avatar_url, name=str(ctx.author))
         for _ in range(number_of_dice):
             embed.add_field(name='\uFEFF', value=f'{random.choice(range(1,number_of_sides + 1))}', inline=True)
-        await ctx.reply(embed=embed, mention_author=True)
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command()
     @commands.cooldown(1,5)
@@ -27,7 +27,7 @@ class FunCog(commands.Cog, name='Fun'):
         """Randomly helps you choose one between two choices."""
         cho=choice1, choice2
         ran=random.choice(cho)
-        msg = await ctx.reply(f'(*&^{choice1}%$^$#%%^&{choice2}**&(#&$&#^&))', mention_author=True)
+        msg = await ctx.reply(f'(*&^{choice1}%$^$#%%^&{choice2}**&(#&$&#^&))', mention_author=False)
         await asyncio.sleep(1.0)
         await msg.edit(content=f'I choose **{ran}**')
 
@@ -37,7 +37,7 @@ class FunCog(commands.Cog, name='Fun'):
         """Generates few alphanumeric letters to join to become a discord gift code. You are VERY lucky if you managed to get one."""
         letters_and_digits = string.ascii_letters + string.digits
         result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
-        await ctx.reply('https://discord.gift/' + result_str, mention_author=True)
+        await ctx.reply('https://discord.gift/' + result_str, mention_author=False)
 
     @commands.command(name='type', aliases=['say'])
     @commands.cooldown(1,3)
@@ -77,7 +77,7 @@ class FunCog(commands.Cog, name='Fun'):
     @commands.cooldown(1,5)
     async def guess(self, ctx):
         """Guessing game"""
-        await ctx.reply('Guess a number between 1 and 10.', mention_author=True)
+        await ctx.reply('Guess a number between 1 and 10.', mention_author=False)
         def is_correct(m):
             return m.author == ctx.author and m.content.isdigit()
         answer = random.randint(1, 10)
@@ -85,12 +85,12 @@ class FunCog(commands.Cog, name='Fun'):
         try:
             guess = await self.bot.wait_for('message', check=is_correct, timeout=5.0)
         except asyncio.TimeoutError:
-            return await ctx.reply(f'Sorry, you took too long it was **__{answer}__**.', mention_author=True)
+            return await ctx.reply(f'Sorry, you took too long it was **__{answer}__**.', mention_author=False)
 
         if int(guess.content) == answer:
-            await guess.reply('Congrats!', mention_author=True)
+            await guess.reply('Congrats!', mention_author=False)
         else:
-            await guess.reply(f'No It is actually **__{answer}__**.', mention_author=True)
+            await guess.reply(f'No It is actually **__{answer}__**.', mention_author=False)
 
 
 def setup(bot):

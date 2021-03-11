@@ -14,7 +14,7 @@ class MembersCog(commands.Cog, name='Members'):
         """Says when a member joined the server."""
         if member is None:
             member = ctx.author
-        await ctx.reply(f'**{member.display_name}** joined the server on **{member.joined_at}**', mention_author=True)
+        await ctx.reply(f'**{member.display_name}** joined the server on **{member.joined_at}**', mention_author=False)
         await ctx.message.delete()
 
     @commands.command(name='toprole', aliases=['top_role'])
@@ -24,7 +24,7 @@ class MembersCog(commands.Cog, name='Members'):
         """Shows the members Top Role."""
         if member is None:
             member = ctx.author
-        await ctx.send(f'The top role for **{member.display_name}** is **{member.top_role.name}**', mention_author=True)
+        await ctx.send(f'The top role for **{member.display_name}** is **{member.top_role.name}**', mention_author=False)
     
     @commands.command(name='perms', aliases=['permissions'])
     @commands.cooldown(1,5)
@@ -40,7 +40,7 @@ class MembersCog(commands.Cog, name='Members'):
         embed.add_field(name='\uFEFF', value=perms)
         embed.set_footer(text=f'Requested by {ctx.author}')
         await ctx.trigger_typing()
-        await ctx.reply(embed=embed, mention_author=True)
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name='avatar', aliases=['av'])
     @commands.cooldown(1,5)
@@ -53,7 +53,7 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_author(icon_url=member.avatar_url, name=str(member))
         embed.set_image(url=member.avatar_url)
         embed.set_footer(text=f'Requested by {ctx.author}')
-        await ctx.reply(embed=embed, mention_author=True)
+        await ctx.reply(embed=embed, mention_author=False)
         
 
 def setup(bot):

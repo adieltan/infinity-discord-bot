@@ -18,9 +18,9 @@ class OwnerCog(commands.Cog, name='Owner'):
             self.bot.unload_extension(cog)
             self.bot.load_extension(cog)
         except Exception as e:
-            await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=True)
+            await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=False)
         else:
-            await ctx.reply(f'**`SUCCESSFULLY`** *reloaded* __{cog}__', mention_author=True)
+            await ctx.reply(f'**`SUCCESSFULLY`** *reloaded* __{cog}__', mention_author=False)
 
     @commands.command(name='unload')
     @commands.is_owner()
@@ -31,9 +31,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         try:
             self.bot.unload_extension(cog)
         except Exception as e:
-            await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=True)
+            await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=False)
         else:
-            await ctx.reply(f'**`SUCCESSFULLY`** *unloaded* __{cog}__', mention_author=True)
+            await ctx.reply(f'**`SUCCESSFULLY`** *unloaded* __{cog}__', mention_author=False)
 
     @commands.command(name='load')
     @commands.is_owner()
@@ -44,9 +44,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         try:
             self.bot.load_extension(cog)
         except Exception as e:
-            await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=True)
+            await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=False)
         else:
-            await ctx.reply(f'**`SUCCESSFULLY`** *loaded* __{cog}__', mention_author=True)
+            await ctx.reply(f'**`SUCCESSFULLY`** *loaded* __{cog}__', mention_author=False)
 
     @commands.command(name='eval', aliases=['ev'])
     @commands.is_owner()
@@ -54,9 +54,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         """Evaluate"""
         res = eval(command)
         if inspect.isawaitable(res):
-            await ctx.reply(await res, mention_author=True)
+            await ctx.reply(await res, mention_author=False)
         else:
-            await ctx.reply(res, mention_author=True)
+            await ctx.reply(res, mention_author=False)
 
 
 '''blacklisted = {''}

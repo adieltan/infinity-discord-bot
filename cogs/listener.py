@@ -13,17 +13,20 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         elif message.author == self.bot.user:
             return
+        #excluded trigger guilds
+        elif message.guild.id in [1]:
+            return
         elif ('hi ') in message.content.lower():
             greeting = ('Hi', 'Hello', '안녕하세요 (Annyeonghaseyo)', '你好', 'こんにちは(Konnichiwa)', 'Bonjour')
             response = random.choice(greeting)
-            await message.reply(response, mention_author=True, delete_after=5)
+            await message.reply(response, mention_author=False, delete_after=5)
             pass
         elif ('hello ') in message.content.lower():
             greeting = ('Hi', 'Hello', '안녕하세요 (Annyeonghaseyo)', '你好', 'こんにちは(Konnichiwa)', 'Bonjour')
             response = random.choice(greeting)
-            await message.reply(response, mention_author=True, delete_after=5)
+            await message.reply(response, mention_author=False, delete_after=5)
             pass
-        elif ('f') in message.content.lower():
+        elif ('**f**') in message.content.lower():
             await message.add_reaction("a:f_:819009528204099624")
             pass
         elif ("701009836938231849") in message.content.lower():
@@ -36,11 +39,16 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_command_error (self, ctx, error):
-        await ctx.reply(f'<@{ctx.author.id}>\n{error}')
         er = str(error)
+        #skips wrong command
+        if ("is not found") in er:
+            return
+        else:
+            await ctx.reply(er, mention_author=False)
+
         if ("cooldown") in er:
             return
-        elif ("is not found") in er:
+        elif ("not found") in er:
             return
         else:
             owner = await self.bot.application_info()

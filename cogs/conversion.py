@@ -14,6 +14,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         """Defines a word."""
         arg = word.lower()
         out = str(dictionary.meaning(arg))
+        await ctx.typing()
         await ctx.reply(out, mention_author=False)
 
     @commands.command(name="translate", aliases=['tr'])
@@ -21,6 +22,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
     async def translate(self, ctx,language:str, arg):
         """Translates a term."""
         out = str(dictionary.translate(arg, language))
+        await ctx.typing()
         await ctx.reply(out, mention_author=False)
 
     @commands.command(name="synonym", aliases=['sy'])
@@ -28,6 +30,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
     async def synonym(self, ctx, arg):
         """Gets the synonym of a term"""
         out = str(dictionary.synonym(arg))
+        await ctx.typing()
         await ctx.reply(out, mention_author=False)
 
     @commands.command(name="antonym", aliases=['an'])
@@ -35,12 +38,14 @@ class ConversionCog(commands.Cog, name='Conversion'):
     async def antonym(self, ctx, arg):
         """Gets the antonym of a term"""
         out = str(dictionary.antonym(arg))
+        await ctx.typing()
         await ctx.reply(out, mention_author=False)
 
     @commands.command(name='qrcode', aliases=['qr'])
     @commands.cooldown(1,6)
     async def qr(self, ctx, *args):
         """Generates a qr code."""
+        await ctx.typing()
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_H,

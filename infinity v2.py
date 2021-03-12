@@ -59,7 +59,7 @@ async def status():
     ser=bot.guilds
     m=0
     for s in ser:
-        m += len(s.members)
+        m += s.member_count
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{m} members in {len(ser)} servers"))
 status.start()
 

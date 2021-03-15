@@ -58,40 +58,15 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.reply(res, mention_author=False)
 
-
-'''blacklisted = {''}
-
-    @bot.check
-    def blacklistedguys(ctx):
-        if ctx.author.id in blacklisted:
-            return False
-        else:
-            return True
-
-    @bot.command(name='blacklistadd', aliases=['bla', 'blacklist', 'bl'])
+    @commands.command(name='logout', aliases=['shutdown', 'gosleep'])
     @commands.is_owner()
-    async def bla(ctx, *, member: discord.Member=None):
-        """Command to blacklist a user."""
-        if member is None:
-            return
-        blacklisted.add(member.id)
-        await ctx.reply(f'<@{ctx.author.id}>\n***SUCESSFULLY BLACKLISTED {member}***', mention_author=False)
+    async def logout(self, ctx):
+        """Logs out."""
+        await ctx.reply("👋")
+        await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
+        await asyncio.sleep(8)
+        await self.bot.logout()
 
-    @bot.command(name='blacklistremove', aliases=['blr', 'unblacklist'])
-    @commands.is_owner()
-    async def blr(ctx, *, member: discord.Member=None):
-        """Command to unblacklist a user."""
-        if member is None:
-            return
-        blacklisted.discard(member.id)
-        await ctx.reply(f'<@{ctx.author.id}>\n***SUCESSFULLY UNBLACKLISTED {member}***', mention_author=False)
-
-    @bot.command(name='blacklistlist', aliases=['bll'])
-    @commands.is_owner()
-    async def bll(ctx):
-        """Show blacklisted users."""
-        await ctx.send(f'<@{ctx.author.id}>')
-        await ctx.reply(blacklisted, mention_author=False)'''
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

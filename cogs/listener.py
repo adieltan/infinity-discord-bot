@@ -60,18 +60,5 @@ class ListenerCog(commands.Cog, name='Listener'):
             embed.add_field(name="User", value=f"User: {ctx.author.name} <@{ctx.author.id}>\nChannel: <#{ctx.channel.id}>\n[Message]({ctx.message.jump_url})")
             await owner.owner.send(embed=embed)
 
-    @commands.Cog.listener()
-    async def on_message_edit(self, before, after):
-        if before.author == 270904126974590976:
-            pass
-        elif before.author.bot == True:
-            return
-        elif before.author == self.bot.user:
-            return
-        elif before != after:
-            pass
-        fmt = '**{0.author}** edited their message:\n```{0.content} ```'
-        await before.channel.send(fmt.format(before, after), delete_after=8)
-
 def setup(bot):
     bot.add_cog(ListenerCog(bot))

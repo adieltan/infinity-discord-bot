@@ -50,6 +50,10 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         elif ("not found") in er:
             return
+        elif ("failed for parameter") in er:
+            return
+        elif ("is a required argument that is missing.") in er:
+            return
         else:
             owner = await self.bot.application_info()
             hex_int = random.randint(0,16777215)

@@ -1,4 +1,4 @@
-import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo
+import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime
 from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, Navigation
@@ -7,6 +7,7 @@ from pretty_help import PrettyHelp, Navigation
 cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = cluster["infinity"]
 col=db["server"]
+
 
 def get_prefix(bot, message):
     if not message.guild:
@@ -44,7 +45,9 @@ if __name__ == '__main__':
 
 @bot.event
 async def on_ready():
-    print(f"Logged in as {bot.user}")
+    t = datetime.datetime.now()
+    ti = t.strftime("%H:%M %a %d %b %Y")
+    print(f"Logged in as {bot.user}  ↯  {ti}  ↯")
     vc = bot.get_channel(736791916397723780)
     await vc.connect()
     hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞", ]

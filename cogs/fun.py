@@ -92,6 +92,24 @@ class FunCog(commands.Cog, name='Fun'):
         else:
             await guess.reply(f'No It is actually **__{answer}__**.', mention_author=False)
 
+    @commands.command(name="draw", aliases=["rollreaction", "roll reactions"])
+    @commands.cooldown(1,3)
+    async def draw(self, ctx, message:discord.Message, numbers:int):
+        await ctx.trigger_typing()
+        hex_int = random.randint(0,16777215)
+        ppl = message.reactions
+        winners  = []
+        for reaction in ppl:
+            for i in range(numbers):
+                win = random.choice(await reaction.users().flatten())
+                winners.append(win)
+        embed=discord.Embed(title="Draw results", url=message.jump_url, description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
+        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
+        text= "\n".join([winner.mention for winner in winners])
+        embed.add_field(name="Winners", value=text)
+        #embed.set_footer(numbers)
+        await ctx.reply(embed=embed, mention_author=False)
+
 
 def setup(bot):
     bot.add_cog(FunCog(bot))

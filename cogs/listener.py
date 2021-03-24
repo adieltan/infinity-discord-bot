@@ -13,9 +13,6 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         elif message.author == self.bot.user:
             return
-        #excluded trigger guilds
-        elif message.guild.id in [1]:
-            return
         elif ('hi ') in message.content.lower():
             greeting = ('Hi', 'Hello', '안녕하세요 (Annyeonghaseyo)', '你好', 'こんにちは(Konnichiwa)', 'Bonjour')
             response = random.choice(greeting)

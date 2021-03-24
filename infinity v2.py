@@ -2,7 +2,7 @@ import discord, random, string, os, asyncio, discord.voice_client, sys, math, re
 from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, Navigation
-
+from discord_slash import SlashCommand
 
 cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = cluster["infinity"]
@@ -26,7 +26,7 @@ nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
 hex_int = random.randint(0,16777215)
 bot.help_command = PrettyHelp(navigation=nav, color=hex_int, active_time=20, no_category='Others')
 
-
+slash = SlashCommand(bot, override_type = True)
 
 initial_extensions = ['cogs.info',
                       'cogs.members',
@@ -37,6 +37,7 @@ initial_extensions = ['cogs.info',
                       'cogs.moderation',
                       'cogs.listener',
                       'cogs.conversion',
+                      'cogs.slash',
                       'cogs.rh']
 
 if __name__ == '__main__':

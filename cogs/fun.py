@@ -1,5 +1,4 @@
-import discord, random, string, asyncio, discord.voice_client
-from discord import message
+import discord, random, string, asyncio, discord.voice_client, datetime
 from discord.ext import commands, tasks
 
 class FunCog(commands.Cog, name='Fun'):
@@ -17,6 +16,7 @@ class FunCog(commands.Cog, name='Fun'):
         hex_int = random.randint(0,16777215)
         embed = discord.Embed(title=f"{ctx.author}'s Rolling Game", color=hex_int)
         embed.set_author(icon_url=ctx.author.avatar_url, name=str(ctx.author))
+        embed.timestamp=datetime.datetime.utcnow()
         for _ in range(number_of_dice):
             embed.add_field(name='\uFEFF', value=f'{random.choice(range(1,number_of_sides + 1))}', inline=True)
         await ctx.reply(embed=embed, mention_author=False)
@@ -48,6 +48,7 @@ class FunCog(commands.Cog, name='Fun'):
         hex_int = random.randint(0,16777215)
         mes=" ".join(args)
         embed=discord.Embed(title='SECRET MESSAGE', color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=member.avatar_url, name=str(member))
         embed.add_field(name="\uFEFF", value=mes, inline=False)
         embed.set_footer(text=f'Requested by {ctx.author}')
@@ -61,6 +62,7 @@ class FunCog(commands.Cog, name='Fun'):
         hex_int = random.randint(0,16777215)
         mes = " ".join(args)
         embed=discord.Embed(title="Message from your friend", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
         embed.add_field(name="Message", value=mes, inline=False)
         embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}>", inline=False)
@@ -94,20 +96,21 @@ class FunCog(commands.Cog, name='Fun'):
 
     @commands.command(name="draw", aliases=["rollreaction", "roll reactions"])
     @commands.cooldown(1,3)
-    async def draw(self, ctx, message:discord.Message, numbers:int):
+    async def draw(self, ctx, numbers:int):
+        """Reply to the message you wanna draw from."""
         await ctx.trigger_typing()
         hex_int = random.randint(0,16777215)
-        ppl = message.reactions
-        winners  = []
-        for reaction in ppl:
-            for i in range(numbers):
-                win = random.choice(await reaction.users().flatten())
-                winners.append(win)
+        meh = ctx.message.reference.message_id
+        message = await ctx.channel.fetch_message(meh)
+        reactions =  message.reactions
+        winners = (random.choices(reactions, k=numbers))
+        await ctx.send(winners)
         embed=discord.Embed(title="Draw results", url=message.jump_url, description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
         text= "\n".join([winner.mention for winner in winners])
         embed.add_field(name="Winners", value=text)
-        #embed.set_footer(numbers)
+        embed.set_footer(text=numbers)
         await ctx.reply(embed=embed, mention_author=False)
 
 

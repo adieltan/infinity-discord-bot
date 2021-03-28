@@ -1,7 +1,8 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, qrcode
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, qrcode, datetime
 from PyDictionary import PyDictionary
 dictionary=PyDictionary()
 from discord.ext import commands
+from wordfreq import zipf_frequency
 
 class ConversionCog(commands.Cog, name='Conversion'):
     """*Conversion commands.*"""
@@ -14,8 +15,18 @@ class ConversionCog(commands.Cog, name='Conversion'):
         """Defines a word."""
         await ctx.trigger_typing()
         arg = word.lower()
-        out = str(dictionary.meaning(arg))
-        await ctx.reply(out, mention_author=False)
+        hex_int = random.randint(0,16777215)
+        embed=discord.Embed(title=word, url=f"https://www.thefreedictionary.com/{word}", description="**Definition:**", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        out: dict = dictionary.meaning(arg)
+        if out == None:
+            return
+        for this,that in out.items():
+            value = chr(10).join([f"{i+1}: {e}"for i,e in enumerate(that)])
+            embed.add_field(name=this, value=value, inline=False)
+        freque = zipf_frequency(arg, lang="en")
+        embed.set_footer(text=f"Zipf frequency value: {freque}")
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="translate", aliases=['tr'])
     @commands.cooldown(1,6)

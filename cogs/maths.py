@@ -1,6 +1,7 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math
 from discord.ext import commands
 from py_expression_eval import Parser
+from fractions import Fraction
 parser = Parser()
 
 class MathsCog(commands.Cog, name='Maths'):
@@ -36,22 +37,21 @@ class MathsCog(commands.Cog, name='Maths'):
         output = oct(input)
         await ctx.reply(f'Octaldecimal form of {input}:\n***{output}***', mention_author=False)
 
-    @commands.command(name='calc')
-    @commands.cooldown(1,3)
+    @commands.command(name='calc', aliases=['c', '='])
+    @commands.cooldown(1,2)
     async def calc (self, ctx, *, input):
         """Evaluates a maths equation."""
-        out = parser.parse(input).evaluate({})
-        formatted = format(out, ',')
-        await ctx.reply(f'```json\n{input} = \n{out}\nFormatted: {formatted}```', mention_author=False)
-
-    @commands.command(name='calchelp')
-    @commands.cooldown(1,2)
-    async def calchelp (self, ctx):
-        """Shows help on the `calc` command."""
-        embed=discord.Embed(title="Calc Help", description="Usable expressions\n `+` `-` `*` `/` `%` `^` `PI` `E` `sin(x)` `cos(x)` `tan(x)` `asin(x)` `acos(x)` `atan(x)` `log(x)` `log(x, base)` `abs(x)` `ceil(x)` `floor(x)` `round(x)` `exp(x)` `and` `or` `xor` `not` `in`") 
-        embed.set_footer(text=f'Requested by {ctx.author}')
-        await ctx.reply(embed=embed, mention_author=False)
-
+        inp = input.replace(",", "")
+        try:
+            out = parser.parse(inp).evaluate({})
+            formatted = format(out, ',')
+            floated = "{:e}".format(out)
+            frac = Fraction(out)
+            await ctx.reply(f'```json\n{input} = \n{out}\n\nFormatted: {formatted}\nSci      : {floated}\nFraction : {frac}```', mention_author=False)
+        except:
+            embed=discord.Embed(title="Calc Help", description="Usable expressions\n `+` `-` `*` `/` `%` `^` `PI` `E` `sin(x)` `cos(x)` `tan(x)` `asin(x)` `acos(x)` `atan(x)` `log(x)` `log(x, base)` `abs(x)` `ceil(x)` `floor(x)` `round(x)` `exp(x)` `and` `or` `xor` `not` `in`") 
+            embed.set_footer(text=f'Requested by {ctx.author}')
+            await ctx.reply(embed=embed, mention_author=False)
 
 def setup(bot):
     bot.add_cog(MathsCog(bot))

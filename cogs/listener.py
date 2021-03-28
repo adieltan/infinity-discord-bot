@@ -1,6 +1,10 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, json, pymongo
-from pymongo import MongoClient
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, json, datetime
 from discord.ext import commands, tasks
+from pymongo import MongoClient
+
+cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+db = cluster["infinity"]
+col=db["server"]
 
 class ListenerCog(commands.Cog, name='Listener'):
     """*Listening Commands.*"""
@@ -55,6 +59,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             owner = await self.bot.application_info()
             hex_int = random.randint(0,16777215)
             embed=discord.Embed(title="Error", description="An error was recorded", color=hex_int)
+            embed.timestamp=datetime.datetime.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             embed.add_field(name="Trigger", value=ctx.message.content)
             embed.add_field(name="Error", value=er)

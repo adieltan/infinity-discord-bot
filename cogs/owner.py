@@ -1,5 +1,5 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect
-from discord.ext.commands.errors import TooManyArguments
+from discord.ext.commands.errors import ExtensionNotLoaded, TooManyArguments
 from discord.ext import commands, tasks
 
 
@@ -8,15 +8,17 @@ class OwnerCog(commands.Cog, name='Owner'):
     def __init__(self, bot):
         self.bot = bot
         
-    @commands.command(name='reload')
+    @commands.command(name='reload', aliases=['load'])
     @commands.is_owner()
     async def reload(self, ctx, *, cog: str):
-        """Command which Reloads a Module.
-        Remember to use dot path. e.g: cogs.owner"""
-
+        """Command which Reloads/loads a Module."""
+        cog="cogs." + cog.removeprefix("cogs.")
         try:
-            self.bot.unload_extension(cog)
-            self.bot.load_extension(cog)
+            try:
+                self.bot.unload_extension(cog)
+                self.bot.load_extension(cog)
+            except ExtensionNotLoaded:
+                self.bot.load_extension(cog)
         except Exception as e:
             await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=False)
         else:
@@ -25,9 +27,9 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='unload')
     @commands.is_owner()
     async def unload(self, ctx, *, cog: str):
-        """Command which Reloads a Module.
+        """Command which Unloads a Module.
         Remember to use dot path. e.g: cogs.owner"""
-
+        cog="cogs." + cog.removeprefix("cogs.")
         try:
             self.bot.unload_extension(cog)
         except Exception as e:
@@ -35,20 +37,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.reply(f'**`SUCCESSFULLY`** *unloaded* __{cog}__', mention_author=False)
 
-    @commands.command(name='load')
-    @commands.is_owner()
-    async def load(self, ctx, *, cog: str):
-        """Command which Reloads a Module.
-        Remember to use dot path. e.g: cogs.owner"""
-
-        try:
-            self.bot.load_extension(cog)
-        except Exception as e:
-            await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=False)
-        else:
-            await ctx.reply(f'**`SUCCESSFULLY`** *loaded* __{cog}__', mention_author=False)
-
-    @commands.command(name='eval', aliases=['ev'])
+    @commands.command(name='eval', aliases=['e'])
     @commands.is_owner()
     async def eval(self, ctx, *, command):
         """Evaluate"""

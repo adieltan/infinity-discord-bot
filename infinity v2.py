@@ -34,6 +34,7 @@ initial_extensions = ['cogs.info',
                       'cogs.maths',
                       'cogs.owner',
                       'cogs.others',
+                      'cogs.channel',
                       'cogs.moderation',
                       'cogs.listener',
                       'cogs.conversion',
@@ -52,10 +53,8 @@ async def on_ready():
     vc = bot.get_channel(736791916397723780)
     await vc.connect()
     hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞", ]
-    channellist = [813251835371454515,799885536844054559,779939454978490418]
-    for int in channellist:
-        channel = bot.get_channel(int)
-        await channel.send(random.choice(hello))
+    channel = bot.get_channel(813251835371454515)
+    await channel.send(random.choice(hello))
 
 @tasks.loop(minutes=10, reconnect=True)
 async def status():

@@ -1,4 +1,4 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, datetime, requests
 from discord.ext import commands
 
 

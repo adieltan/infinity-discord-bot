@@ -2,7 +2,6 @@ import discord, random, string, os, asyncio, discord.voice_client, sys, math, re
 from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, Navigation
-from discord_slash import SlashCommand
 
 cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = cluster["infinity"]
@@ -11,7 +10,7 @@ col=db["server"]
 
 def get_prefix(bot, message):
     if not message.guild:
-        return '='
+        return ['=']
     if col.count_documents({"_id":message.guild.id}) > 0:
         results= col.find_one({"_id":message.guild.id})
         pref = results["prefix"]
@@ -21,12 +20,11 @@ def get_prefix(bot, message):
         pass
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.AutoShardedBot(shard_count=2,command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, intents=intents)
+bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, intents=intents)
 nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
 hex_int = random.randint(0,16777215)
 bot.help_command = PrettyHelp(navigation=nav, color=hex_int, active_time=20, no_category='Others')
 
-slash = SlashCommand(bot, override_type = True)
 
 initial_extensions = ['cogs.info',
                       'cogs.members',
@@ -34,6 +32,8 @@ initial_extensions = ['cogs.info',
                       'cogs.maths',
                       'cogs.owner',
                       'cogs.others',
+                      'cogs.image',
+                      'cogs.data',
                       'cogs.channel',
                       'cogs.moderation',
                       'cogs.listener',
@@ -55,6 +55,7 @@ async def on_ready():
     hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞", ]
     channel = bot.get_channel(813251835371454515)
     await channel.send(random.choice(hello))
+ 
 
 @tasks.loop(minutes=10, reconnect=True)
 async def status():

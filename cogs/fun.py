@@ -1,4 +1,4 @@
-import discord, random, string, asyncio, discord.voice_client, datetime
+import discord, random, string, asyncio, discord.voice_client, datetime, requests
 from discord.ext import commands, tasks
 
 class FunCog(commands.Cog, name='Fun'):
@@ -113,6 +113,45 @@ class FunCog(commands.Cog, name='Fun'):
         embed.set_footer(text=numbers)
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(name="catfact")
+    @commands.cooldown(1,5)
+    async def catfact(self, ctx):
+        """Cat facts."""
+        hex_int = random.randint(0,16777215)
+        fac = requests.get(url="https://api.monkedev.com/facts/cat", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'})
+        fact = fac.json()["fact"]
+        embed=discord.Embed(title="Cat Fact", description=fact, color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_footer(text="MonkeDev Api")
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.command(name="dogfact")
+    @commands.cooldown(1,5)
+    async def dogfact(self, ctx):
+        """Dog facts."""
+        hex_int = random.randint(0,16777215)
+        fac = requests.get(url="https://api.monkedev.com/facts/dog", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'})
+        fact = fac.json()["fact"]
+        embed=discord.Embed(title="Dog Fact", description=fact, color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_footer(text="MonkeDev Api")
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.command(name="8ball", aliases=['eightball', '8b'])
+    @commands.cooldown(1,5)
+    async def ball(self, ctx, *, mess):
+        """Ask 8ball about your life."""
+        if "suicide" in mess.lower():
+            await ctx.reply("NO SUICIDE.")
+            return
+        hex_int = random.randint(0,16777215)
+        fac = requests.get(url="https://api.monkedev.com/fun/8ball", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'})
+        fact = fac.json()["answer"]
+        embed=discord.Embed(title="8ball", description=mess, color=hex_int)
+        embed.add_field(name="Conclusion", value=fact)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_footer(text="MonkeDev Api")
+        await ctx.reply(embed=embed, mention_author=False)
 
 def setup(bot):
     bot.add_cog(FunCog(bot))

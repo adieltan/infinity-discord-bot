@@ -7,7 +7,7 @@ class MembersCog(commands.Cog, name='Members'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='userinfo', aliases=['ui', 'user'])
+    @commands.command(name='userinfo', aliases=['ui', 'user', 'whois'])
     @commands.cooldown(1,5)
     @commands.guild_only()
     async def userinfo(self, ctx, *, member: discord.Member=None):
@@ -16,32 +16,16 @@ class MembersCog(commands.Cog, name='Members'):
             member = ctx.author
         await ctx.trigger_typing()
         hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="User Info", url=member.avatar_url, description=member.mention, color=hex_int)
-        embed.set_author(name=member.display_name, icon_url=member.avatar_url)
+        embed=discord.Embed(title="User Info", description=member.mention, color=hex_int)
+        embed.set_author(name=member.display_name, icon_url=f'{member.avatar_url}')
+        embed.add_field(name="User ID", value=member.id)
         embed.add_field(name="Nickname", value=member.display_name)
-        embed.add_field(name="Top Role", value=member.top_role)
+        embed.add_field(name="Top Role", value=f"{member.top_role.mention}\n{member.top_role.id}")
+        embed.add_field(name="Date Joined", value=member.joined_at.strftime("%a %Y %b %d , %H:%M:%S %Z"))
+        embed.set_image(url=member.avatar_url)
         embed.set_footer(text="Date created")
         embed.timestamp = member.created_at
-
         await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name='joined', aliases=['datejoined', 'date_joined'])
-    @commands.cooldown(1,5)
-    @commands.guild_only()
-    async def joined(self, ctx, *, member: discord.Member=None):
-        """Says when a member joined the server."""
-        if member is None:
-            member = ctx.author
-        await ctx.reply(f'**{member.display_name}** joined the server on **{member.joined_at}**', mention_author=False)
-
-    @commands.command(name='toprole', aliases=['top_role'])
-    @commands.cooldown(1,5)
-    @commands.guild_only()
-    async def show_toprole(self, ctx, *, member: discord.Member=None):
-        """Shows the members Top Role."""
-        if member is None:
-            member = ctx.author
-        await ctx.send(f'The top role for **{member.display_name}** is **{member.top_role.name}**', mention_author=False)
     
     @commands.command(name='perms', aliases=['permissions'])
     @commands.cooldown(1,5)
@@ -59,21 +43,22 @@ class MembersCog(commands.Cog, name='Members'):
         embed.add_field(name='\uFEFF', value=perms)
         embed.set_footer(text=f'Requested by {ctx.author}')
         await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name='avatar', aliases=['av'])
+        
+    @commands.command(name='roleperms', aliases=['rolepermissions', 'rp'])
     @commands.cooldown(1,5)
-    async def ava(self, ctx, *, member: discord.Member=None):
-        """Shows the avatar for a user."""
-        if not member:
-            member = ctx.author
+    @commands.guild_only()
+    async def role_check_permissions(self, ctx, *, role: discord.Role=None):
+        """Checks role's permissions."""
+        await ctx.trigger_typing()
+        if not role:
+            role = ctx.guild.default_role
+        perms = '\n'.join(perm for perm, value in role.permissions if value)
         hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title=f"{member}'s", description='Avatar', color=hex_int)
+        embed = discord.Embed(title='Permissions for:', description=role.mention, color=hex_int)
         embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=member.avatar_url, name=str(member))
-        embed.set_image(url=member.avatar_url)
+        embed.add_field(name='\uFEFF', value=f'\uFEFF'+perms)
         embed.set_footer(text=f'Requested by {ctx.author}')
         await ctx.reply(embed=embed, mention_author=False)
-        
 
 def setup(bot):
     bot.add_cog(MembersCog(bot))

@@ -2,7 +2,7 @@ import discord, random, string, os, logging, asyncio, discord.voice_client, sys,
 from discord.ext import commands
 
 
-class ChannelCog(commands.Cog, name='Channe;'):
+class ChannelCog(commands.Cog, name='Channel'):
     """*Channel Commands*"""
     def __init__(self, bot):
         self.bot = bot
@@ -39,6 +39,20 @@ class ChannelCog(commands.Cog, name='Channe;'):
             role = ctx.guild.default_role
         await ctx.channel.set_permissions(role, send_messages=True)
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=None)
+
+    @commands.command(name="purge", aliases=["cleanup"])
+    @commands.cooldown(1,6)
+    @commands.has_permissions(manage_messages=True)
+    async def purge(self,ctx,no:int):
+        """Purges a certain number of messages."""
+        def pinc(msg):
+            if msg.pinned == True:
+                return False
+            else:
+                return True
+        deleted = await ctx.channel.purge(limit=no+1, check=pinc)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)), dalete_after=10)
+
 
 def setup(bot):
     bot.add_cog(ChannelCog(bot))

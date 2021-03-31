@@ -84,6 +84,16 @@ class InfoCog(commands.Cog, name='Info'):
         """Shows info about an emoji."""
         await ctx.reply(f"```Name:{emoji.name}\nId: {emoji.id}\n{emoji}```", mention_author=False)
 
+    @commands.command(name='info', aliases=['botinfo'])
+    @commands.cooldown(1,4)
+    async def info(self, ctx):
+        """Info about the bot."""
+        hex_int = random.randint(0,16777215)
+        embed=discord.Embed(title="Bot Info", description="Info about the bot.", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_author(name=self.bot.user, url=self.bot.user.avatar_url)
+        embed.add_field(name="", value="")
+        await ctx.reply(embed=embed, mention_author=False)
 
 def setup(bot):
     bot.add_cog(InfoCog(bot))

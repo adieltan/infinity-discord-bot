@@ -56,6 +56,16 @@ class OwnerCog(commands.Cog, name='Owner'):
         await asyncio.sleep(8)
         await self.bot.logout()
 
+    @commands.command(name="spam")
+    @commands.is_owner()
+    async def spam(self, ctx, number:int=100):
+        """Spams the channel."""
+        strings = string.ascii_lowercase + string.ascii_uppercase + string.digits
+        for _ in range(1,number):
+            no = "".join(random.choice(strings) for _ in range(1,10))
+            await ctx.send(no)
+        await ctx.send("Done")
+
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

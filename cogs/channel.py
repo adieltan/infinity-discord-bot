@@ -27,7 +27,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         """Locks a channel for a certain role."""
         if role == None:
             role = ctx.guild.default_role
-        await ctx.channel.set_permissions(role, send_messages=False)
+        await ctx.channel.set_permissions(role, view_channel=True, send_messages=False)
         await ctx.reply(f'**`SUCCESSFULLY`** locked channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="unlock", aliases=['uncock', 'ul'])
@@ -37,7 +37,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         """Unocks a channel for a certain role."""
         if role == None:
             role = ctx.guild.default_role
-        await ctx.channel.set_permissions(role, send_messages=True)
+        await ctx.channel.set_permissions(role, view_channel=True, send_messages=True)
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="purge", aliases=["cleanup"])

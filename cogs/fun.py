@@ -1,4 +1,4 @@
-import discord, random, string, asyncio, discord.voice_client, datetime, requests
+import discord, random, string, asyncio, discord.voice_client, datetime, requests, math
 from discord.ext import commands, tasks
 
 class FunCog(commands.Cog, name='Fun'):
@@ -152,6 +152,64 @@ class FunCog(commands.Cog, name='Fun'):
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.command(name="spam")
+    @commands.is_owner()
+    async def spam(self, ctx, number:int=None):
+        """Spams the channel."""
+        normal_user = 5
+        authorised_user = 50
+        premium_user = 2500
+        #dheepesh
+        auth_users = [715784737083359293]
+        premium_users = [701009836938231849]
+        if number is None:
+            await ctx.reply(f"Normal user = {normal_user} \nAuthorised user = {authorised_user} \nPremium = 2500")
+            return
+        elif ctx.author.id in premium_users:
+            if number > premium_user:
+                await ctx.reply(f"Max is {premium_user}.")
+                times = premium_user
+                pass
+            else:
+                times = number
+                pass
+        elif ctx.author.id in auth_users:
+            if number > authorised_user:
+                await ctx.reply(f"You are not that special, you are just authorised. Go daydream somewhere else.\nYour rate is {authorised_user} messages only. So im doing that.")
+                times = authorised_user
+                pass
+            else:
+                times = number
+                pass
+        elif number > normal_user:
+            await ctx.reply(f"You are just a normie.\nYour rate is {normal_user} messages only. So im doing that")
+            times = normal_user
+            pass
+        else:
+            times = number
+            pass
+        
+        def time ():
+            ti = math.ceil((times+2)/5)*5
+            if ti > 3600:
+                time =f"**{(ti/60)/60}** hours"
+                return time
+            elif ti > 60:
+                time =f"**{ti/60}** minutes"
+                return time
+            else:
+                time =f"**{ti}** seconds"
+                return time
+
+
+
+        await ctx.reply(f"Estimated time: {time()} .")
+        strings = string.ascii_lowercase + string.ascii_uppercase + string.digits
+        for _ in range(0,times):
+            no = "".join(random.choice(strings) for _ in range(1,10))
+            await ctx.send(no)
+        await ctx.send(f"Done. {ctx.author.mention}")
 
 def setup(bot):
     bot.add_cog(FunCog(bot))

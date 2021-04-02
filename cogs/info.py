@@ -1,6 +1,7 @@
-import discord, random, asyncio, discord.voice_client, datetime
+import discord, random, asyncio, discord.voice_client, datetime, psutil
 from discord.emoji import Emoji
 from discord.ext import commands
+from psutil._common import bytes2human
 
 class InfoCog(commands.Cog, name='Info'):
     """*Info about bot and related servers.*"""
@@ -92,7 +93,10 @@ class InfoCog(commands.Cog, name='Info'):
         embed=discord.Embed(title="Bot Info", description="Info about the bot.", color=hex_int)
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(name=self.bot.user, url=self.bot.user.avatar_url)
-        embed.add_field(name="", value="")
+        embed.add_field(name="Ping", value=f'{round (self.bot.latency * 1000)}ms ')
+        embed.add_field(name="CPU", value=f'Count: {psutil.cpu_count()}\nUsage: {psutil.cpu_percent()}%', inline=False)
+        memory = psutil.virtual_memory()
+        embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
         await ctx.reply(embed=embed, mention_author=False)
 
 def setup(bot):

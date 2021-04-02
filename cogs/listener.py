@@ -55,6 +55,10 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         elif ("is a required argument that is missing.") in er:
             return
+        elif ("You do not own this bot.") in er:
+            return
+        elif ("permission(s) to run this command.") in er:
+            return
         else:
             owner = await self.bot.application_info()
             hex_int = random.randint(0,16777215)

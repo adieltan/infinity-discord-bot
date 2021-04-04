@@ -54,7 +54,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.reply("👋")
         await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
         await asyncio.sleep(8)
-        await self.bot.logout()
+        await self.bot.close()
 
 
 def setup(bot):

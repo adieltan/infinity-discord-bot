@@ -154,7 +154,6 @@ class FunCog(commands.Cog, name='Fun'):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="spam")
-    @commands.is_owner()
     async def spam(self, ctx, number:int=None):
         """Spams the channel."""
         normal_user = 5
@@ -163,7 +162,12 @@ class FunCog(commands.Cog, name='Fun'):
         #dheepesh
         auth_users = [715784737083359293]
         premium_users = [701009836938231849]
-        if number is None:
+        
+        if ('spam') in ctx.channel.name.lower():
+            times = number
+            pass
+
+        elif number is None:
             await ctx.reply(f"Normal user = {normal_user} \nAuthorised user = {authorised_user} \nPremium = 2500")
             return
         elif ctx.author.id in premium_users:

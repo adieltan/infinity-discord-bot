@@ -38,6 +38,7 @@ initial_extensions = ['cogs.info',
                       'cogs.moderation',
                       'cogs.listener',
                       'cogs.conversion',
+                      'cogs.currency',
                       'cogs.slash',
                       'cogs.rh']
 

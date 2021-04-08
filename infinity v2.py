@@ -10,7 +10,7 @@ col=db["server"]
 
 def get_prefix(bot, message):
     if not message.guild:
-        return ['=']
+        return ['']
     if col.count_documents({"_id":message.guild.id}) > 0:
         results= col.find_one({"_id":message.guild.id})
         pref = results["prefix"]
@@ -20,7 +20,7 @@ def get_prefix(bot, message):
         pass
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, intents=intents)
+bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=intents)
 nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
 hex_int = random.randint(0,16777215)
 bot.help_command = PrettyHelp(navigation=nav, color=hex_int, active_time=20, no_category='Others')

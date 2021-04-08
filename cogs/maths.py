@@ -47,7 +47,7 @@ class MathsCog(commands.Cog, name='Maths'):
             formatted = format(out, ',')
             floated = "{:e}".format(out)
             frac = Fraction(out)
-            await ctx.reply(f'```json\n{input} = \n{out}\n\nFormatted: {formatted}\nSci      : {floated}\nFraction : {frac}```', mention_author=False)
+            await ctx.reply(f'```json\n{input} = \n{out}\n```Formatted : **{formatted}**\nSci               : **{floated}**\nFraction     : **{frac}**', mention_author=False)
         except:
             embed=discord.Embed(title="Calc Help", description="Usable expressions\n `+` `-` `*` `/` `%` `^` `PI` `E` `sin(x)` `cos(x)` `tan(x)` `asin(x)` `acos(x)` `atan(x)` `log(x)` `log(x, base)` `abs(x)` `ceil(x)` `floor(x)` `round(x)` `exp(x)` `and` `or` `xor` `not` `in`") 
             embed.set_footer(text=f'Requested by {ctx.author}')

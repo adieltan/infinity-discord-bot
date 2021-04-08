@@ -27,7 +27,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             response = random.choice(greeting)
             await message.reply(response, mention_author=False, delete_after=5)
             pass
-        elif ('**f**') in message.content.lower():
+        elif ('*f*') in message.content.lower():
             await message.add_reaction("a:f_:819009528204099624")
             pass
         elif ("701009836938231849") in message.content.lower():

@@ -41,7 +41,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="purge", aliases=["cleanup"])
-    @commands.cooldown(1,6)
+    @commands.cooldown(1,1)
     @commands.has_permissions(manage_messages=True)
     async def purge(self,ctx,no:int):
         """Purges a certain number of messages."""
@@ -51,7 +51,7 @@ class ChannelCog(commands.Cog, name='Channel'):
             else:
                 return True
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
-        await ctx.send("Deleted *{}* message(s).".format(len(deleted)), dalete_after=10)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)), delete_after=10)
 
 
 def setup(bot):

@@ -41,16 +41,15 @@ class FunCog(commands.Cog, name='Fun'):
 
     @commands.command(name='type', aliases=['say'])
     @commands.cooldown(1,3)
-    async def send(self, ctx, member: discord.Member=None, *args):
+    async def send(self, ctx, member: discord.Member=None, *, msg:str='Hi'):
         """Gets the bot to repeat after you. Isn't that cool?"""
         if not member:
             member = ctx.author
         hex_int = random.randint(0,16777215)
-        mes=" ".join(args)
         embed=discord.Embed(title='SECRET MESSAGE', color=hex_int)
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=member.avatar_url, name=str(member))
-        embed.add_field(name="\uFEFF", value=mes, inline=False)
+        embed.add_field(name="\uFEFF", value=msg, inline=False)
         embed.set_footer(text=f'Requested by {ctx.author}')
         await ctx.send(embed=embed)
         await ctx.message.delete()

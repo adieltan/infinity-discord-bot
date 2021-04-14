@@ -10,14 +10,15 @@ col=db["server"]
 
 def get_prefix(bot, message):
     if not message.guild:
-        return ['']
+        return ('')
     if col.count_documents({"_id":message.guild.id}) > 0:
         results= col.find_one({"_id":message.guild.id})
         pref = results["prefix"]
-        return pref
+        return commands.when_mentioned_or(pref)(bot, message)
     else:
         col.insert_one({"_id":message.guild.id, "prefix": "="})
-        pass
+        return commands.when_mentioned_or("=")(bot, message)
+
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=intents)
@@ -40,7 +41,7 @@ initial_extensions = ['cogs.info',
                       'cogs.conversion',
                       'cogs.currency',
                       'cogs.slash',
-                      'cogs.rh']
+                      'cogs.custom']
 
 if __name__ == '__main__':
     for extension in initial_extensions:

@@ -1,0 +1,10 @@
+discord
+random
+string
+os
+logging
+asyncio
+discord.voice_client
+sys
+math
+datetime

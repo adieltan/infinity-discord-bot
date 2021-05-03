@@ -1,7 +1,5 @@
 discord
-string
 os
-logging
 asyncio
 discord.voice_client
 sys

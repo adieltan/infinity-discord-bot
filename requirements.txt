@@ -1,5 +1,4 @@
 discord
-os
 asyncio
 discord.voice_client
 sys

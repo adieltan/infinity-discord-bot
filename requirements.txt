@@ -1,6 +1,5 @@
 discord
 asyncio
-discord.voice_client
 sys
 math
 datetime

@@ -1,4 +1,2 @@
 discord
 asyncio
-math
-datetime

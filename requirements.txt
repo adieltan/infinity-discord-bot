@@ -1,5 +1,4 @@
 discord
 asyncio
-sys
 math
 datetime

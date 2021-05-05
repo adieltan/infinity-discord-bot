@@ -40,13 +40,16 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,5)
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: discord.Member, *, reason=None):
+    async def ban(self, ctx, member: discord.User, *, reason=None):
         """Bans a user."""
         if member == None or member == ctx.message.author:
             await ctx.channel.reply("You cannot ban yourself", mention_author=False)
         else:
             message = f"You have been banned from {ctx.guild.name} for {reason}"
-            await member.send(message)
+            try:
+                await member.send(message)
+            except:
+                await ctx.message.add_reaction("\U0000274c")
             await ctx.guild.ban(member, reason=reason)
             await ctx.reply(f'**{member}** was ***BANNED***\nReason: __{reason}__', mention_author=False)
         
@@ -60,7 +63,10 @@ class ModerationCog(commands.Cog, name='Moderation'):
             await ctx.channel.reply("You cannot kick yourself", mention_author=False)
         else:
             message = f"You have been kicked from {ctx.guild.name} for {reason}"
-            await member.send(message)
+            try:
+                await member.send(message)
+            except:
+                await ctx.message.add_reaction("\U0000274c")
             await ctx.guild.kick(member, reason=reason)
             await ctx.reply(f'**{member}** was ***KICKED***\nReason: __{reason}__', mention_author=False)
 

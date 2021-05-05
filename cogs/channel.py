@@ -27,7 +27,9 @@ class ChannelCog(commands.Cog, name='Channel'):
         """Locks a channel for a certain role."""
         if role == None:
             role = ctx.guild.default_role
-        await ctx.channel.set_permissions(role, view_channel=True, send_messages=False)
+        overwrite = ctx.channel.overwrites_for(role)
+        overwrite.send_messages=False
+        await ctx.channel.set_permissions(role, overwrite=overwrite)
         await ctx.reply(f'**`SUCCESSFULLY`** locked channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="unlock", aliases=['uncock', 'ul'])
@@ -37,7 +39,9 @@ class ChannelCog(commands.Cog, name='Channel'):
         """Unocks a channel for a certain role."""
         if role == None:
             role = ctx.guild.default_role
-        await ctx.channel.set_permissions(role, view_channel=True, send_messages=True)
+        overwrite = ctx.channel.overwrites_for(role)
+        overwrite.send_messages=True
+        await ctx.channel.set_permissions(role, overwrite=overwrite)
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="purge", aliases=["cleanup"])
@@ -51,7 +55,7 @@ class ChannelCog(commands.Cog, name='Channel'):
             else:
                 return True
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
-        await ctx.send("Deleted *{}* message(s).".format(len(deleted)), delete_after=10)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
 
 def setup(bot):

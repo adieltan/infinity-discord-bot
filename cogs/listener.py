@@ -31,7 +31,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             await message.add_reaction("a:f_:819009528204099624")
             pass
         elif ("701009836938231849") in message.content.lower():
-            emoji =[":r1:715894707850313758", ":r2:747584481124286544"]
+            emoji =["a:heartgif:813391491552641044"]
             for emj in emoji:
                 await message.add_reaction(emj)
         elif ("732917262297595925") in message.content.lower():
@@ -58,6 +58,8 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif ("You do not own this bot.") in er:
             return
         elif ("permission(s) to run this command.") in er:
+            return
+        elif ("The check functions for command") in er:
             return
         else:
             owner = await self.bot.application_info()

@@ -1,24 +1,6 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime
-from discord.ext.commands.bot import BotBase
 from discord.ext.commands.errors import ExtensionNotLoaded, TooManyArguments
 from discord.ext import commands, tasks
-
-class botcantalk(BotBase):
-    def __init__(self, **options):
-        self=self
-        super().__init__(**options)
-        super(BotBase)
-            
-    async def process_commands(self, message):
-        """Listens to bot now too."""
-
-        ctx = await self.get_context(message)
-        await self.invoke(ctx)
-
-class bot2(botcantalk, discord.Client):
-    def __init__(self, **options):
-        self=self
-        super().__init__(**options)
 
 
 
@@ -26,7 +8,6 @@ class OwnerCog(commands.Cog, name='Owner'):
     """*Only owner can use this.*"""
     def __init__(self, bot):
         self.bot = bot
-        self.bo2 = bot2
         
     @commands.command(name='reload', aliases=['load'])
     @commands.is_owner()
@@ -57,73 +38,27 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.reply(f'**`SUCCESSFULLY`** *unloaded* __{cog}__', mention_author=False)
 
-    @commands.command(name='eval', aliases=['e'])
+    @commands.command(name="update")
     @commands.is_owner()
-    async def eval(self, ctx, *, command):
-        """Evaluate"""
-        res = eval(command)
-        if inspect.isawaitable(res):
-            await ctx.reply(await res, mention_author=False)
+    async def updates(self, ctx, status:str, *args):
+        """Bot updates."""
+        info = str(' '.join(args))
+        hex_int = random.randint(0,16777215)
+        embed=discord.Embed(title="Bot updates", description=status , color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
+        embed.add_field(name="Details", value=info, inline=False)
+        embed.set_footer(text=f"Infinity Updates")
+        channel = self.bot.get_channel(813251614449074206)
+        try:
+            message = await channel.send(embed=embed)
+        except:
+            await ctx.message.add_reaction("\U0000274c")
         else:
-            await ctx.reply(res, mention_author=False)
+            await ctx.message.add_reaction("\U00002705") 
 
 
-
-    @commands.Cog.listener()
-    async def on_message(self, message:discord.Message):
-        """Tracks gift record on dank memer."""
-        if ('pls gift' or 'pls shareitem') in message.content.lower():
-            #getting id of recipant
-            inp = str(message.content).split(sep=" ")
-            recipant = message.mentions[0].id or re.findall("^(?:\d{18})$", message.content)[0]
-            sender = message.author.id
-            quantity = inp[2]
-            item = inp[3]
-            #leftovers
-            remarks = inp[-1]
-            def fromdankmemer(m):
-                return m.author.id == 270904126974590976 and m.mentions[0].id == sender and ('You gave') in m.content
-
-            try:
-                vali = await self.bo2.wait_for(event="validation_from_dank", check=fromdankmemer, timeout=15 )
-            except asyncio.TimeoutError:
-                await message.channel.send("Guess we won't have a reply from dank today.\n**Checks:**\n- Check if dank is in the server\n- Check if the channel has dank enabled.\n- Check permissions for Dank Memer\n- Maybe you are dumb.")
-                return    
-            #input from dank
-            #should be something like "@Rh You gave A Koala 1 bread, now ye have 17 and they've got 1" is sucessful
-            #changing ','s which python dosen't understand and the input to a list 
-            inpfd = str(vali.content).replace(",", "").split(sep=" ")
-            #recipant final amount
-            rfa = int(inpfd[-1])
-            #sender final amount
-            sfa = int(inpfd[-5])
-            #validated item
-            vi = inpfd[-9] 
-            #validated item quantity
-            viq = int(inpfd[-10])
-            if quantity == viq:
-                hex_int = random.randint(0,16777215)
-                embed = discord.Embed(title="Dank Memer Item Transfer Validator", url=message.jump_url, description=f":green_circle: **Successful**\n[Trigger Message]({message.jump_url})\n[Validation Message]({vali.jump_url})", color=hex_int)
-                embed.timestamp=datetime.datetime.utcnow()
-                embed.set_author(icon_url=message.author.avatar_url, name=message.author)  
-                embed.add_field(name="Original Message", value=f"{message.author.mention}\n{message.content}\nSent: {quantity} {item}\nNow has: {sfa} {vi}\nRemarks: {remarks}", inline=False)
-                embed.add_field(name="Validation Message", value=f"{vali.content}", inline=False)
-                embed.add_field(name="Recipant", value=f"<@{recipant}>\nReceived: {viq} {vi}\nNow has: {rfa} {vi}", inline=False)
-
-                await message.channel.send(embed=embed)
-
-            elif quantity != viq:
-                hex_int = random.randint(0,16777215)
-                embed = discord.Embed(title="Dank Memer Item Transfer Validator", url=message.jump_url, description=f":yellow_circle: **Await human verification**\n[Trigger Message]({message.jump_url})\n[Validation Message]({vali.jump_url})", color=hex_int)
-                embed.timestamp=datetime.datetime.utcnow()
-                embed.set_author(icon_url=message.author.avatar_url, name=message.author)  
-                embed.add_field(name="Original Message", value=f"{message.author.mention}\n{message.content}\nSent: {quantity} {item}\nNow has: {sfa} {vi}\nRemarks: {remarks}", inline=False)
-                embed.add_field(name="Validation Message", value=f"{vali.content}", inline=False)
-                embed.add_field(name="Recipant", value=f"<@{recipant}>\nReceived: {viq} {vi}\nNow has: {rfa} {vi}", inline=False)
-
-
-
-    @commands.command(name='logout', aliases=['shutdown', 'gosleep'])
+    @commands.command(name='logout', aliases=['shutdown'])
     @commands.is_owner()
     async def logout(self, ctx):
         """Logs out."""

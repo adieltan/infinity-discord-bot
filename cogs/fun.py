@@ -99,18 +99,23 @@ class FunCog(commands.Cog, name='Fun'):
         """Reply to the message you wanna draw from."""
         await ctx.trigger_typing()
         hex_int = random.randint(0,16777215)
-        meh = ctx.message.reference.message_id
-        message = await ctx.channel.fetch_message(meh)
-        reactions =  message.reactions
-        winners = (random.choices(reactions, k=numbers))
-        await ctx.send(winners)
-        embed=discord.Embed(title="Draw results", url=message.jump_url, description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
-        text= "\n".join([winner.mention for winner in winners])
-        embed.add_field(name="Winners", value=text)
-        embed.set_footer(text=numbers)
-        await ctx.reply(embed=embed, mention_author=False)
+        me = ctx.message.reference
+        if me == None:
+            await ctx.reply("Eh you gotta reply to the message you wanna draw from!", mention_author=True)
+        else:
+            meh = me.message_id           
+            message = await ctx.channel.fetch_message(meh)
+            reactions = message.reactions
+            for reaction in reactions:
+                users = await reaction.users().flatten()
+            winners = (random.choices(users, k=numbers))
+            embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
+            embed.timestamp=datetime.datetime.utcnow()
+            embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
+            text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
+            embed.add_field(name="Winners", value=text)
+            embed.set_footer(text=numbers)
+            await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="catfact")
     @commands.cooldown(1,5)

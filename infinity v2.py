@@ -19,8 +19,7 @@ def get_prefix(bot, message):
         col.insert_one({"_id":message.guild.id, "prefix": "="})
         return commands.when_mentioned_or("=")(bot, message)
 
-intents = discord.Intents.default()
-intents.members = True
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=intents)
 nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
 hex_int = random.randint(0,16777215)

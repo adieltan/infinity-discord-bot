@@ -45,14 +45,44 @@ class ModerationCog(commands.Cog, name='Moderation'):
         if member == None or member == ctx.message.author:
             await ctx.channel.reply("You cannot ban yourself", mention_author=False)
         else:
-            message = f"You have been banned from {ctx.guild.name} for {reason}"
+            message = f"You have been banned from {ctx.guild.name} by {ctx.author.mention} for {reason}"
             try:
                 await member.send(message)
             except:
                 await ctx.message.add_reaction("\U0000274c")
+            reason = f"Banned by {ctx.author.name} for {reason}"
             await ctx.guild.ban(member, reason=reason)
             await ctx.reply(f'**{member}** was ***BANNED***\nReason: __{reason}__', mention_author=False)
         
+    @commands.command(name='unban')
+    @commands.cooldown(1,5)
+    @commands.guild_only()
+    @commands.has_permissions(ban_members=True)
+    async def unban(self, ctx, member: discord.User, *, reason=None):
+        """Unbans a user."""
+        if member == None or member == ctx.message.author:
+            await ctx.channel.reply("You cannot unban yourself", mention_author=False)
+        else:
+            reason = f"Unbanned by {ctx.author.name} for {reason}"
+            try:
+                await ctx.guild.unban(member, reason=reason)
+                await ctx.reply(f'**{member}** was ***UNBANNED***\nReason: __{reason}__', mention_author=False)
+            except:
+                await ctx.reply(f'Error?')
+
+    @commands.command(name="massban")
+    @commands.cooldown(1,10)
+    @commands.guild_only()
+    @commands.has_permissions(ban_members=True)
+    async def massban(self, ctx, reason=None, *, users):
+        """Massban users."""
+        l = users.replace(f"{ctx.author.id}", '')
+        x = ' '.split(l)
+        reason = f"Massbanned by {ctx.author.name} for {reason}"
+        for user in x:
+            await ctx.guild.ban(user, reason=reason)
+
+
     @commands.command(name='kick')
     @commands.cooldown(1,5)
     @commands.guild_only()

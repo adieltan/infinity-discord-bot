@@ -57,8 +57,9 @@ async def on_ready():
     channel = bot.get_channel(813251835371454515)
     await channel.send(random.choice(hello))
  
+estimated_startup_time = datetime.datetime.now()
 
-@tasks.loop(minutes=10, reconnect=True)
+@tasks.loop(seconds=30, reconnect=True)
 async def status():
     await bot.wait_until_ready()
     ser=bot.guilds
@@ -67,6 +68,16 @@ async def status():
         m += s.member_count
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{m} members in {len(ser)} servers"))
 status.start()
+
+@tasks.loop(seconds=30, reconnect=True)
+async def uptime():
+    await bot.wait_until_ready()
+    await asyncio.sleep(15)
+    timenow = datetime.datetime.now()
+    d = timenow-estimated_startup_time
+    minutes = divmod(d.total_seconds(), 60)
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"for {round(minutes[0])} minutes {round(minutes[1])} seconds"))
+uptime.start()
 
 token = ('NzMyOTE3MjYyMjk3NTk1OTI1.Xw7kZA.i5ap8wowZz2WSb0zn9cM4K_5Fio')
 bot.run(token, bot=True, reconnect=True)

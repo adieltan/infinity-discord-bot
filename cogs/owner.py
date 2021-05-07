@@ -51,12 +51,52 @@ class OwnerCog(commands.Cog, name='Owner'):
         embed.set_footer(text=f"Infinity Updates")
         channel = self.bot.get_channel(813251614449074206)
         try:
-            message = await channel.send(embed=embed)
+            await channel.send(embed=embed)
         except:
             await ctx.message.add_reaction("\U0000274c")
         else:
             await ctx.message.add_reaction("\U00002705") 
 
+    @commands.command(name="timer", aliases=['countdown', 'cd'])
+    @commands.is_owner()
+    async def timer(self, ctx, time, name:str="Timer"):
+        """Ever heard of a timer countdown?
+            m=minutes
+            s=seconds
+            h=hours
+        """
+        lower = time.lower()
+        digit = int(re.sub("[^\\d.]", "", time))
+        if lower[-1] == "s":
+            seconds = digit
+        elif lower[-1] == "m":
+            seconds = digit*60
+        elif lower[-1] == "h":
+            seconds = digit*60*60
+        elif digit == None:
+            await ctx.reply("Do you speak numbers？")
+            raise BaseException
+        else:
+            seconds = digit
+        secondint = int(seconds)
+        if secondint < 0 or secondint == 0:
+            await ctx.send("Do YoU SpEaK NuMbErS?")
+            raise BaseException
+        hex_int = random.randint(0,16777215)
+        embed = discord.Embed(title=f"{name}", description=f"{seconds} seconds remaining" ,color=hex_int)
+        message = await ctx.send(ctx.message.author.mention, embed=embed)
+        while True:
+            secondint = secondint - 1
+            if secondint == 0:
+                hex_int = random.randint(0,16777215)
+                embed = discord.Embed(title=f"{name}", description="Ended" ,color=hex_int)
+                await message.edit(embed=embed)
+                break
+            hex_int = random.randint(0,16777215)
+            embed = discord.Embed(title=f"{name}", description=f"{secondint} seconds remaining" ,color=hex_int)
+            await message.edit(embed=embed)
+            await asyncio.sleep(1)
+        await message.reply(ctx.message.author.mention + " Your countdown Has ended!")
 
     @commands.command(name='logout', aliases=['shutdown'])
     @commands.is_owner()
@@ -67,6 +107,24 @@ class OwnerCog(commands.Cog, name='Owner'):
         await asyncio.sleep(8)
         await self.bot.close()
 
+    @commands.command(name='execute', aliases=['eval ', 'exe'])
+    @commands.is_owner()
+    async def exe(self, ctx, *, code):
+        """Executes some code."""
+        try:
+            exec(code)
+        except:
+            await ctx.message.add_reaction("\U0000274c")
+        else:
+            await ctx.message.add_reaction("\U00002705")
+
+    @commands.command(name="break")
+    @commands.cooldown(1,0)
+    @commands.is_owner()
+    async def b(self, ctx, slowmo:int=-1):
+        """Designed definitly to break."""
+        await ctx.channel.edit(slowmode_delay=slowmo)
+        await ctx.reply("There sure is error!")
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

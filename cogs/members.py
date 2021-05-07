@@ -1,4 +1,5 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, datetime
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, datetime, re
+from discord.member import Member
 from discord.ext import commands
 
 
@@ -27,35 +28,26 @@ class MembersCog(commands.Cog, name='Members'):
         embed.timestamp = member.created_at
         await ctx.reply(embed=embed, mention_author=False)
     
-    @commands.command(name='perms', aliases=['permissions'])
+    @commands.command(name='perms', aliases=['permissions', 'perm'])
     @commands.cooldown(1,5)
     @commands.guild_only()
-    async def check_permissions(self, ctx, *, member: discord.Member=None):
-        """Checks member's permissions."""
+    async def check_permissions(self, ctx, *, who=None):
+        """Checks member's or role's permissions."""
         await ctx.trigger_typing()
-        if not member:
-            member = ctx.author
-        perms = '\n'.join(perm for perm, value in member.guild_permissions if value)
+        if who == None:
+            who = f"{ctx.author.id}"
+        id = int(re.sub("[^\\d.]", "", who))
+        who = ctx.guild.get_member(id)
+        if who:
+            perms = '\n'.join(perm for perm, value in who.guild_permissions if value)
+        if who == None:
+            who = ctx.guild.get_role(id)
+            perms = '\n'.join(perm for perm, value in who.permissions if value)
         hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title='Permissions for:', description=ctx.guild.name, color=hex_int)
+        embed = discord.Embed(title='Permissions for:', description=who.mention, color=hex_int)
         embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=member.avatar_url, name=str(member))
-        embed.add_field(name='\uFEFF', value=perms)
-        embed.set_footer(text=f'Requested by {ctx.author}')
-        await ctx.reply(embed=embed, mention_author=False)
-        
-    @commands.command(name='roleperms', aliases=['rolepermissions', 'rp'])
-    @commands.cooldown(1,5)
-    @commands.guild_only()
-    async def role_check_permissions(self, ctx, *, role: discord.Role=None):
-        """Checks role's permissions."""
-        await ctx.trigger_typing()
-        if not role:
-            role = ctx.guild.default_role
-        perms = '\n'.join(perm for perm, value in role.permissions if value)
-        hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title='Permissions for:', description=role.mention, color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
+        if who is discord.Member:
+            embed.set_author(icon_url=who.avatar_url, name=str(who))
         embed.add_field(name='\uFEFF', value=f'\uFEFF'+perms)
         embed.set_footer(text=f'Requested by {ctx.author}')
         await ctx.reply(embed=embed, mention_author=False)

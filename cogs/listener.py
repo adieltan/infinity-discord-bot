@@ -62,7 +62,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif ("The check functions for command") in er:
             return
         else:
-            owner = await self.bot.application_info()
+            reports = self.bot.get_channel(825900714013360199)
             hex_int = random.randint(0,16777215)
             embed=discord.Embed(title="Error", description="An error was recorded", color=hex_int)
             embed.timestamp=datetime.datetime.utcnow()
@@ -70,7 +70,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             embed.add_field(name="Trigger", value=ctx.message.content)
             embed.add_field(name="Error", value=er)
             embed.add_field(name="User", value=f"User: {ctx.author.name} <@{ctx.author.id}>\nChannel: <#{ctx.channel.id}>\n[Message]({ctx.message.jump_url})")
-            await owner.owner.send(embed=embed)
+            await reports.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(ListenerCog(bot))

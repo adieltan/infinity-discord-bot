@@ -57,6 +57,15 @@ class ChannelCog(commands.Cog, name='Channel'):
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
+    @commands.command(name="slowmode", aliases=["sm"])
+    @commands.cooldown(1,3)
+    @commands.has_permissions(manage_messages=True)
+    async def slowmode(self,ctx,seconds:int=0):
+        """Sets the slowmode for the channel."""
+        if seconds < 0:
+            seconds = seconds *-1
+        await ctx.channel.edit(slowmode_delay=seconds)
+        await ctx.reply(f"The slowmode delay for this channel is now {seconds} seconds!")
 
 def setup(bot):
     bot.add_cog(ChannelCog(bot))

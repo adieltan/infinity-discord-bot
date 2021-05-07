@@ -50,16 +50,16 @@ if __name__ == '__main__':
 async def on_ready():
     t = datetime.datetime.now()
     ti = t.strftime("%H:%M %a %d %b %Y")
-    print(f"Logged in as {bot.user}  ↯  {ti}  ↯")
+    print(f"Logged in as {bot.user}  ↯  {ti}  ↯\n")
     vc = bot.get_channel(736791916397723780)
     await vc.connect()
-    hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞", ]
+    hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞"]
     channel = bot.get_channel(813251835371454515)
     await channel.send(random.choice(hello))
  
 estimated_startup_time = datetime.datetime.now()
 
-@tasks.loop(seconds=30, reconnect=True)
+@tasks.loop(seconds=120, reconnect=True)
 async def status():
     await bot.wait_until_ready()
     ser=bot.guilds
@@ -69,14 +69,13 @@ async def status():
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{m} members in {len(ser)} servers"))
 status.start()
 
-@tasks.loop(seconds=30, reconnect=True)
+@tasks.loop(seconds=120, reconnect=True)
 async def uptime():
     await bot.wait_until_ready()
-    await asyncio.sleep(15)
+    await asyncio.sleep(60)
     timenow = datetime.datetime.now()
     d = timenow-estimated_startup_time
-    minutes = divmod(d.total_seconds(), 60)
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"for {round(minutes[0])} minutes {round(minutes[1])} seconds"))
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"with the infinity for {d.weeks} W {d.days} D {d.hours} H {d.minutes} M"))
 uptime.start()
 
 token = ('NzMyOTE3MjYyMjk3NTk1OTI1.Xw7kZA.i5ap8wowZz2WSb0zn9cM4K_5Fio')

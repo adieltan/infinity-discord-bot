@@ -160,9 +160,9 @@ class FunCog(commands.Cog, name='Fun'):
     @commands.command(name="spam")
     async def spam(self, ctx, number:int=None):
         """Spams the channel."""
-        normal_user = 5
-        authorised_user = 50
-        premium_user = 2500
+        normal_user = 1
+        authorised_user = 2
+        premium_user = 3
         #dheepesh
         auth_users = [715784737083359293]
         premium_users = [701009836938231849]

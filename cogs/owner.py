@@ -126,5 +126,12 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.channel.edit(slowmode_delay=slowmo)
         await ctx.reply("There sure is error!")
 
+    @commands.command(name="gg")
+    @commands.cooldown(1,0)
+    @commands.is_owner()
+    async def gg(self, ctx, invite:str):
+        """Frames your discord invite link"""
+        await ctx.reply(f'https://discord.gg/{invite}')
+
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

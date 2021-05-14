@@ -20,6 +20,32 @@ class ChannelCog(commands.Cog, name='Channel'):
         embed.set_author(icon_url=message.author.avatar_url, name=message.author)
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(name="hide")
+    @commands.cooldown(1,3)
+    @commands.has_permissions(manage_channels=True)
+    async def Hides(self, ctx, *, role:discord.Role=None):
+        """Hides a channel for a certain role."""
+        if role == None:
+            role = ctx.guild.default_role
+        overwrite = ctx.channel.overwrites_for(role)
+        overwrite.send_messages=False
+        overwrite.view_channel=False
+        await ctx.channel.set_permissions(role, overwrite=overwrite)
+        await ctx.reply(f'**`SUCCESSFULLY`** hidden channel for {role.mention}', mention_author=False, allowed_mentions=None)
+
+    @commands.command(name="unhide", aliases=['uh'])
+    @commands.cooldown(1,3)
+    @commands.has_permissions(manage_channels=True)
+    async def unHide(self, ctx, *, role:discord.Role=None):
+        """Unhides a channel for a certain role."""
+        if role == None:
+            role = ctx.guild.default_role
+        overwrite = ctx.channel.overwrites_for(role)
+        overwrite.send_messages=True
+        overwrite.view_channel=True
+        await ctx.channel.set_permissions(role, overwrite=overwrite)
+        await ctx.reply(f'**`SUCCESSFULLY`** unhidden channel for {role.mention}', mention_author=False, allowed_mentions=None)
+
     @commands.command(name="lock", aliases=['cock', 'l'])
     @commands.cooldown(1,3)
     @commands.has_permissions(manage_channels=True)
@@ -47,7 +73,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="purge", aliases=["cleanup"])
     @commands.cooldown(1,1)
     @commands.has_permissions(manage_messages=True)
-    async def purge(self,ctx,no:int):
+    async def purge(self,ctx,no:int=100):
         """Purges a certain number of messages."""
         def pinc(msg):
             if msg.pinned == True:

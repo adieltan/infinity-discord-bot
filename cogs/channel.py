@@ -21,20 +21,19 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="hide")
-    @commands.cooldown(1,3)
+    @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
     async def Hides(self, ctx, *, role:discord.Role=None):
         """Hides a channel for a certain role."""
         if role == None:
             role = ctx.guild.default_role
         overwrite = ctx.channel.overwrites_for(role)
-        overwrite.send_messages=False
         overwrite.view_channel=False
         await ctx.channel.set_permissions(role, overwrite=overwrite)
         await ctx.reply(f'**`SUCCESSFULLY`** hidden channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="unhide", aliases=['uh'])
-    @commands.cooldown(1,3)
+    @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
     async def unHide(self, ctx, *, role:discord.Role=None):
         """Unhides a channel for a certain role."""
@@ -47,7 +46,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** unhidden channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="lock", aliases=['cock', 'l'])
-    @commands.cooldown(1,3)
+    @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
     async def lock(self, ctx, *, role:discord.Role=None):
         """Locks a channel for a certain role."""
@@ -59,7 +58,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** locked channel for {role.mention}', mention_author=False, allowed_mentions=None)
 
     @commands.command(name="unlock", aliases=['uncock', 'ul'])
-    @commands.cooldown(1,3)
+    @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
     async def unlock(self, ctx, *, role:discord.Role=None):
         """Unocks a channel for a certain role."""

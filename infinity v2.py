@@ -40,7 +40,8 @@ initial_extensions = ['cogs.info',
                       'cogs.conversion',
                       'cogs.currency',
                       'cogs.slash',
-                      'cogs.custom']
+                      'cogs.custom', 
+                      'cogs.cogcontroller']
 
 if __name__ == '__main__':
     for extension in initial_extensions:

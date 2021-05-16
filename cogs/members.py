@@ -52,5 +52,28 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_footer(text=f'Requested by {ctx.author}')
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(name='random', aliases=['randommember'])
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    async def random(self, ctx, howmany:int=1, role:discord.Role=None):
+        """Finds random peoples from the server or from roles."""
+        await ctx.trigger_typing()
+        if role == None:
+            role = ctx.guild.default_role
+        people = role.members
+        winners = []
+        if howmany > len(people):
+            howmany = len(people)
+        while len(winners) < howmany:
+            win = random.choice(people)
+            winners.append(win)
+            people.remove(win)
+        hex_int = random.randint(0,16777215)
+        text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
+        embed = discord.Embed(title='Member randomizer', description=f'{text}', color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_footer(text=f'Drawn {len(winners)} winners.')
+        await ctx.reply(embed=embed, mention_author=False)
+
 def setup(bot):
     bot.add_cog(MembersCog(bot))

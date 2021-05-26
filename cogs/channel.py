@@ -92,5 +92,58 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.channel.edit(slowmode_delay=seconds)
         await ctx.reply(f"The slowmode delay for this channel is now {seconds} seconds!")
 
+    @commands.command(name="catdel", aliases=['categorydelete'])
+    @commands.cooldown(1,8)
+    @commands.has_permissions(administrator=True)
+    async def catdel(self,ctx, category:discord.CategoryChannel, *, reason:str=None):
+        """Deletes all the channels in the category."""
+        channels = category.channels
+        for channel in channels:
+            await channel.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+        await category.delete(reason=f"Deleted by {ctx.author.name} for {reason}")
+
+    @commands.command(name="chandel", aliases=['channeldelete'])
+    @commands.cooldown(1,8)
+    @commands.has_permissions(administrator=True)
+    async def chandel(self,ctx, channel:discord.TextChannel, *, reason:str=None):
+        """Deletes the channel."""
+        await channel.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+
+    @commands.command(name="purgeallchannel")
+    @commands.cooldown(1,8)
+    @commands.has_permissions(administrator=True)
+    async def purgeallchannel(self,ctx):
+        """Deletes all the channels."""
+        if ctx.author != ctx.guild.owner:
+            await ctx.reply("You are not server owner.")
+            return
+        channels = ctx.guild.channels
+        for channel in channels:
+            try:
+                await channel.delete(reason=f"Deleted by {ctx.author.name}.")
+            except:
+                pass
+
+    @commands.command(name="muteoverwrites", aliases=['mo'])
+    @commands.cooldown(1,6)
+    @commands.has_permissions(administrator=True)
+    async def lock(self, ctx, muterole:discord.Role):
+        """Updates mute role's perms for the whole server.."""
+        overwrite = ctx.channel.overwrites_for(muterole)
+        overwrite.send_messages=False
+        channels = ctx.guild.channels
+        categories = ctx.guild.categories
+        for channel in channels:
+            try:
+                await channel.set_permissions(muterole, overwrite=overwrite)
+            except:
+                pass
+        for category in categories:
+            try:
+                await category.set_permissions(muterole, overwrite=overwrite)
+            except:
+                pass
+        await ctx.send("`DONE`")
+
 def setup(bot):
     bot.add_cog(ChannelCog(bot))

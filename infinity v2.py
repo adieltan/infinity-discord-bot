@@ -57,8 +57,8 @@ async def on_ready():
     hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞"]
     channel = bot.get_channel(813251835371454515)
     await channel.send(random.choice(hello))
-    
-estimated_startup_time = datetime.datetime.now()
+    global est
+    est = datetime.datetime.now()
 
 @tasks.loop(seconds=100, reconnect=True)
 async def status():
@@ -75,7 +75,7 @@ async def uptime():
     await bot.wait_until_ready()
     await asyncio.sleep(50)
     timenow = datetime.datetime.now()
-    d = timenow-estimated_startup_time
+    d = timenow-est
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"with the infinity for {d.days} Days {d.seconds/60/60} Hours "))
 uptime.start()
 

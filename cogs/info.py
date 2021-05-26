@@ -1,6 +1,6 @@
 import discord, random, asyncio, discord.voice_client, datetime, psutil
 from discord.emoji import Emoji
-from discord.ext import commands
+from discord.ext import commands, tasks
 from psutil._common import bytes2human
 
 class InfoCog(commands.Cog, name='Info'):
@@ -72,6 +72,17 @@ class InfoCog(commands.Cog, name='Info'):
         memory = psutil.virtual_memory()
         embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
         await ctx.reply(embed=embed, mention_author=False)
+
+    @tasks.loop(minutes=15)
+    async def performance(self):
+        """Quartarly report on performance."""
+        performance = self.bot.get_channel(847011689882189824)
+        hex_int = random.randint(0,16777215)
+        embed=discord.Embed(title="Performance report", description=f"`Ping  :` {round(self.bot.latency * 1000)}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory.percent}%", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        await performance.send(embed=embed)
+        
+
 
 def setup(bot):
     bot.add_cog(InfoCog(bot))

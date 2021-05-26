@@ -75,5 +75,12 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_footer(text=f'Drawn {len(winners)} winners.')
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(name="roledel")
+    @commands.cooldown(1,4)
+    @commands.has_permissions(administrator=True)
+    async def roledel(self,ctx, role:discord.Role, *, reason:str=None):
+        """Deletes the role."""
+        await role.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+
 def setup(bot):
     bot.add_cog(MembersCog(bot))

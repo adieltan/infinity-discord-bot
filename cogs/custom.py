@@ -132,5 +132,6 @@ class customCog(commands.Cog, name='custom'):
             await admin.send(f"Added {role.mention} to {message.author.mention}")
 
 
+
 def setup(bot):
     bot.add_cog(customCog(bot))

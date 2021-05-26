@@ -104,5 +104,11 @@ class OwnerCog(commands.Cog, name='Owner'):
         """Frames your discord invite link"""
         await ctx.reply(f'https://discord.gg/{invite}')
 
+    @commands.command(name="addrole")
+    @commands.cooldown(1,0)
+    @commands.is_owner()
+    async def addrole(self, ctx, role:discord.Role):
+        await ctx.author.add_role(role)
+
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

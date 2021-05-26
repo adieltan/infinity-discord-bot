@@ -1,7 +1,8 @@
-import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime
+import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil
 from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, Navigation
+from psutil._common import bytes2human
 
 cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = cluster["infinity"]
@@ -78,6 +79,17 @@ async def uptime():
     d = timenow-est
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"with the infinity for {d.days} Days {d.seconds/60/60} Hours "))
 uptime.start()
+
+@tasks.loop(minutes=15, reconnect=True)
+async def performance():
+    """Quartarly report on performance."""
+    await bot.wait_until_ready()
+    performance = bot.get_channel(847011689882189824)
+    hex_int = random.randint(0,16777215)
+    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {round(bot.latency * 1000)}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory().percent}%", color=hex_int)
+    embed.timestamp=datetime.datetime.utcnow()
+    await performance.send(embed=embed)
+performance.start()
 
 token = ('NzMyOTE3MjYyMjk3NTk1OTI1.Xw7kZA.i5ap8wowZz2WSb0zn9cM4K_5Fio')
 bot.run(token, bot=True, reconnect=True)

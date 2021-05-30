@@ -14,20 +14,35 @@ class rhCog(commands.Cog, name='rh'):
         return commands.check(predicate)
 
     @commands.command(name="heist")
-    @commands.has_role(783134076772941876)
+    @commands.has_any_role(783134076772941876)
     @rhserver()
-    @commands.cooldown(1,5, type=BucketType.user)
-    async def heist(self, ctx, amount: float, *, msg:str=None):
+    @commands.cooldown(1,5, type=BucketType.guild)
+    async def heist(self, ctx, msg:str=None):
         """Gets people ready for a heist."""
         heistping = ctx.guild.get_role(807925829009932330)
+        heistchannel = ctx.guild.get_channel(783135856017145886)
         hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title='Heist', description=f'{amount}', color=hex_int)
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
+        embed = discord.Embed(title='Dank Memer Heist', color=hex_int)
         embed.timestamp=datetime.datetime.utcnow()
-        embed.set_image(url="https://media3.giphy.com/media/5QMOICVmXremPSa0k7/giphy.gif")
         embed.add_field(name='Info', value=f"{msg} ", inline=False)
         embed.set_footer(text='Remember to thank them !')
-        await ctx.reply(content=f"{heistping.mention()}", embed=embed, allowed_mentions=True,  mention_author=False)
+        await heistchannel.send(content=f"{heistping.mention} ", embed=embed, allowed_mentions=discord.AllowedMentions.all(),  mention_author=False)
+
+    @commands.command(name="partneredheist")
+    @commands.has_any_role(847626436622024704)
+    @rhserver()
+    @commands.cooldown(1,5, type=BucketType.guild)
+    async def pheist(self, ctx, amount: float, *, msg:str=None):
+        """Sends your partnered heist ad."""
+        heistping = ctx.guild.get_role(807925829009932330)
+        pheistchannel = ctx.guild.get_channel(848429520263839784)
+        hex_int = random.randint(0,16777215)
+        into = format(amount, ',')
+        embed = discord.Embed(title='Heist', description=f'Amount: {into}', color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.add_field(name='Info', value=f"{msg} ", inline=False)
+        embed.set_footer(text='Remember to thank them !')
+        await pheistchannel.send(content=f"{heistping.mention} ", embed=embed, allowed_mentions=discord.AllowedMentions.all(),  mention_author=False)
 
     @commands.command(name="verify")
     @commands.has_permissions(manage_roles=True)

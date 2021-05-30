@@ -30,12 +30,11 @@ class OwnerCog(commands.Cog, name='Owner'):
 
     @commands.command(name="timer", aliases=['countdown', 'cd'])
     @commands.is_owner()
-    async def timer(self, ctx, time, name:str="Timer"):
-        """Ever heard of a timer countdown?
-            m=minutes
-            s=seconds
-            h=hours
-        """
+    async def timer(self, ctx, time=None, name:str="Timer"):
+        """Ever heard of a timer countdown?"""
+        if time==None:
+            await ctx.reply("Ever heard of a timer countdown?\nm=minutes\ns=seconds\nh=hours")
+            return
         lower = time.lower()
         digit = int(re.sub("[^\\d.]", "", time))
         if lower[-1] == "s":

@@ -30,6 +30,8 @@ bot.help_command = PrettyHelp(navigation=nav, color=hex_int, active_time=20, no_
 bot.load_extension('jishaku')
 os.environ["JISHAKU_NO_UNDERSCORE"]="true"
 
+
+
 initial_extensions = ['cogs.info',
                       'cogs.members',
                       'cogs.fun',

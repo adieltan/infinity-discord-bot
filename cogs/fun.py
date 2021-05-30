@@ -106,16 +106,19 @@ class FunCog(commands.Cog, name='Fun'):
             meh = me.message_id           
             message = await ctx.channel.fetch_message(meh)
             reactions = message.reactions
-            for reaction in reactions:
-                users = await reaction.users().flatten()
-            winners = (random.choices(users, k=numbers))
-            embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
-            embed.timestamp=datetime.datetime.utcnow()
-            embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
-            text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
-            embed.add_field(name="Winners", value=text)
-            embed.set_footer(text=numbers)
-            await ctx.reply(embed=embed, mention_author=False)
+            if reactions == None:
+                await ctx.reply("Urm no one reacted to that message.")
+            else:
+                for reaction in reactions:
+                    users = await reaction.users().flatten()
+                winners = (random.choices(users, k=numbers))
+                embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
+                embed.timestamp=datetime.datetime.utcnow()
+                embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
+                text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
+                embed.add_field(name="Winners", value=text)
+                embed.set_footer(text=f"{numbers} winners")
+                await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="catfact")
     @commands.cooldown(1,5)

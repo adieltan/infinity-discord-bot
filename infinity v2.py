@@ -20,12 +20,15 @@ def get_prefix(bot, message):
         col.insert_one({"_id":message.guild.id, "prefix": "="})
         return commands.when_mentioned_or("=")(bot, message)
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=intents)
+
+bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=True))
 nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
+global hex_int
 hex_int = random.randint(0,16777215)
 bot.help_command = PrettyHelp(navigation=nav, color=hex_int, active_time=20, no_category='Others')
 
+bot.load_extension('jishaku')
+os.environ["JISHAKU_NO_UNDERSCORE"]="true"
 
 initial_extensions = ['cogs.info',
                       'cogs.members',
@@ -42,6 +45,7 @@ initial_extensions = ['cogs.info',
                       'cogs.currency',
                       'cogs.slash',
                       'cogs.custom', 
+                      'cogs.rh',
                       'cogs.cogcontroller']
 
 if __name__ == '__main__':
@@ -82,7 +86,7 @@ uptime.start()
 
 @tasks.loop(minutes=15, reconnect=True)
 async def performance():
-    """Quartarly report on performance."""
+    #Quartarly report on performance.
     await bot.wait_until_ready()
     performance = bot.get_channel(847011689882189824)
     hex_int = random.randint(0,16777215)

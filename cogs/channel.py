@@ -1,3 +1,4 @@
+from click import pass_context
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, datetime
 from discord.ext import commands
 
@@ -30,7 +31,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         overwrite = ctx.channel.overwrites_for(role)
         overwrite.view_channel=False
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** hidden channel for {role.mention}', mention_author=False, allowed_mentions=None)
+        await ctx.reply(f'**`SUCCESSFULLY`** hidden channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="unhide", aliases=['uh'])
     @commands.cooldown(1,2)
@@ -43,7 +44,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         overwrite.send_messages=True
         overwrite.view_channel=True
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** unhidden channel for {role.mention}', mention_author=False, allowed_mentions=None)
+        await ctx.reply(f'**`SUCCESSFULLY`** unhidden channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="lock", aliases=['cock', 'l'])
     @commands.cooldown(1,2)
@@ -55,7 +56,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         overwrite = ctx.channel.overwrites_for(role)
         overwrite.send_messages=False
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** locked channel for {role.mention}', mention_author=False, allowed_mentions=None)
+        await ctx.reply(f'**`SUCCESSFULLY`** locked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="unlock", aliases=['uncock', 'ul'])
     @commands.cooldown(1,2)
@@ -67,18 +68,56 @@ class ChannelCog(commands.Cog, name='Channel'):
         overwrite = ctx.channel.overwrites_for(role)
         overwrite.send_messages=True
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=None)
+        await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(name="purge", aliases=["cleanup"])
-    @commands.cooldown(1,1)
+    @commands.group(pass_context=True)
     @commands.has_permissions(manage_messages=True)
-    async def purge(self,ctx,no:int=100):
-        """Purges a certain number of messages."""
+    async def purge(self,ctx):
+        """Different types of purging commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("`purge <no>` command moved to `purge count <no>`")
+    
+    @purge.command(pass_context=True)
+    async def user(self, ctx, user:discord.Member, no:int=100):
+        """Purges messages from a user."""
+        def pinc(msg):
+            if msg.author == user:
+                return True
+            else:
+                return False
+        deleted = await ctx.channel.purge(limit=no+1, check=pinc)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
+
+    @purge.command(pass_context=True)
+    async def count(self, ctx, no:int=100):
+        """Purges a number of messages."""
         def pinc(msg):
             if msg.pinned == True:
                 return False
             else:
                 return True
+        deleted = await ctx.channel.purge(limit=no+1, check=pinc)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
+
+    @purge.command(pass_context=True)
+    async def pins(self, ctx, no:int=100):
+        """Purges a number of pinned messages."""
+        def pinc(msg):
+            if msg.pinned == True:
+                return True
+            else:
+                return False
+        deleted = await ctx.channel.purge(limit=no+1, check=pinc)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
+
+    @purge.command(pass_context=True)
+    async def bot(self, ctx, no:int=100):
+        """Purges messages from bots."""
+        def pinc(msg):
+            if msg.author.bot == True:
+                return True
+            else:
+                return False
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 

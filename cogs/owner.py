@@ -21,8 +21,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         embed.add_field(name="Details", value=info, inline=False)
         embed.set_footer(text=f"Infinity Updates")
         channel = self.bot.get_channel(813251614449074206)
+        ping = channel.guild.get_role(848814884330537020)
         try:
-            await channel.send(embed=embed)
+            await channel.send(text=f"{ping.mention}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
         except:
             await ctx.message.add_reaction("\U0000274c")
         else:
@@ -75,7 +76,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.reply("👋")
         await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
         await asyncio.sleep(8)
-        await self.bot.close()
+        await self.bot.logout()
 
     @commands.command(name='execute', aliases=['eval ', 'exe'])
     @commands.is_owner()

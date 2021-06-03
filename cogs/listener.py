@@ -17,16 +17,6 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         elif message.author == self.bot.user:
             return
-        elif ('hi ') in message.content.lower():
-            greeting = ('Hi', 'Hello', '안녕하세요 (Annyeonghaseyo)', '你好', 'こんにちは(Konnichiwa)', 'Bonjour')
-            response = random.choice(greeting)
-            await message.reply(response, mention_author=False, delete_after=5)
-            pass
-        elif ('hello ') in message.content.lower():
-            greeting = ('Hi', 'Hello', '안녕하세요 (Annyeonghaseyo)', '你好', 'こんにちは(Konnichiwa)', 'Bonjour')
-            response = random.choice(greeting)
-            await message.reply(response, mention_author=False, delete_after=5)
-            pass
         elif ('*f*') in message.content.lower():
             await message.add_reaction("a:f_:819009528204099624")
             pass

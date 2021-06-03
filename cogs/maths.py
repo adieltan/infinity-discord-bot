@@ -16,27 +16,6 @@ class MathsCog(commands.Cog, name='Maths'):
         output = math.gcd(input, input2)
         await ctx.reply(f'Greatest common divisor of {input} and {input2}:\n***{output}***', mention_author=False)
 
-    @commands.command(name= 'binary', aliases=['bin'])
-    @commands.cooldown(1,5)
-    async def bin (self, ctx, input:int):
-        """Find the binary form of an integer"""
-        output = bin(input)
-        await ctx.reply(f'Binary form of {input}:\n***{output}***', mention_author=False)
-
-    @commands.command(name= 'hexadecimal', aliases=['hex'])
-    @commands.cooldown(1,5)
-    async def hex (self, ctx, input:int):
-        """Find the hexadecimal form of an integer"""
-        output = hex(input)
-        await ctx.reply(f'Hexadecimal form of {input}:\n***{output}***', mention_author=False)
-
-    @commands.command(name= 'octaldecimal', aliases=['oct'])
-    @commands.cooldown(1,5)
-    async def oct (self, ctx, input:int):
-        """Find the octaldecimal of an integer"""
-        output = oct(input)
-        await ctx.reply(f'Octaldecimal form of {input}:\n***{output}***', mention_author=False)
-
     @commands.command(name='calc', aliases=['c', '='])
     @commands.cooldown(1,2)
     async def calc (self, ctx, *, input):

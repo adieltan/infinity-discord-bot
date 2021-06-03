@@ -32,7 +32,7 @@ class FunCog(commands.Cog, name='Fun'):
         await msg.edit(content=f'I choose **{ran}**')
 
     @commands.command()
-    @commands.cooldown(1,10)
+    @commands.cooldown(1,3)
     async def gift(self, ctx):
         """Generates few alphanumeric letters to join to become a discord gift code. You are VERY lucky if you managed to get one."""
         letters_and_digits = string.ascii_letters + string.digits

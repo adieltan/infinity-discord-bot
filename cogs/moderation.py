@@ -1,12 +1,7 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, json, pymongo, datetime
+import discord, discord.voice_client, sys, traceback, json, pymongo, datetime, motor.motor_asyncio
 from discord.enums import NotificationLevel
-from pymongo import MongoClient
 from discord.ext import commands
 from discord.guild import Guild
-
-cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-db = cluster["infinity"]
-col=db["server"]
 
 class ModerationCog(commands.Cog, name='Moderation'):
     """*Moderation Commands.*"""
@@ -14,13 +9,13 @@ class ModerationCog(commands.Cog, name='Moderation'):
         self.bot = bot
 
     @commands.command(name='prefix')
-    @commands.cooldown(1,100)
+    @commands.cooldown(1,20)
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def prefix(self, ctx, apref:str=None):
         """Changes the prefix for the bot in the server."""
         if apref is None:
-            results= col.find_one({"_id":ctx.guild.id})
+            results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
             pref = results["prefix"]
             await ctx.reply(f"The prefix for {ctx.guild.name} is `{pref}`", mention_author=False)
             pass
@@ -29,7 +24,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
             pass
         else:
             #col.replace_one({"_id":ctx.guild.id}, {"$set":{"prefix":f"{apref}"}})
-            col.replace_one({"_id":ctx.guild.id}, {"prefix":apref})
+            await self.bot.dba['server'].update_one({"_id":ctx.guild.id}, {"$inc":{"prefix":apref}}, True)
             await ctx.reply(f'Prefix changed to: {apref}', mention_author=False)
             name=f'[{apref}] Infinity'
             member=ctx.guild.get_member(732917262297595925)

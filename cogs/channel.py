@@ -92,7 +92,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     async def count(self, ctx, no:int=100):
         """Purges a number of messages."""
         def pinc(msg):
-            if msg.pinned == True:
+            if msg.pinned:
                 return False
             else:
                 return True
@@ -103,7 +103,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     async def pins(self, ctx, no:int=100):
         """Purges a number of pinned messages."""
         def pinc(msg):
-            if msg.pinned == True:
+            if msg.pinned:
                 return True
             else:
                 return False

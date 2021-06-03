@@ -1,3 +1,4 @@
+from click import pass_context
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, datetime, re
 from discord.member import Member
 from discord.ext import commands
@@ -17,14 +18,14 @@ class MembersCog(commands.Cog, name='Members'):
             member = ctx.author
         await ctx.trigger_typing()
         hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="User Info", description=member.mention, color=hex_int)
-        embed.set_author(name=member.display_name, icon_url=f'{member.avatar_url}')
-        embed.add_field(name="User ID", value=member.id)
+        embed=discord.Embed(title="User Info", description=f"{member.mention} [Avatar]({member.avatar_url_as(static_format='png')})\n`Status  :` {member.raw_status}\n`Activity:` {member.activity}", color=hex_int)
+        embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
+        embed.add_field(name="User ID", value=f"`{member.id}`")
         embed.add_field(name="Nickname", value=member.display_name)
-        embed.add_field(name="Top Role", value=f"{member.top_role.mention}\n{member.top_role.id}")
         embed.add_field(name="Date Joined", value=member.joined_at.strftime("%a %Y %b %d , %H:%M:%S %Z"))
+        embed.add_field(name="Roles", value=f"`Top Role:` {member.top_role.mention}\n`{member.top_role.id}`\n`Number of roles:` {len(member.roles)}", inline=False)
         embed.set_image(url=member.avatar_url)
-        embed.set_footer(text="Date created")
+        embed.set_footer(text="User creation date")
         embed.timestamp = member.created_at
         await ctx.reply(embed=embed, mention_author=False)
     
@@ -75,12 +76,79 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_footer(text=f'Drawn {len(winners)} winners.')
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name="roledel")
+    @commands.group(pass_context=True, aliases=['r'])
+    async def role(self, ctx):
+        """Role utilities."""
+        if ctx.invoked_subcommand is None:
+            pass
+    
+    @role.command(pass_context=True)
     @commands.cooldown(1,4)
-    @commands.has_permissions(administrator=True)
-    async def roledel(self,ctx, role:discord.Role, *, reason:str=None):
+    @commands.has_permissions(manage_roles=True)
+    async def delete(self,ctx, role:discord.Role, *, reason:str=None):
         """Deletes the role."""
-        await role.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+        try:
+            await role.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+        except:
+            await ctx.reply("Failed")
+        else:
+            await ctx.reply(f"{role.name} deleted.")
+
+    @role.command(pass_context=True)
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def add(self,ctx, member:discord.Member, *,  role:discord.Role):
+        """Adds a role to a person."""
+        try:
+            await member.add_roles(role)
+        except:
+            await ctx.reply("Failed")
+        else:
+            await ctx.reply(f"Added {role.mention} to {member.mention}")
+
+    @role.command(pass_context=True)
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def remove(self,ctx, member:discord.Member, *, role:discord.Role):
+        """Removes a role from a person."""
+        try:
+            await member.remove_roles(role)
+        except:
+            await ctx.reply("Failed")
+        else:
+            await ctx.reply(f"Removed {role.mention} from {member.mention}")
+
+    @role.command(pass_context=True, aliases=['i'])
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def info(self,ctx, *, role:discord.Role=None):
+        """Shows infomation about a role."""
+        if role is None:
+            role = ctx.guild.default_role
+        embed = discord.Embed(title="Role Info", description=f"{role.mention} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
+        embed.add_field(name="Permissions", value='`🎈`'.join(perm for perm, value in role.permissions if value))
+        embed.set_footer(text="Role created at")
+        embed.timestamp = role.created_at
+        await ctx.reply(embed=embed, mention_author=True)
+
+    @role.command(pass_context=True, aliases=['d'])
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def dump(self,ctx, *, role:discord.Role):
+        """Dumps members from the role."""
+        people = role.members
+        text ="```css\n" + '\n'.join((f'{m.name} ({m.id})')for m in people) + "```"
+        await ctx.reply(text)
+    
+    @role.command(pass_context=True)
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def clear(self,ctx, *, role:discord.Role):
+        """Clears members from that role."""
+        people = role.members
+        for m in people:
+            await m.remove_roles(role, reason="Role member clear command.")
+        await ctx.reply(f"Removed {role.mention} from {len(people)} member(s).")
 
 def setup(bot):
     bot.add_cog(MembersCog(bot))

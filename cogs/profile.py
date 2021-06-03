@@ -16,7 +16,9 @@ class profileCog(commands.Cog, name='profile'):
     @set.command(name="weight", aliases=['w]'])
     async def setweight(self, ctx, kg:int):
         """Sets your own weight."""
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$inc":{"weight":kg}}, True)
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        results['weight'] = kg
+        await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
         results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
         weightdb = results['weight']
         await ctx.reply(f"Your weight has been set to {weightdb} kg.")
@@ -24,12 +26,46 @@ class profileCog(commands.Cog, name='profile'):
     @set.command(name="height", aliases=['h]'])
     async def setheight(self, ctx, cm:int):
         """Sets your own height."""
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$inc":{"height":cm}}, True)
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        results['height'] = cm
+        await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
         results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
         heightdb = results['height']
         await ctx.reply(f"Your height has been set to {heightdb} cm.")
+    
+    @set.command(name="birthday", aliases=['b', 'bd'])
+    async def setbd(self, ctx, *, birthday:str):
+        """Sets your own birthday."""
+        user_input = birthday
+        settings = {
+            'TIMEZONE': 'UTC',
+            'RETURN_AS_TIMEZONE_AWARE': True,
+            'TO_TIMEZONE': 'UTC',
+            'PREFER_DATES_FROM': 'future'
+        }
+        to_be_passed = f"in {user_input}"
+        split = to_be_passed.split(" ")
+        length = len(split[:7])
+        out = None
+        used = ""
+        for i in range(length, 0, -1):
+            used = " ".join(split[:i])
+            out = dateparser.parse(used, settings=settings)
+            if out is not None:
+                break
+        if out is None:
+            raise commands.BadArgument('Provided time is invalid')
+        now = ctx.message.created_at
+        time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
+        timestamp=time[0].timestamp()
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        results['bd'] = timestamp
+        await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        bd = datetime.datetime.fromtimestamp(results['bd'])
+        await ctx.reply(f"Your birthday has been set to {bd}.")
 
-    @commands.command(name="profile")
+    @commands.command(name="profile", aliases=['bmi'])
     async def profile(self, ctx, member:discord.Member=None):
         """Gets the profile of a member."""
         if member is None:
@@ -46,10 +82,18 @@ class profileCog(commands.Cog, name='profile'):
             except:
                 await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"height":0}}, True)
                 height = 0
+            try:
+                bd = results['bd']
+            except:
+                bd = member.joined_at.timestamp()
+                await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"bd":bd}}, True)
+                bd = 0
         else:
-            await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"weight":0, "height":0}}, True)
+            bd = member.joined_at.timestamp()
+            await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"weight":0, "height":0, 'bd':bd}}, True)
             weight = 0
             height = 0
+            bd = 0
         try:
             bmi = weight / (height/100)**2
         except:
@@ -67,11 +111,13 @@ class profileCog(commands.Cog, name='profile'):
         else:
             status="severely obese"
 
+        birthday = datetime.datetime.fromtimestamp(bd)
         hex_int = random.randint(0,16777215)
         embed=discord.Embed(title="Profile", color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=member.avatar_url, name=member.display_name)
         embed.add_field(name="BMI", value=f"Height : {height} cm\nWeight : {weight} kg\nBMI : {bmi} ({status})")
+        embed.set_footer(text="Birthday: ")
+        embed.timestamp=birthday
         await ctx.reply(embed=embed, mention_author=True)
 
     

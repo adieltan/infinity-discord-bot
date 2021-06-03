@@ -37,7 +37,15 @@ class utilityCog(commands.Cog, name='utility'):
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
         embed=discord.Embed(title="Time", description=expression)
         embed.timestamp=time[0]
-        await ctx.reply(embed=embed)
+        try:
+            ts = time[0].timestamp()
+        except:
+            pass
+        try:
+            embed.set_footer(text=ts)
+        except:
+            pass
+        await ctx.reply(time[0],embed=embed)
 
 
 

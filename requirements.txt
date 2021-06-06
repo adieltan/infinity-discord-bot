@@ -1,7 +1,6 @@
 discord
 asyncio
 requests
-pymongo
 datetime
 psutil
 motor
@@ -12,4 +11,4 @@ wordfreq
 brawlstats
 py_expression_eval
 discord-pretty-help
-pymongo[srv]
+pymongo[tls,srv]

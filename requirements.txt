@@ -1,7 +1,6 @@
 discord
 asyncio
 requests
-json
 pymongo
 datetime
 psutil

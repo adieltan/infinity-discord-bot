@@ -1,1 +1,1 @@
-worker:python infinity v2.py
+worker: python infinity v2.py

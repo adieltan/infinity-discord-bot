@@ -1,7 +1,7 @@
 import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio
 from pymongo import MongoClient
 from discord.ext import commands, tasks
-from pretty_help import PrettyHelp, Navigation
+from pretty_help import PrettyHelp, DefaultMenu
 from psutil._common import bytes2human
 
 global bot
@@ -25,10 +25,14 @@ async def get_prefix(bot, message):
 bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=True), owner_ids={701009836938231849,703135131459911740})
 bot.dba = dba
 
-nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
 global hex_int
 hex_int = random.randint(0,16777215)
-bot.help_command = PrettyHelp(navigation=nav, color=hex_int, active_time=20, no_category='Others')
+
+# ":discord:743511195197374563" is a custom discord emoji format. Adjust to match your own custom emoji.
+menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove="a:infi:851081962491478026", active_time=20)
+# Custom ending note
+ending_note = "The ending note from {ctx.bot.user.name}\nFor command {help.clean_prefix}{help.invoked_with}"
+bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=hex_int, no_category='Others')
 
 bot.load_extension('jishaku')
 os.environ["JISHAKU_NO_UNDERSCORE"]="true"

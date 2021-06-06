@@ -12,6 +12,64 @@ class customCog(commands.Cog, name='custom'):
             return ctx.guild.id==841654825456107530 or ctx.guild.id==830731085955989534 
         return commands.check(predicate)
 
+    @commands.command(name='bb')
+    @udevent()
+    @commands.has_role(841805626300301374)
+    async def bb(self, ctx, victim:discord.Member):
+        """Ban battle."""
+        admin = ctx.guild.get_role(841655266743418892)
+        banned = ctx.guild.get_role(851027190308929586)
+        spec = ctx.guild.get_role(842926861239582750)
+        if ctx.channel.id in [843027975070810114, 841654825456107533]:
+            pass
+        else:
+            await ctx.reply("Not allowed in this channel.")
+            return
+        if banned in ctx.author.roles:
+            await ctx.reply("You are banned.")
+            return
+        elif spec in ctx.author.roles:
+            await ctx.reply("You have no weapon.")
+            return
+        elif admin in victim.roles:
+            await ctx.reply("Unbannable")
+            return
+        elif spec in victim.roles:
+            await ctx.reply("He has no weapons just eyes. No harm to you.")
+            return
+        elif banned in victim.roles:
+            await ctx.reply("Already banned.")
+            return
+        else:
+            await victim.add_roles(banned)
+            await ctx.reply(f"Banned {victim.mention}")
+
+    @commands.command(name='group', aliases=['g'])
+    @udevent()
+    @commands.has_permissions(administrator=True)
+    async def group(self, ctx, code:str, groupleader:discord.User, member1:discord.User=None, member2:discord.User=None, *, message:str="Good luck"):
+        """Dmes the group members the code."""
+        hex_int = random.randint(0,16777215)
+        embed=discord.Embed(title="Kahoot Event Info", description="Message to your group from the host. [Server Invite](https://discord.gg/gEetr37)", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
+        embed.add_field(name="Verification Code", value=f"Type `{code}` in <#841657242053771274> to be verified and handed the group role.")
+        embed.set_footer(text=code)
+        if message:
+            embed.add_field(name="Message", value=message)
+        try:
+            await groupleader.send("https://discord.gg/gEetr37", embed=embed)
+        except:
+            await ctx.reply(f"Can't send to {groupleader.mention}")
+        try:
+            await member1.send("https://discord.gg/gEetr37", embed=embed)
+        except:
+            await ctx.reply(f"Can't send to {member1.mention}")
+        try:
+            await member2.send("https://discord.gg/gEetr37", embed=embed)
+        except:
+            await ctx.reply(f"Can't send to {member2.mention}")
+
     @commands.command(name="donolog", aliases=["dl"])
     @udevent()
     @commands.cooldown(1,7)
@@ -91,10 +149,61 @@ class customCog(commands.Cog, name='custom'):
             'c$&dkp305jc' :842375212342837268,
             'c$&sjc204kb' :842375271248035840,
             'c$&ieh194jv' :842375721531342900,
+            'ish287hc':850514046910070836,
+            'aif225zh':850514176182845460,
+            'apf255cz':850514187801460796,
+            'sjf285cz':850514197133656095,
+            'kao342gd':850514329538527232,
+            'foa295ca':850514341480366160,
+            'dif631cj':850514350769700884,
+            'spg742hd':850515659006672908,
+            'amg995xa':850515660878249984,
+            'sog411ap':850515662194343936,
+            'spg721va':850515663554478120,
+            'kdf173sb':850515664447078421,
+            'ksj284dd':850515666075123713,
+            'orh184xa':850515667442335804,
+            'oks853ff':850515670839459840,
+            'idi384hd':850515672140087337,
+            'ied994hs':850515673796706304,
+            'phh274aa':850515675071774720,
+            'pra025sa':850515676535455744,
+            'dha500fa':850515677793484810,
+            'gir328sh':850515679068684318,
+            'kek246gg':850515680179519509,
+            'pat426dd':850515681816608819,
+            'flg327vs':850515683279110144,
+            'uso385da':850515684647501924,
+            'dkf532bs':850515685967790090,
+            'ifg384cs':850515687239974912,
+            'rog284fs':850515688514650132,
+            'kdk945ds':850515689852239923,
+            'iso294ds':850515691332567101,
+            'sid885gs':850515692644990986,
+            'ldf939jv':850515693866844180,
+            'aof265hf':850515694923939881,
+            'glb876gf':850515696496017414,
+            'rog876ga':850515697506451467,
+            'pth864gf':850515699134365696,
+            'kdf984ga':850515700150042635,
+            'sog765gs':850515701588426772,
+            'afc645ff':850515702867558440,
+            'dif877fd':850515704154554399,
+            'apf274hs':850515705585860629,
+            'off964hf':850515706700103711,
+            'skk394gp':850515708071641100,
+            'ffs045hz':850515709792354315,
+            'osf887ff':850515711453560862,
+            'kfd845cx':850515712699269140,
+            'kff763fd':850515713977876490,
+            'eud924hb':850515715320053791,
+            'doc485sb':850515716658692096,
+            'kdf94ss':850515717577244723,
             'c$&mrbeme' :841805626300301374,
             'c$&tospetca' :842926861239582750,
             'c$&$of&fx29' :841980807215841301,
-            'c$&&gh$yx64' :841980878153842708
+            'c$&&gh$yx64' :841980878153842708,
+            'laoxogosga919445-(:dld':841655266743418892
         }
         admin = self.bot.get_channel(841654825456107533)
         member = message.guild.get_role(841805626300301374)

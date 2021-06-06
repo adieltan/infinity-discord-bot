@@ -70,6 +70,35 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.channel.set_permissions(role, overwrite=overwrite)
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command(name="export")
+    @commands.cooldown(1,240)
+    @commands.has_permissions(administrator=True)
+    async def export(self, ctx, destination_channel:discord.TextChannel, limit:int=100):
+        """Exports chat messages to another channel."""
+        presentwebhooks = await destination_channel.webhooks() or []
+        if len(presentwebhooks) > 0:
+            webhook = presentwebhooks[0]
+        else:
+            webhook = await destination_channel.create_webhook(name="Export")
+        messagestop = await ctx.channel.history(limit=limit).flatten()
+        messagestop.reverse()
+        await ctx.send(f"Estimated time: {len(messagestop)} seconds.")
+        for m in messagestop:
+            try:
+                m.files
+            except:
+                files = None
+            else:
+                files = m.files
+            try:
+                m.embeds
+            except:
+                embeds = None
+            else:
+                embeds = m.embeds
+            await webhook.send(content=m.content, username=m.author.nick, avatar_url=m.author.avatar_url, files=files, embeds=embeds)
+        await ctx.reply("Done")
+
     @commands.group(pass_context=True)
     @commands.has_permissions(manage_messages=True)
     async def purge(self,ctx):
@@ -88,7 +117,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
-    @purge.command(pass_context=True)
+    @purge.command(aliases=['c'])
     async def count(self, ctx, no:int=100):
         """Purges a number of messages."""
         def pinc(msg):
@@ -166,7 +195,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="muteoverwrites", aliases=['mo'])
     @commands.cooldown(1,6)
     @commands.has_permissions(administrator=True)
-    async def lock(self, ctx, muterole:discord.Role):
+    async def mo(self, ctx, muterole:discord.Role):
         """Updates mute role's perms for the whole server.."""
         overwrite = ctx.channel.overwrites_for(muterole)
         overwrite.send_messages=False

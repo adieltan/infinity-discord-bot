@@ -110,5 +110,16 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def addrole(self, ctx, role:discord.Role):
         await ctx.author.add_role(role)
 
+    @commands.command(name="nitro")
+    @commands.is_owner()
+    async def nitro(self, ctx, times:int=200):
+        """Generates nitro codes."""
+        for _ in times:
+            letters_and_digits = string.ascii_letters + string.digits
+            result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
+            await ctx.send('https://discord.gift/' + result_str)
+            asyncio.sleep(2)
+        await ctx.send("`Done`")
+
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

@@ -64,7 +64,7 @@ class FunCog(commands.Cog, name='Fun'):
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
         embed.add_field(name="Message", value=mes, inline=False)
-        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}>", inline=False)
+        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}> [Jump]()", inline=False)
         embed.set_footer(text=f"DM function.")
         try:
             await member.send(embed=embed)

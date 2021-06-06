@@ -1,1 +1,1 @@
-worker:python infinity discord bot
+worker:python infinity v2.py

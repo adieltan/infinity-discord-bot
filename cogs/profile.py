@@ -16,7 +16,7 @@ class profileCog(commands.Cog, name='profile'):
     @set.command(name="weight", aliases=['w]'])
     async def setweight(self, ctx, kg:int):
         """Sets your own weight."""
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
         results['weight'] = kg
         await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
         results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
@@ -26,14 +26,14 @@ class profileCog(commands.Cog, name='profile'):
     @set.command(name="height", aliases=['h]'])
     async def setheight(self, ctx, cm:int):
         """Sets your own height."""
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
         results['height'] = cm
         await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) 
         heightdb = results['height']
         await ctx.reply(f"Your height has been set to {heightdb} cm.")
     
-    @set.command(name="birthday", aliases=['b', 'bd'])
+    @set.command(name="birthday", aliases=['b', 'bd', 'bday'])
     async def setbd(self, ctx, *, birthday:str):
         """Sets your own birthday."""
         user_input = birthday
@@ -58,7 +58,7 @@ class profileCog(commands.Cog, name='profile'):
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
         timestamp=time[0].timestamp()
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
+        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
         results['bd'] = timestamp
         await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
         results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})

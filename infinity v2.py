@@ -22,7 +22,7 @@ async def get_prefix(bot, message):
         await cola.insert_one({"_id":message.guild.id, "prefix": "="})
         return commands.when_mentioned_or("=")(bot, message)
 
-bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=True))
+bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=True), owner_ids={701009836938231849,703135131459911740})
 bot.dba = dba
 
 nav = Navigation('\U00002b06', '\U00002b07', '\U0000274c')
@@ -97,6 +97,7 @@ async def performance():
     embed.timestamp=datetime.datetime.utcnow()
     await performance.send(embed=embed)
 performance.start()
+
 
 token = ('NzMyOTE3MjYyMjk3NTk1OTI1.Xw7kZA.i5ap8wowZz2WSb0zn9cM4K_5Fio')
 bot.run(token, bot=True, reconnect=True)

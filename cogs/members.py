@@ -94,6 +94,18 @@ class MembersCog(commands.Cog, name='Members'):
         else:
             await ctx.reply(f"{role.name} deleted.")
 
+    @role.command()
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def create(self,ctx, rolename:str):
+        """Creates the role."""
+        try:
+            role = await ctx.guild.create_role(name=rolename)
+        except:
+            await ctx.reply("Failed")
+        else:
+            await ctx.reply(f"{role.mention} created.")
+
     @role.command(pass_context=True)
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)

@@ -1,4 +1,4 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, datetime, dateparser, motor.motor_asyncio
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, datetime, dateparser, motor.motor_asyncio, re
 from discord.ext import commands
 
 
@@ -47,6 +47,23 @@ class utilityCog(commands.Cog, name='utility'):
             pass
         await ctx.reply(time[0],embed=embed)
 
+    @commands.command(name='creationdate', aliases=['createdate', 'created'])
+    @commands.cooldown(1,2)
+    async def created(self, ctx, argument:str): 
+        """Time the snowflake id was created."""
+        arg = int(re.sub("[^0-9]", "", argument))
+        time = discord.utils.snowflake_time(arg)
+        embed=discord.Embed(title="Creation Date Checker", description=argument)
+        embed.timestamp=time
+        try:
+            ts = time.timestamp()
+        except:
+            pass
+        try:
+            embed.set_footer(text=ts)
+        except:
+            pass
+        await ctx.reply(time,embed=embed)
 
 
 def setup(bot):

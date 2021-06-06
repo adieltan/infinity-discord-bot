@@ -11,4 +11,3 @@ PyDictionary
 wordfreq
 brawlstats
 py_expression_eval
-discord_slash

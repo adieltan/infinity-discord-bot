@@ -1,8 +1,6 @@
 discord
 asyncio
-string
 os
-asyncio
 sys
 math
 requests

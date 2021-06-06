@@ -1,6 +1,5 @@
 discord
 asyncio
-sys
 math
 requests
 json

@@ -14,3 +14,4 @@ discord-pretty-help
 pymongo[tls,srv]
 jishaku
 dateparser
+pillow

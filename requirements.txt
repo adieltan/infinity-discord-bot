@@ -15,4 +15,3 @@ pymongo[tls,srv]
 jishaku
 dateparser
 pillow
-zbar

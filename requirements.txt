@@ -10,7 +10,6 @@ pyzbar
 PyDictionary
 wordfreq
 brawlstats
-json
 py_expression_eval
 fractions
 discord_slash

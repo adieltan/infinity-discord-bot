@@ -1,6 +1,5 @@
 discord
 asyncio
-math
 requests
 json
 pymongo

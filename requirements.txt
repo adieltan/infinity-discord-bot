@@ -12,3 +12,4 @@ brawlstats
 py_expression_eval
 discord-pretty-help
 pymongo[tls,srv]
+dnspython

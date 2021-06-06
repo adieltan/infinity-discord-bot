@@ -6,7 +6,6 @@ datetime
 psutil
 motor
 qrcode
-io
 PIL
 pyzbar
 PyDictionary

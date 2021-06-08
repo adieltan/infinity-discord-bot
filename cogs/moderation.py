@@ -15,7 +15,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     async def prefix(self, ctx, apref:str=None):
         """Changes the prefix for the bot in the server."""
         if apref is None:
-            results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
+            results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
             pref = results["prefix"]
             await ctx.reply(f"The prefix for {ctx.guild.name} is `{pref}`", mention_author=False)
             pass
@@ -24,7 +24,9 @@ class ModerationCog(commands.Cog, name='Moderation'):
             pass
         else:
             #col.replace_one({"_id":ctx.guild.id}, {"$set":{"prefix":f"{apref}"}})
-            await self.bot.dba['server'].update_one({"_id":ctx.guild.id}, {"$inc":{"prefix":apref}}, True)
+            results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
+            results['prefix'] = apref
+            await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
             await ctx.reply(f'Prefix changed to: {apref}', mention_author=False)
             name=f'[{apref}] Infinity'
             member=ctx.guild.get_member(732917262297595925)

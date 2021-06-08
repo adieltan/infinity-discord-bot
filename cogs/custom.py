@@ -72,22 +72,22 @@ class customCog(commands.Cog, name='custom'):
 
     @commands.command(name="donolog", aliases=["dl"])
     @udevent()
-    @commands.cooldown(1,7)
     @commands.has_permissions(administrator=True)
-    async def logging(self, ctx, user:discord.User, item:str, value:str, proof:str):
+    async def logging(self, ctx, user:discord.User, quantity:float, item:str, value_per:str, *, proof:str):
         """Logs the dono."""
-        raw = float(value.replace(",", ""))
+        raw = float(value_per.replace(",", ""))
         channel = self.bot.get_channel(842738964385497108)
-        valu = math.trunc(raw)
+        valu = math.trunc(raw)*quantity
+        human = format(int(valu), ',')
         hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Ultimate Dankers Event Donation", color=hex_int)
+        embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator** : {user.mention}\n**Donation** : {quantity} {item}(s) worth {human} [Proof]({proof})", color=hex_int)
         embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
-        embed.add_field(name="Donator", value=f'{user.mention}', inline=True)
-        embed.add_field(name="Donation", value=f"[{item} worth {valu}]({proof})", inline=True)
-        embed.add_field(name="Logging command", value=f"`,d a {user.id} {valu} {proof}`\n\nYou may log it in <#824211968021495871>", inline=False)
+        embed.set_author(icon_url=ctx.author.avatar_url, name=f"Logged by: {ctx.author.name}")
+        embed.add_field(name="Logging command", value=f"`,d a {user.id} {valu:.2e} {proof}`\nLog in <#814490036842004520>", inline=False)
+        embed.add_field(name="Raw", value=f"||`{ctx.message.content}`||", inline=False)
+        embed.set_thumbnail(url=user.avatar_url)
         embed.set_footer(text=f"React with a ✅ after logged.")
-        await channel.send(embed=embed)
+        await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 
     @commands.Cog.listener()

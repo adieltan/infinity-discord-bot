@@ -5,10 +5,48 @@ from discord.ext import commands, tasks
 
 
 class OwnerCog(commands.Cog, name='Owner'):
-    """*Only owner can use this.*"""
+    """*Only owner/managers can use this.*"""
     def __init__(self, bot):
         self.bot = bot
-        
+    
+
+    @commands.command(name='blacklist', aliases=['bl'], hidden=True)
+    async def blacklist(self, ctx, user:discord.User, *, reason:str=None):
+        """Blacklists a member from using the bot."""
+        guild = self.bot.get_guild(709711335436451901)
+        managers = guild.get_role(843375370627055637).members
+        if ctx.author not in managers:
+            return
+        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results['bl'] = True
+        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        await ctx.reply(f"Blacklisted {user.mention}.")
+        await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
+
+    @commands.command(name='unblacklist', aliases=['ubl'], hidden=True)
+    async def unblacklist(self, ctx, user:discord.User):
+        """unBlacklists a member from using the bot."""
+        guild = self.bot.get_guild(709711335436451901)
+        managers = guild.get_role(843375370627055637).members
+        if ctx.author not in managers:
+            return
+        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results['bl'] = False
+        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        await ctx.reply(f"unBlacklisted {user.mention}.")
+        await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and do continue to use and support our bot.")
+
+    @commands.command(name='blacklistcheck', aliases=['blc'], hidden=True)
+    async def blacklistcheck(self, ctx, user:discord.User):
+        """Checks if a member is blacklisted from using the bot."""
+        guild = self.bot.get_guild(709711335436451901)
+        managers = guild.get_role(843375370627055637).members
+        if ctx.author not in managers:
+            return
+        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        out = results['bl'] or False
+        await ctx.reply(f"{user.mention}'s blacklist status: {out}.")
+
     @commands.command(name="update")
     @commands.is_owner()
     async def updates(self, ctx, status:str, *args):

@@ -56,6 +56,7 @@ class FunCog(commands.Cog, name='Fun'):
 
     @commands.command(name='dm')
     @commands.cooldown(1,3)
+    @commands.is_owner()
     async def dm(self,ctx, member: discord.Member, *args):
         """Gets the bot to DM your friend."""
         hex_int = random.randint(0,16777215)

@@ -11,6 +11,26 @@ clustera = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://rh:1234@infinit
 dba = clustera["infinity"]
 cola=dba["server"]
 
+owners = {701009836938231849,703135131459911740}
+
+class MyBot(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    async def process_commands(self, message):
+        results = await dba['profile'].find_one({"_id":message.author.id}) or {}
+        try:
+            out = results['bl']
+        except:
+            out = False
+        if message.author.bot:
+            return
+        elif message.author.id in owners:
+            pass
+        elif out:
+            return
+        ctx = await self.get_context(message, cls=commands.Context)
+        await self.invoke(ctx)
+
 async def get_prefix(bot, message):
     if not message.guild:
         return ('')
@@ -22,16 +42,15 @@ async def get_prefix(bot, message):
         await cola.insert_one({"_id":message.guild.id, "prefix": "="})
         return commands.when_mentioned_or("=")(bot, message)
 
-bot = commands.Bot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=True), owner_ids={701009836938231849,703135131459911740})
+bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=True), owner_ids=owners)
 bot.dba = dba
 
 global hex_int
 hex_int = random.randint(0,16777215)
 
-# ":discord:743511195197374563" is a custom discord emoji format. Adjust to match your own custom emoji.
 menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove="a:infi:851081962491478026", active_time=20)
 # Custom ending note
-ending_note = "The ending note from {ctx.bot.user.name}\nFor command {help.clean_prefix}{help.invoked_with}"
+ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
 bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=hex_int, no_category='Others')
 
 bot.load_extension('jishaku')
@@ -46,6 +65,7 @@ initial_extensions = ['cogs.info',
                       'cogs.owner',
                       'cogs.others',
                       'cogs.image',
+                      'cogs.conversion',
                       'cogs.data',
                       'cogs.channel',
                       'cogs.utility',

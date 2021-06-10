@@ -6,15 +6,21 @@ class CurrencyCog(commands.Cog, name='Currency'):
     """*Currency Commands*"""
     def __init__(self, bot):
         self.bot = bot
-        self.dba = bot.dba
 
         
     global updatebal
-    async def updatebal(self, userid, amount):
-        bal = await int(self.dba["currency"].find({},{'_id':userid, 'balance':1}))
-        query = {'_id':userid}
-        newval = {"$set" :{"balance" : amount+bal}}
-        await self.dba["currency"].update_one(query, newval)
+    async def updatebal(self, who:discord.User, amount:int=None):
+        userid = who.id
+        profile = await self.bot.dba["currency"].find_one({'_id':userid})
+        bal = int(profile['bal'])
+        if amount == None:
+            yield bal
+        else:
+            await self.dba["currency"].update_one({'_id':userid}, {"$inc":{"bal":amount}}, True)
+            profile = await self.bot.dba["currency"].find_one({'_id':userid})
+            bal = int(profile['bal'])
+            yield bal
+
 
     @commands.command(name="balance", aliases=["bal", 'b'])
     @commands.cooldown(3,1)
@@ -22,7 +28,7 @@ class CurrencyCog(commands.Cog, name='Currency'):
         hex_int = random.randint(0,16777215)
         if user == None:
             user = ctx.author
-        bal = await int(self.db["currency"].find({},{'_id':user.id, 'balance':1}))
+        bal = await updatebal(who=user)
         embed = discord.Embed(title="Balance", color=hex_int)
         embed.set_author(name=user.display_name, icon_url=user.avatar_url)
         embed.add_field(name="Wallet", value=bal, inline=True)

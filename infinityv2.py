@@ -94,7 +94,10 @@ async def on_ready():
     ti = t.strftime("%H:%M %a %d %b %Y")
     print(f"\nLogged in as {bot.user}  ↯  {ti}  ↯\n")
     vc = bot.get_channel(736791916397723780)
-    await vc.connect()
+    try:
+        await vc.connect()
+    except:
+        pass
     hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞"]
     channel = bot.get_channel(813251835371454515)
     await channel.send(random.choice(hello))

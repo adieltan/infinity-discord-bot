@@ -1,5 +1,6 @@
 from click import pass_context
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, datetime, re
+from discord.ext.commands.cooldowns import BucketType
 from discord.member import Member
 from discord.ext import commands
 
@@ -9,7 +10,7 @@ class MembersCog(commands.Cog, name='Members'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='userinfo', aliases=['ui', 'user', 'whois'])
+    @commands.command(name='userinfo', aliases=['ui', 'user', 'whois', 'i'])
     @commands.cooldown(1,5)
     @commands.guild_only()
     async def userinfo(self, ctx, *, member: discord.Member=None):
@@ -76,13 +77,13 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_footer(text=f'Drawn {len(winners)} winners.')
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.group(pass_context=True, aliases=['r'])
+    @commands.group(aliases=['r'])
     async def role(self, ctx):
         """Role utilities."""
         if ctx.invoked_subcommand is None:
             pass
     
-    @role.command(pass_context=True)
+    @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def delete(self,ctx, role:discord.Role, *, reason:str=None):
@@ -138,7 +139,7 @@ class MembersCog(commands.Cog, name='Members'):
         if role is None:
             role = ctx.guild.default_role
         embed = discord.Embed(title="Role Info", description=f"{role.mention} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
-        embed.add_field(name="Permissions", value='`🎈`'.join(perm for perm, value in role.permissions if value))
+        embed.add_field(name="Permissions", value='❤'+'`🎈`'.join(perm for perm, value in role.permissions if value))
         embed.set_footer(text="Role created at")
         embed.timestamp = role.created_at
         await ctx.reply(embed=embed, mention_author=True)
@@ -161,6 +162,30 @@ class MembersCog(commands.Cog, name='Members'):
         for m in people:
             await m.remove_roles(role, reason="Role member clear command.")
         await ctx.reply(f"Removed {role.mention} from {len(people)} member(s).")
+
+    @role.command(name="list", aliases=['all'])
+    @commands.cooldown(1,7,BucketType.channel)
+    @commands.has_permissions(manage_roles=True)
+    async def list(self, ctx):
+        """Lists all the roles of the guild in a paginated way."""
+        roles = ctx.guild.roles
+        roles.reverse()
+        hex_int = random.randint(0,16777215)
+        embed=discord.Embed(title="Guild Roles", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        lis = [f'{r.mention} `{r.id}` {len(r.members)}'for r in roles]
+        if len(lis<=10):
+            text = '\n'.join(lis)
+            embed.description=text
+            embed.footer(text=f"{1} to {len(roles)} of {len(roles)} roles.")
+            await ctx.reply(embed=embed)
+        else:
+            default = 10
+            while default>0 and default > default-10:
+                text += '\n'.join(list[default])
+                default -= 1
+
+            
 
 def setup(bot):
     bot.add_cog(MembersCog(bot))

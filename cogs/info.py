@@ -8,7 +8,7 @@ class InfoCog(commands.Cog, name='Info'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver'])
+    @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite'])
     @commands.cooldown(1,5)
     async def links(self, ctx):
         """Gets the links related to the bot."""

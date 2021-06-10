@@ -1,4 +1,4 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime, requests, aiohttp
 from discord.ext.commands.errors import ExtensionNotLoaded, TooManyArguments
 from discord.ext import commands, tasks
 
@@ -19,12 +19,13 @@ class OwnerCog(commands.Cog, name='Owner'):
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = True
+        results['blreason'] = reason
         await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
         await ctx.reply(f"Blacklisted {user.mention}.")
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
 
     @commands.command(name='unblacklist', aliases=['ubl'], hidden=True)
-    async def unblacklist(self, ctx, user:discord.User):
+    async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
         """unBlacklists a member from using the bot."""
         guild = self.bot.get_guild(709711335436451901)
         managers = guild.get_role(843375370627055637).members
@@ -32,6 +33,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = False
+        results['blreason'] = reason
         await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
         await ctx.reply(f"unBlacklisted {user.mention}.")
         await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and do continue to use and support our bot.")
@@ -44,8 +46,15 @@ class OwnerCog(commands.Cog, name='Owner'):
         if ctx.author not in managers:
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
-        out = results['bl'] or False
-        await ctx.reply(f"{user.mention}'s blacklist status: {out}.")
+        try:
+            out = results['bl']
+        except:
+            out = False
+        try:
+            reason = results['blreason']
+        except:
+            reason = None
+        await ctx.reply(f"{user.mention}'s blacklist status: {out}.\nReason: {reason}")
 
     @commands.command(name="update")
     @commands.is_owner()
@@ -152,12 +161,27 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def nitro(self, ctx, times:int=200):
         """Generates nitro codes."""
-        for _ in times:
+        error = 0
+        while times > 0:
             letters_and_digits = string.ascii_letters + string.digits
             result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
-            await ctx.send('https://discord.gift/' + result_str)
-            asyncio.sleep(2)
-        await ctx.send("`Done`")
+            semaphore = asyncio.Semaphore(1)
+            async with semaphore:
+                async with aiohttp.ClientSession() as session:
+                    validator = f"https://discord.com/api/v9/entitlements/gift-codes/{result_str}?with_application=false&with_subscription_plan=true"
+                    async with session.get(validator) as resp:
+                        content = await resp.json()
+                try:
+                    if content['code'] == 10038:
+                        error += 1
+                        pass
+                    else:
+                        await ctx.author.send('https://discord.gift/' + result_str)
+                    times -= 1
+                except:
+                    await asyncio.sleep(content['retry_after'])
+        await ctx.send(f"`Done` with {error} fails.")
+
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

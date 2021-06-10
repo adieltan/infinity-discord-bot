@@ -65,7 +65,6 @@ initial_extensions = ['cogs.info',
                       'cogs.owner',
                       'cogs.others',
                       'cogs.image',
-                      'cogs.conversion',
                       'cogs.data',
                       'cogs.channel',
                       'cogs.utility',
@@ -78,9 +77,16 @@ initial_extensions = ['cogs.info',
                       'cogs.profile',
                       'cogs.cogcontroller']
 
+breakable_extentions = ['cogs.conversion']
+
 if __name__ == '__main__':
     for extension in initial_extensions:
         bot.load_extension(extension)
+    for extentsion in breakable_extentions:
+        try:
+            bot.load_extension(extentsion)
+        except:
+            print(f"{extentsion} can't be loaded.")
 
 @bot.event
 async def on_ready():

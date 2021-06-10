@@ -71,10 +71,12 @@ class customCog(commands.Cog, name='custom'):
             await ctx.reply(f"Can't send to {member2.mention}")
 
     @commands.command(name="donolog", aliases=["dl"])
-    @udevent()
-    @commands.has_permissions(administrator=True)
     async def logging(self, ctx, user:discord.User, quantity:float, item:str, value_per:str, *, proof:str):
         """Logs the dono."""
+        guild = self.bot.get_guild(841654825456107530)
+        admin = guild.get_role(841655266743418892).members
+        if ctx.author not in admin:
+            return
         raw = float(value_per.replace(",", ""))
         channel = self.bot.get_channel(842738964385497108)
         valu = math.trunc(raw)*quantity

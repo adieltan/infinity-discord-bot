@@ -1,13 +1,12 @@
-import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio, dns
+import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio, dns, motor.motor_tornado
 from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
 from psutil._common import bytes2human
 
 global bot
-
-import motor.motor_asyncio
-clustera = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+#motor.motor_asyncio.AsyncIO
+clustera = motor.motor_tornado.MotorClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 dba = clustera["infinity"]
 cola=dba["server"]
 
@@ -16,6 +15,7 @@ owners = {701009836938231849,703135131459911740}
 class MyBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
     async def process_commands(self, message):
         results = await dba['profile'].find_one({"_id":message.author.id}) or {}
         try:

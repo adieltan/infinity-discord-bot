@@ -163,27 +163,47 @@ class MembersCog(commands.Cog, name='Members'):
             await m.remove_roles(role, reason="Role member clear command.")
         await ctx.reply(f"Removed {role.mention} from {len(people)} member(s).")
 
-    @role.command(name="list", aliases=['all'])
-    @commands.cooldown(1,7,BucketType.channel)
-    @commands.has_permissions(manage_roles=True)
-    async def list(self, ctx):
-        """Lists all the roles of the guild in a paginated way."""
-        roles = ctx.guild.roles
-        roles.reverse()
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Guild Roles", color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
-        lis = [f'{r.mention} `{r.id}` {len(r.members)}'for r in roles]
-        if len(lis<=10):
-            text = '\n'.join(lis)
-            embed.description=text
-            embed.footer(text=f"{1} to {len(roles)} of {len(roles)} roles.")
-            await ctx.reply(embed=embed)
-        else:
-            default = 10
-            while default>0 and default > default-10:
-                text += '\n'.join(list[default])
-                default -= 1
+#    @role.command(name="list", aliases=['all'])
+    #@commands.cooldown(1,7,BucketType.channel)
+    #@commands.has_permissions(manage_roles=True)
+    #async def list(self, ctx):
+        #"""Lists all the roles of the guild in a paginated way."""
+        #roles = ctx.guild.roles
+        #roles.reverse()
+        #hex_int = random.randint(0,16777215)
+        #embed=discord.Embed(title="Guild Roles", color=hex_int)
+        #embed.timestamp=datetime.datetime.utcnow()
+        #lis = [f'{r.mention} `{r.id}` {len(r.members)}'for r in roles]
+        #if len(lis<=10):
+            #text = '\n'.join(lis)
+            #embed.description=text
+            #embed.footer(text=f"{1} to {len(roles)} of {len(roles)} roles.")
+            #msg =await ctx.reply(embed=embed)
+        #else:
+            #default = 10
+            #while default>0 and default > default-10:
+                #text += '\n'.join(list[default])
+                #default -= 1
+                #msg = await ctx.reply(embed=embed)
+        #def check(reaction, user):
+            #return reaction.message.id == msg.id and user == ctx.author #msg.id is the id of the embed sent by the bot.
+#
+        #page = 0
+#
+        #while True: #can be changed to a variable to let it work a certain amount of times.
+#            try:
+#                reaction, _ = await self.bot.wait_for('reaction_add', timeout= 20.0, check=check)
+ #               if reaction.emoji == 'emote of choice here' and page > 0:
+  #                  page -= 1
+   #                 embed = discord.Embed(title='Title Here', description=pages[page]
+    #                await msg.edit(embed=embed)
+     #           if reaction.emoji == 'emote of choice here' and page < len(pages) -1:
+      #              page += 1
+       #             embed = discord.Embed(title='Title Here', description= pages[page]
+        #            await msg.edit(embed=embed)
+         #   except asyncio.TimeoutError:
+          #      pass            
+                #do stuff here, could be pass or a message saying the timeout has been reached or something similar.
 
             
 

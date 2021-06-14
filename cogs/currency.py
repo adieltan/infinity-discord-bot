@@ -16,7 +16,7 @@ class CurrencyCog(commands.Cog, name='Currency'):
         if amount == None:
             yield bal
         else:
-            await self.dba["currency"].update_one({'_id':userid}, {"$inc":{"bal":amount}}, True)
+            await self.bot.dba["currency"].update_one({'_id':userid}, {"$inc":{"bal":amount}}, True)
             profile = await self.bot.dba["currency"].find_one({'_id':userid})
             bal = int(profile['bal'])
             yield bal
@@ -28,11 +28,25 @@ class CurrencyCog(commands.Cog, name='Currency'):
         hex_int = random.randint(0,16777215)
         if user == None:
             user = ctx.author
-        bal = await updatebal(who=user)
+        bal = await updatebal(self, who=user)
         embed = discord.Embed(title="Balance", color=hex_int)
         embed.set_author(name=user.display_name, icon_url=user.avatar_url)
-        embed.add_field(name="Wallet", value=bal, inline=True)
+        embed.add_field(name="Wallet", value=format(bal,','), inline=True)
         await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.command(name="addbal")
+    @commands.is_owner()
+    async def addbal(self, ctx, user:discord.User=None, adjustment:int=None):
+        if user == None:
+            user = ctx.author
+        if adjustment == None:
+            adjustment = 10
+        bal = await updatebal(self, who=user, amount=adjustment)
+        if adjustment < 0:
+            await ctx.send(f"Subtracted {adjustment} from {user.mention}'s balance.")
+        elif adjustment > 0:
+            await ctx.send(f"Added {adjustment} to {user.mention}'s balance.")
+        
 
     @commands.command(name="coinflip", aliases=["flip", 'cf'])
     @commands.cooldown(1,10)

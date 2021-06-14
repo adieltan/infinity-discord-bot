@@ -161,6 +161,41 @@ class FunCog(commands.Cog, name='Fun'):
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(aliases=["ctp", "capturethephoenix"])
+    async def catchthephoenix(self, ctx, member: discord.Member=None):
+        points = {ctx.author: 0, member: 0}
+        random_time = random.randrange(30)
+
+        game = False
+        if member is None:
+            await ctx.send("...")
+        elif member == self.bot.user:
+            await ctx.send("...")
+        elif member.bot:
+            await ctx.send("...")
+        else:
+            game = True
+
+        await ctx.send(...)
+        while game:
+            try:
+                await asyncio.sleep(random_time)
+                await ctx.send(...)
+                message = await self.bot.wait_for(
+                    "message",
+                    check=lambda m: m.author.id == ctx.author.id,
+                    timout=45.0
+                )
+            except asyncio.TimeoutError:
+                game = False
+                ...
+            if not message.content.lower() == "catch":
+                continue
+            if message.author.id == member.id:
+                ...
+            elif message.author.id == ctx.author.id:
+                ...
+
     @commands.command(name='ttt', aliases=['tictactoe'])
     @commands.cooldown(1,10)
     async def ttt(self, ctx, opponent:discord.Member):

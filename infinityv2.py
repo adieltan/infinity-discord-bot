@@ -3,6 +3,11 @@ from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
 from psutil._common import bytes2human
+try:
+    from win10toast import ToastNotifier
+    toaster = ToastNotifier()
+except:
+    pass
 
 global bot
 #motor.motor_asyncio.AsyncIO
@@ -92,7 +97,8 @@ if __name__ == '__main__':
 async def on_ready():
     t = datetime.datetime.now()
     ti = t.strftime("%H:%M %a %d %b %Y")
-    print(f"\nLogged in as {bot.user}  ↯  {ti}  ↯\n")
+    login = f"\nLogged in as {bot.user}  × {ti}  ×\n"
+    print(login)
     vc = bot.get_channel(736791916397723780)
     try:
         await vc.connect()
@@ -103,6 +109,14 @@ async def on_ready():
     await channel.send(random.choice(hello))
     global est
     est = datetime.datetime.now()
+    try:
+        toaster.show_toast("Infinity",
+                   login,
+                   icon_path="D:\TRH\code\py\infinity discord bot\infinity.ico",
+                   duration=5,
+                   threaded=True)
+    except:pass    
+
 
 @tasks.loop(seconds=100, reconnect=True)
 async def status():
@@ -125,11 +139,16 @@ async def performance():
     await bot.wait_until_ready()
     performance = bot.get_channel(847011689882189824)
     hex_int = random.randint(0,16777215)
-    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {round(bot.latency * 1000)}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory().percent}%", color=hex_int)
+    rawping = bot.latency
+    if rawping != float('inf'): 
+        ping = round(rawping *1000 )
+    else:
+        ping = "∞"
+    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {ping}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory().percent}%", color=hex_int)
     embed.timestamp=datetime.datetime.utcnow()
     await performance.send(embed=embed)
 performance.start()
 
 
-token = ('NzMyOTE3MjYyMjk3NTk1OTI1.Xw7kZA.i5ap8wowZz2WSb0zn9cM4K_5Fio')
+token = ('NzMyOTE3MjYyMjk3NTk1OTI1.Xw7kZA.OYcA4UssHArLl_7HyYFKSMNhCE0')
 bot.run(token, bot=True, reconnect=True)

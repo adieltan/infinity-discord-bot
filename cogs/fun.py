@@ -54,26 +54,6 @@ class FunCog(commands.Cog, name='Fun'):
         await ctx.send(embed=embed)
         await ctx.message.delete()
 
-    @commands.command(name='dm')
-    @commands.cooldown(1,3)
-    @commands.is_owner()
-    async def dm(self,ctx, member: discord.Member, *args):
-        """Gets the bot to DM your friend."""
-        hex_int = random.randint(0,16777215)
-        mes = " ".join(args)
-        embed=discord.Embed(title="Message from your friend", color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
-        embed.add_field(name="Message", value=mes, inline=False)
-        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}> [Jump]()", inline=False)
-        embed.set_footer(text=f"DM function.")
-        try:
-            await member.send(embed=embed)
-        except:
-            await ctx.message.add_reaction("\U0000274c")
-        else:
-            await ctx.message.add_reaction("\U00002705")
-
 
     @commands.command(name='guess')
     @commands.cooldown(1,5)

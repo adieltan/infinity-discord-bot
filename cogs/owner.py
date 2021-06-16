@@ -1,6 +1,11 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime, requests, aiohttp
 from discord.ext.commands.errors import ExtensionNotLoaded, TooManyArguments
 from discord.ext import commands, tasks
+try:
+    from win10toast import ToastNotifier
+    toaster = ToastNotifier()
+except:
+    pass
 
 
 
@@ -120,9 +125,16 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def logout(self, ctx):
         """Logs out."""
+        try:
+            toaster.show_toast("Infinity",
+                   "Is shutting down.",
+                   icon_path="D:\TRH\code\py\infinity discord bot\infinity.ico",
+                   duration=10,
+                   threaded=True)
+        except:pass
         await ctx.reply("👋")
         await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
-        await asyncio.sleep(8)
+        await asyncio.sleep(0.5)
         await self.bot.logout()
 
     @commands.command(name='execute', aliases=['eval ', 'exe'])
@@ -181,6 +193,26 @@ class OwnerCog(commands.Cog, name='Owner'):
                 except:
                     await asyncio.sleep(content['retry_after'])
         await ctx.send(f"`Done` with {error} fails.")
+
+    @commands.command(name='dm')
+    @commands.cooldown(1,3)
+    @commands.is_owner()
+    async def dm(self,ctx, member: discord.Member, *, message:str):
+        """Gets the bot to DM your friend."""
+        hex_int = random.randint(0,16777215)
+        embed=discord.Embed(title="Message from your friend", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
+        embed.add_field(name="Message", value=message, inline=False)
+        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}> [Jump]({ctx.message.jump_url})", inline=False)
+        embed.add_field(name="To reply:", value=f"Type\n`dm {ctx.author.id} <your message>`")
+        embed.set_footer(text=f"DM function.")
+        try:
+            await member.send(embed=embed)
+        except:
+            await ctx.message.add_reaction("\U0000274c")
+        else:
+            await ctx.message.add_reaction("\U00002705")
 
 
 def setup(bot):

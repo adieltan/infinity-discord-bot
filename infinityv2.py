@@ -47,7 +47,7 @@ async def get_prefix(bot, message):
         await cola.insert_one({"_id":message.guild.id, "prefix": "="})
         return commands.when_mentioned_or("=")(bot, message)
 
-bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=True), owner_ids=owners)
+bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), owner_ids=owners)
 bot.dba = dba
 
 global hex_int

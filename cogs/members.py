@@ -78,6 +78,7 @@ class MembersCog(commands.Cog, name='Members'):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.group(aliases=['r'])
+    @commands.guild_only()
     async def role(self, ctx):
         """Role utilities."""
         if ctx.invoked_subcommand is None:
@@ -88,12 +89,18 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.has_permissions(manage_roles=True)
     async def delete(self,ctx, role:discord.Role, *, reason:str=None):
         """Deletes the role."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
         try:
             await role.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
         except:
             await ctx.reply("Failed")
         else:
-            await ctx.reply(f"{role.name} deleted.")
+            hex_int = random.randint(0,16777215)
+            embed = discord.Embed(title='Role deletion', description=f"{role.name} deleted.", color=hex_int)
+            embed.timestamp=datetime.datetime.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
 
     @role.command()
     @commands.cooldown(1,4)
@@ -105,31 +112,50 @@ class MembersCog(commands.Cog, name='Members'):
         except:
             await ctx.reply("Failed")
         else:
-            await ctx.reply(f"{role.mention} created.")
+            hex_int = random.randint(0,16777215)
+            embed = discord.Embed(title='Role creation', description=f"{role.mention} created.", color=role.color)
+            embed.timestamp=datetime.datetime.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
 
     @role.command(pass_context=True)
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def add(self,ctx, member:discord.Member, *,  role:discord.Role):
         """Adds a role to a person."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        if role in member.roles:
+            await ctx.reply("User already has role.")
+            return
         try:
             await member.add_roles(role)
         except:
             await ctx.reply("Failed")
         else:
-            await ctx.reply(f"Added {role.mention} to {member.mention}")
+            embed = discord.Embed(title='User role add', description=f"Added {role.mention} to {member.mention}", color=role.color)
+            embed.timestamp=datetime.datetime.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
 
     @role.command(pass_context=True)
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def remove(self,ctx, member:discord.Member, *, role:discord.Role):
         """Removes a role from a person."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        if role not in member.roles:
+            await ctx.reply("User dosen't have the role.")
+            return
         try:
             await member.remove_roles(role)
         except:
             await ctx.reply("Failed")
         else:
-            await ctx.reply(f"Removed {role.mention} from {member.mention}")
+            embed = discord.Embed(title='User role remove', description=f"Removed {role.mention} from {member.mention}", color=role.color)
+            embed.timestamp=datetime.datetime.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
 
     @role.command(pass_context=True, aliases=['i'])
     @commands.cooldown(1,4)
@@ -158,54 +184,67 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.has_permissions(manage_roles=True)
     async def clear(self,ctx, *, role:discord.Role):
         """Clears members from that role."""
+        if ctx.author.top_role < role:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
         people = role.members
         for m in people:
             await m.remove_roles(role, reason="Role member clear command.")
         await ctx.reply(f"Removed {role.mention} from {len(people)} member(s).")
 
-#    @role.command(name="list", aliases=['all'])
-    #@commands.cooldown(1,7,BucketType.channel)
-    #@commands.has_permissions(manage_roles=True)
-    #async def list(self, ctx):
-        #"""Lists all the roles of the guild in a paginated way."""
-        #roles = ctx.guild.roles
-        #roles.reverse()
-        #hex_int = random.randint(0,16777215)
-        #embed=discord.Embed(title="Guild Roles", color=hex_int)
-        #embed.timestamp=datetime.datetime.utcnow()
-        #lis = [f'{r.mention} `{r.id}` {len(r.members)}'for r in roles]
-        #if len(lis<=10):
-            #text = '\n'.join(lis)
-            #embed.description=text
-            #embed.footer(text=f"{1} to {len(roles)} of {len(roles)} roles.")
-            #msg =await ctx.reply(embed=embed)
-        #else:
-            #default = 10
-            #while default>0 and default > default-10:
-                #text += '\n'.join(list[default])
-                #default -= 1
-                #msg = await ctx.reply(embed=embed)
-        #def check(reaction, user):
-            #return reaction.message.id == msg.id and user == ctx.author #msg.id is the id of the embed sent by the bot.
-#
-        #page = 0
-#
-        #while True: #can be changed to a variable to let it work a certain amount of times.
-#            try:
-#                reaction, _ = await self.bot.wait_for('reaction_add', timeout= 20.0, check=check)
- #               if reaction.emoji == 'emote of choice here' and page > 0:
-  #                  page -= 1
-   #                 embed = discord.Embed(title='Title Here', description=pages[page]
-    #                await msg.edit(embed=embed)
-     #           if reaction.emoji == 'emote of choice here' and page < len(pages) -1:
-      #              page += 1
-       #             embed = discord.Embed(title='Title Here', description= pages[page]
-        #            await msg.edit(embed=embed)
-         #   except asyncio.TimeoutError:
-          #      pass            
-                #do stuff here, could be pass or a message saying the timeout has been reached or something similar.
+    @role.command(name="list", aliases=['all', 'l'])
+    @commands.cooldown(1,7,BucketType.channel)
+    @commands.has_permissions(manage_roles=True)
+    async def list(self, ctx):
+        """Lists all the roles of the guild in a paginated way."""
+        await ctx.trigger_typing()
+        roles = ctx.guild.roles
+        roles.reverse()
+        n = 10
+        pageno = 0
+        pages = [roles[i:i + n] for i in range(0, len(roles), n)]
+        hex_int = random.randint(0,16777215)
+        def check(reaction, user):
+            if reaction.message.id != msg.id:
+                return False
+            if user != ctx.message.author:
+                return False
+            return True
+        embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", color=hex_int)
+        embed.timestamp=datetime.datetime.utcnow()
+        lis = [f'{r.mention} `{r.id}`' for r in pages[pageno]]
+        text = '\n'.join(lis)
+        embed.description=text
+        embed.set_footer(text=f"Page {pageno+1} / {len(pages)}")
+        msg = await ctx.reply(embed=embed)
+        all_reaction = ["⬅️", "🔒", "➡️"]
+        for rect in all_reaction:
+            await msg.add_reaction(rect)
+        while True:
+            try:
+                reaction , user= await self.bot.wait_for('reaction_add', check=check, timeout=20)
+                if '⬅️' in str(reaction.emoji):
+                    pageno -= 1
+                    await msg.remove_reaction(reaction.emoji, user)
+                elif '➡️' in str(reaction.emoji):
+                    pageno += 1
+                    await msg.remove_reaction(reaction.emoji, user)
+                elif '🔒' in str(reaction.emoji):
+                    await msg.clear_reactions()
+                    break
+                if pageno < 0:
+                    pageno = 0
+                else:
+                    hex_int = random.randint(0,16777215)
+                    lis = [f'{r.mention} `{r.id}`' for r in pages[pageno]]
+                    text = '\n'.join(lis)
+                    embed.description=text
+                    embed.set_footer(text=f"Page {pageno+1} / {len(pages)}")
+                    await msg.edit(embed=embed)
+            except:
+                await msg.clear_reactions()
+                break
 
-            
 
 def setup(bot):
     bot.add_cog(MembersCog(bot))

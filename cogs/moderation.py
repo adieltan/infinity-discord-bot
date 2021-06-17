@@ -41,15 +41,18 @@ class ModerationCog(commands.Cog, name='Moderation'):
         """Bans a user."""
         if member == None or member == ctx.message.author:
             await ctx.channel.reply("You cannot ban yourself", mention_author=False)
-        else:
-            message = f"You have been banned from {ctx.guild.name} by {ctx.author.mention} for {reason}"
-            try:
-                await member.send(message)
-            except:
-                await ctx.message.add_reaction("\U0000274c")
-            reason = f"Banned by {ctx.author.name} for {reason}"
-            await ctx.guild.ban(member, reason=reason)
-            await ctx.reply(f'**{member}** was ***BANNED***\nReason: __{reason}__', mention_author=False)
+            return
+        elif ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        message = f"You have been banned from {ctx.guild.name} by {ctx.author.mention} for {reason}"
+        try:
+            await member.send(message)
+        except:
+            await ctx.message.add_reaction("\U0000274c")
+        reason = f"Banned by {ctx.author.name} for {reason}"
+        await ctx.guild.ban(member, reason=reason)
+        await ctx.reply(f'**{member}** was ***BANNED***\nReason: __{reason}__', mention_author=False)
         
     @commands.command(name='unban')
     @commands.cooldown(1,5)
@@ -88,14 +91,17 @@ class ModerationCog(commands.Cog, name='Moderation'):
         """Kicks a user."""
         if member == None or member == ctx.message.author:
             await ctx.channel.reply("You cannot kick yourself", mention_author=False)
-        else:
-            message = f"You have been kicked from {ctx.guild.name} for {reason}"
-            try:
-                await member.send(message)
-            except:
-                await ctx.message.add_reaction("\U0000274c")
-            await ctx.guild.kick(member, reason=reason)
-            await ctx.reply(f'**{member}** was ***KICKED***\nReason: __{reason}__', mention_author=False)
+            return
+        elif ctx.author.top_role < member.top_role or ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        message = f"You have been kicked from {ctx.guild.name} for {reason}"
+        try:
+            await member.send(message)
+        except:
+            await ctx.message.add_reaction("\U0000274c")
+        await ctx.guild.kick(member, reason=reason)
+        await ctx.reply(f'**{member}** was ***KICKED***\nReason: __{reason}__', mention_author=False)
 
 def setup(bot):
     bot.add_cog(ModerationCog(bot))

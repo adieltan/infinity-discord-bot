@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
 from psutil._common import bytes2human
+from discord_components import DiscordComponents, Button
 try:
     from win10toast import ToastNotifier
     toaster = ToastNotifier()
@@ -16,25 +17,34 @@ dba = clustera["infinity"]
 cola=dba["server"]
 
 owners = {701009836938231849,703135131459911740}
+blquery = {'bl':True}
+bled = []
+async for doc in dba['profile'].find(blquery):
+    bled.append(doc['_id'])
 
 class MyBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     async def process_commands(self, message):
-        results = await dba['profile'].find_one({"_id":message.author.id}) or {}
-        try:
-            out = results['bl']
-        except:
-            out = False
         if message.author.bot:
             return
-        elif message.author.id in owners:
+        elif message.author.id in owners or message.author.id not in bled:
             pass
-        elif out:
+        else:
             return
         ctx = await self.get_context(message, cls=commands.Context)
         await self.invoke(ctx)
+
+class Hierarchy(commands.Converter):
+    async def convert(self, ctx, target):
+        target = await commands.MemberConverter().convert(ctx, target)
+
+        if target.top_role >= ctx.author.top_role and ctx.author != ctx.guild.owner:
+            raise commands.BadArgument(f":x: **{ctx.author.name}**, you can't.", mention_author=False)
+
+        return target
+
 
 async def get_prefix(bot, message):
     if not message.guild:
@@ -49,6 +59,7 @@ async def get_prefix(bot, message):
 
 bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), owner_ids=owners)
 bot.dba = dba
+bot.bled = bled
 
 global hex_int
 hex_int = random.randint(0,16777215)
@@ -95,6 +106,7 @@ if __name__ == '__main__':
 
 @bot.event
 async def on_ready():
+    DiscordComponents(bot)
     t = datetime.datetime.now()
     ti = t.strftime("%H:%M %a %d %b %Y")
     login = f"\nLogged in as {bot.user}  × {ti}  ×\n"

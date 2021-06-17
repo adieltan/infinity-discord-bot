@@ -1,5 +1,4 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime, requests, aiohttp
-from discord.ext.commands.errors import ExtensionNotLoaded, TooManyArguments
 from discord.ext import commands, tasks
 try:
     from win10toast import ToastNotifier
@@ -26,6 +25,11 @@ class OwnerCog(commands.Cog, name='Owner'):
         results['bl'] = True
         results['blreason'] = reason
         await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        blquery = {'bl':True}
+        bled = []
+        async for doc in self.bot.dba['profile'].find(blquery):
+            bled.append(doc['_id'])
+        self.bot.bled = bled
         await ctx.reply(f"Blacklisted {user.mention}.")
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
 
@@ -40,6 +44,11 @@ class OwnerCog(commands.Cog, name='Owner'):
         results['bl'] = False
         results['blreason'] = reason
         await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        blquery = {'bl':True}
+        bled = []
+        async for doc in self.bot.dba['profile'].find(blquery):
+            bled.append(doc['_id'])
+        self.bot.bled = bled
         await ctx.reply(f"unBlacklisted {user.mention}.")
         await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and do continue to use and support our bot.")
 
@@ -60,6 +69,19 @@ class OwnerCog(commands.Cog, name='Owner'):
         except:
             reason = None
         await ctx.reply(f"{user.mention}'s blacklist status: {out}.\nReason: {reason}")
+
+    @commands.command(name='blacklisted', hidden=True)
+    async def blacklisted(self, ctx):
+        guild = self.bot.get_guild(709711335436451901)
+        managers = guild.get_role(843375370627055637).members
+        if ctx.author not in managers:
+            return
+        blquery = {'bl':True}
+        bled = []
+        async for doc in self.bot.dba['profile'].find(blquery):
+            bled.append(doc['_id'])
+        self.bot.bled = bled
+        await ctx.send(f"{bled}")
 
     @commands.command(name="update")
     @commands.is_owner()
@@ -132,6 +154,8 @@ class OwnerCog(commands.Cog, name='Owner'):
                    duration=10,
                    threaded=True)
         except:pass
+        channel = self.bot.get_channel(813251835371454515)
+        await channel.send(f"<@701009836938231849> <@703135131459911740>\nThe bot is shutting down.")
         await ctx.reply("👋")
         await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
         await asyncio.sleep(0.5)
@@ -214,6 +238,10 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.message.add_reaction("\U00002705")
 
+    @commands.command(name='test')
+    @commands.is_owner()
+    async def test(self, ctx):
+        pass
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

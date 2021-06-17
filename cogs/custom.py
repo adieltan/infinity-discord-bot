@@ -14,6 +14,7 @@ class customCog(commands.Cog, name='custom'):
 
     @commands.command(name='bb')
     @udevent()
+    #ban battle
     @commands.has_role(841805626300301374)
     async def bb(self, ctx, victim:discord.Member):
         """Ban battle."""
@@ -71,6 +72,7 @@ class customCog(commands.Cog, name='custom'):
             await ctx.reply(f"Can't send to {member2.mention}")
 
     @commands.command(name="donolog", aliases=["dl"])
+    #ud event
     async def logging(self, ctx, user:discord.User, quantity:float, item:str, value_per:str, *, proof:str):
         """Logs the dono."""
         guild = self.bot.get_guild(841654825456107530)
@@ -93,6 +95,7 @@ class customCog(commands.Cog, name='custom'):
         await ctx.reply("Logged in <#842738964385497108>")
 
     @commands.Cog.listener()
+    #ud tonourment server team verifier
     async def on_message (self, message: discord.Message):
         if message.channel.id != 841657242053771274:
             return

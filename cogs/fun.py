@@ -1,4 +1,4 @@
-import discord, random, string, asyncio, discord.voice_client, datetime, requests, math
+import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp
 from discord.ext import commands, tasks
 
 class FunCog(commands.Cog, name='Fun'):
@@ -38,22 +38,6 @@ class FunCog(commands.Cog, name='Fun'):
         letters_and_digits = string.ascii_letters + string.digits
         result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
         await ctx.reply('https://discord.gift/' + result_str, mention_author=False)
-
-    @commands.command(name='type', aliases=['say'])
-    @commands.cooldown(1,3)
-    async def send(self, ctx, member: discord.Member=None, *, msg:str='Hi'):
-        """Gets the bot to repeat after you. Isn't that cool?"""
-        if not member:
-            member = ctx.author
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title='SECRET MESSAGE', color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=member.avatar_url, name=str(member))
-        embed.add_field(name="\uFEFF", value=msg, inline=False)
-        embed.set_footer(text=f'Requested by {ctx.author}')
-        await ctx.send(embed=embed)
-        await ctx.message.delete()
-
 
     @commands.command(name='guess')
     @commands.cooldown(1,5)
@@ -100,30 +84,6 @@ class FunCog(commands.Cog, name='Fun'):
                 embed.add_field(name="Winners", value=text)
                 embed.set_footer(text=f"{numbers} winners")
                 await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="catfact")
-    @commands.cooldown(1,5)
-    async def catfact(self, ctx):
-        """Cat facts."""
-        hex_int = random.randint(0,16777215)
-        fac = requests.get(url="https://api.monkedev.com/facts/cat", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'})
-        fact = fac.json()["fact"]
-        embed=discord.Embed(title="Cat Fact", description=fact, color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_footer(text="MonkeDev Api")
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="dogfact")
-    @commands.cooldown(1,5)
-    async def dogfact(self, ctx):
-        """Dog facts."""
-        hex_int = random.randint(0,16777215)
-        fac = requests.get(url="https://api.monkedev.com/facts/dog", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'})
-        fact = fac.json()["fact"]
-        embed=discord.Embed(title="Dog Fact", description=fact, color=hex_int)
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_footer(text="MonkeDev Api")
-        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="8ball", aliases=['eightball', '8b'])
     @commands.cooldown(1,5)

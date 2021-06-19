@@ -1,9 +1,9 @@
 import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio, dns, motor.motor_tornado
-from pymongo import MongoClient
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
 from psutil._common import bytes2human
 from discord_components import DiscordComponents, Button
+
 try:
     from win10toast import ToastNotifier
     toaster = ToastNotifier()
@@ -11,30 +11,18 @@ except:
     pass
 
 global bot
-#motor.motor_asyncio.AsyncIO
 clustera = motor.motor_tornado.MotorClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 dba = clustera["infinity"]
 cola=dba["server"]
 
 owners = {701009836938231849,703135131459911740}
-blquery = {'bl':True}
-bled = []
-async for doc in dba['profile'].find(blquery):
-    bled.append(doc['_id'])
+
+bled = set({})
+
 
 class MyBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-    async def process_commands(self, message):
-        if message.author.bot:
-            return
-        elif message.author.id in owners or message.author.id not in bled:
-            pass
-        else:
-            return
-        ctx = await self.get_context(message, cls=commands.Context)
-        await self.invoke(ctx)
 
 class Hierarchy(commands.Converter):
     async def convert(self, ctx, target):
@@ -72,7 +60,10 @@ bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=hex_int,
 bot.load_extension('jishaku')
 os.environ["JISHAKU_NO_UNDERSCORE"]="true"
 
-
+@bot.check
+def blacklisted(ctx) -> bool:
+    bls = bot.bled
+    return (ctx.author.id not in bls or ctx.author.id in owners)
 
 initial_extensions = ['cogs.info',
                       'cogs.members',
@@ -91,6 +82,8 @@ initial_extensions = ['cogs.info',
                       'cogs.custom', 
                       'cogs.rh',
                       'cogs.profile',
+                      'cogs.server'
+                      'cogs.music'
                       'cogs.cogcontroller']
 
 breakable_extentions = ['cogs.conversion']
@@ -106,29 +99,42 @@ if __name__ == '__main__':
 
 @bot.event
 async def on_ready():
+    #blacklisted chaching
+    bls = set({})
+    blquery = {'bl':True}
+    async for doc in dba['profile'].find(blquery):
+        bls.add(doc['_id'])
+    bot.bled = bls
+
     DiscordComponents(bot)
+
     t = datetime.datetime.now()
     ti = t.strftime("%H:%M %a %d %b %Y")
-    login = f"\nLogged in as {bot.user}  × {ti}  ×\n"
+    login = f"\n{bot.user}\n{ti}\n"
     print(login)
     vc = bot.get_channel(736791916397723780)
     try:
         await vc.connect()
     except:
         pass
-    hello = ["I'm online now!", 'Hello.','Hi.', 'Peekaboo!', "What’s kickin’, little chicken?", "Yipee!", "What’s crackin’?", "Yo!", "Whatsup?", "Aye, mate.", "Hola!", "Konnichiwa", "Yikes", "HO", "Hello everyone", "Hello guys", "Infinity is here", "Infinite Possibilities", "∞"]
+
     channel = bot.get_channel(813251835371454515)
-    await channel.send(random.choice(hello))
+    await channel.send("∞")
     global est
     est = datetime.datetime.now()
     try:
         toaster.show_toast("Infinity",
                    login,
                    icon_path="D:\TRH\code\py\infinity discord bot\infinity.ico",
-                   duration=5,
+                   duration=15,
                    threaded=True)
     except:pass    
 
+@bot.event
+async def on_error(event, *args, **kwargs):
+    errors = bot.get_channel(855359960354652160)
+    await errors.send(f"```\n{event}\n\n{''.join(*args)}\n\n{''.join(**kwargs)}\n```")
+    pass
 
 @tasks.loop(seconds=100, reconnect=True)
 async def status():
@@ -147,7 +153,7 @@ uptime.start()
 
 @tasks.loop(minutes=15, reconnect=True)
 async def performance():
-    #Quartarly report on performance.
+    #Report on performance every 15 mins.
     await bot.wait_until_ready()
     performance = bot.get_channel(847011689882189824)
     hex_int = random.randint(0,16777215)

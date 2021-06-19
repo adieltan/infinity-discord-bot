@@ -27,6 +27,9 @@ class rhCog(commands.Cog, name='rh'):
     @commands.cooldown(1,5)
     async def ba(self, ctx, member:discord.Member, *, reason:str=None):
         """Bans a member and send them a link to our appeal server."""
+        if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
         message = f"You have been banned from {ctx.guild.name} by {ctx.author.mention} for {reason}.\nAppeal at https://discord.gg/3TnPvzdtdU ."
         try:
             await member.send(message)
@@ -131,8 +134,8 @@ class rhCog(commands.Cog, name='rh'):
         elif message.author.bot == True:
             return
         roles = {
-            'mal' :733925198415527986,
-            'fem' :733925227423334483,
+            'mal' :854353177804931083,
+            'fem' :854353177377898509,
             "ari" :736915483651080202,
             'tau' :807926824952266782,
             "gem" :807925920404471808,
@@ -176,8 +179,11 @@ class rhCog(commands.Cog, name='rh'):
             await message.reply(f"The code `{message.content}` is invalid.\nBe sure to check out <#723892038587646002> to see what roles you can get.")
         else:
             if role not in message.author.roles:
-                await message.author.add_roles(role, reason="Self roles.")
-                await message.reply(f"Added {role.mention} to {message.author.mention}")
+                try:
+                    await message.author.add_roles(role, reason="Self role.")
+                    await message.reply(f"Added {role.mention} to {message.author.mention}")
+                except:
+                    await message.reply("Failed")
             else:
                 try:
                     await message.author.remove_roles(role, reason="Self roles.")

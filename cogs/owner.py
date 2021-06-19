@@ -1,4 +1,5 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime, requests, aiohttp
+from discord import message
 from discord.ext import commands, tasks
 try:
     from win10toast import ToastNotifier
@@ -77,9 +78,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         if ctx.author not in managers:
             return
         blquery = {'bl':True}
-        bled = []
+        bled = set({})
         async for doc in self.bot.dba['profile'].find(blquery):
-            bled.append(doc['_id'])
+            bled.add(doc['_id'])
         self.bot.bled = bled
         await ctx.send(f"{bled}")
 
@@ -97,7 +98,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         channel = self.bot.get_channel(813251614449074206)
         ping = channel.guild.get_role(848814884330537020)
         try:
-            await channel.send(text=f"{ping.mention}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
+            await channel.send(ping.mention, embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
         except:
             await ctx.message.add_reaction("\U0000274c")
         else:
@@ -155,7 +156,7 @@ class OwnerCog(commands.Cog, name='Owner'):
                    threaded=True)
         except:pass
         channel = self.bot.get_channel(813251835371454515)
-        await channel.send(f"<@701009836938231849> <@703135131459911740>\nThe bot is shutting down.")
+        await channel.send(f"<@701009836938231849> <@703135131459911740>\nThe bot is being shut down by {ctx.author.mention}.")
         await ctx.reply("👋")
         await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
         await asyncio.sleep(0.5)
@@ -238,10 +239,36 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.message.add_reaction("\U00002705")
 
+    @commands.command(name="chat", aliases=['broadcast'])
+    @commands.is_owner()
+    async def chat(self, ctx, channel:discord.TextChannel):
+        to = 60
+        await ctx.reply(f'Type messages that you want to send through the bot to {channel.mention}\nType `quit` to exit.\nSession will timeout after {to} seconds of inactivity.', mention_author=False)
+        def author(m):
+            return m.author == ctx.author
+        quit = False
+        while quit is not True:
+            try:
+                message = await self.bot.wait_for('message', check=author, timeout=to)
+                if message.content.lower() in ['quit','exit']:
+                    quit = True
+                    await message.reply("Session ended.")
+                else:
+                    try:
+                        await channel.send(message.content, allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False))
+                    except:
+                        await message.add_reaction("\U0000274c")
+                    else:
+                        await message.add_reaction("\U00002705")
+            except asyncio.TimeoutError:
+                quit = True
+                return await ctx.reply(f'Session timeout. The broadcast session has ended.', mention_author=False)
+
     @commands.command(name='test')
     @commands.is_owner()
     async def test(self, ctx):
         pass
+
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

@@ -1,4 +1,5 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, json, datetime
+from discord.ext.commands.errors import CheckFailure
 from discord.ext import commands, tasks
 from pymongo import MongoClient
 
@@ -34,6 +35,8 @@ class ListenerCog(commands.Cog, name='Listener'):
         #skips wrong command
         if ("is not found") in er:
             return
+        elif ("check functions for command") in er:
+            return
         else:
             await ctx.reply(er, mention_author=False)
 
@@ -49,17 +52,14 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         elif ("permission(s) to run this command.") in er:
             return
-        elif ("The check functions for command") in er:
-            return
         else:
             reports = self.bot.get_channel(825900714013360199)
             hex_int = random.randint(0,16777215)
-            embed=discord.Embed(title="Error", description="An error was recorded", color=hex_int)
+            embed=discord.Embed(title="Error", description=f"{ctx.author.mention}\n{er}", color=hex_int)
             embed.timestamp=datetime.datetime.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-            embed.add_field(name="Trigger", value=ctx.message.content)
-            embed.add_field(name="Error", value=er)
-            embed.add_field(name="User", value=f"User: {ctx.author.name} <@{ctx.author.id}>\nChannel: <#{ctx.channel.id}>\n[Message]({ctx.message.jump_url})")
+            embed.set_footer(text=ctx.author.id)
+            embed.add_field(name="Info", value=f"{ctx.channel.mention}\n[{ctx.message.content}]({ctx.message.jump_url})")
             await reports.send(embed=embed)
 
 def setup(bot):

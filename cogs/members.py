@@ -3,6 +3,7 @@ import discord, random, string, os, logging, asyncio, discord.voice_client, sys,
 from discord.ext.commands.cooldowns import BucketType
 from discord.member import Member
 from discord.ext import commands
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 
 
 class MembersCog(commands.Cog, name='Members'):
@@ -204,45 +205,73 @@ class MembersCog(commands.Cog, name='Members'):
         pageno = 0
         pages = [roles[i:i + n] for i in range(0, len(roles), n)]
         hex_int = random.randint(0,16777215)
-        def check(reaction, user):
-            if reaction.message.id != msg.id:
-                return False
-            if user != ctx.message.author:
-                return False
-            return True
         embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", color=hex_int)
         embed.timestamp=datetime.datetime.utcnow()
         lis = [f'{r.mention} `{r.id}`' for r in pages[pageno]]
         text = '\n'.join(lis)
         embed.description=text
-        embed.set_footer(text=f"Page {pageno+1} / {len(pages)}")
-        msg = await ctx.reply(embed=embed)
-        all_reaction = ["⬅️", "🔒", "➡️"]
-        for rect in all_reaction:
-            await msg.add_reaction(rect)
+        msg = await ctx.reply(embed=embed,
+                components = [ #Use any button style you wish to :)
+            [
+                Button(
+                    label = "Prev",
+                    id = "back",
+                    style = ButtonStyle.green
+                ),
+                Button(
+                    label = f"Page {int( pages.index( pages[pageno])) + 1}/{len( pages)}",
+                    id = "cur",
+                    style = ButtonStyle.grey,
+                ),
+                Button(
+                    label = "Next",
+                    id = "front",
+                    style = ButtonStyle.green
+                )]])
         while True:
+            #Try and except blocks to catch timeout and break
             try:
-                reaction , user= await self.bot.wait_for('reaction_add', check=check, timeout=20)
-                if '⬅️' in str(reaction.emoji):
+                interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id in ["back", "front", "cur"] and i.user == ctx.author,timeout = 20.0)
+                #Getting the right list index
+                if interaction.component.id == "back":
                     pageno -= 1
-                    await msg.remove_reaction(reaction.emoji, user)
-                elif '➡️' in str(reaction.emoji):
+                elif interaction.component.id == "front":
                     pageno += 1
-                    await msg.remove_reaction(reaction.emoji, user)
-                elif '🔒' in str(reaction.emoji):
-                    await msg.clear_reactions()
-                    break
-                if pageno < 0:
+                elif interaction.component.id == "cur":
+                    raise asyncio.TimeoutError
+                #If its out of index, go back to start / end
+                if pageno == len( pages):
                     pageno = 0
-                else:
-                    hex_int = random.randint(0,16777215)
-                    lis = [f'{r.mention} `{r.id}`' for r in pages[pageno]]
-                    text = '\n'.join(lis)
-                    embed.description=text
-                    embed.set_footer(text=f"Page {pageno+1} / {len(pages)}")
-                    await msg.edit(embed=embed)
-            except:
-                await msg.clear_reactions()
+                elif pageno < 0:
+                    pageno = len( pages) - 1
+
+                #Edit to new page + the center counter changes
+                await interaction.respond(type = InteractionType.UpdateMessage,embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=hex_int, timestamp=datetime.datetime.utcnow()),
+                    components = [
+                        [   Button(
+                                label = "Prev",
+                                id = "back",
+                                style = ButtonStyle.green
+                            ),
+                            Button(
+                                label = f"Page {int( pages.index( pages[pageno])) + 1}/{len( pages)}",
+                                id = "cur",
+                                style = ButtonStyle.grey,
+                            ),
+                            Button(
+                                label = "Next",
+                                id = "front",
+                                style = ButtonStyle.green
+                            )]])
+
+            except asyncio.TimeoutError:
+                #Disable and get outta here
+                await msg.edit(
+                    components = [Button(
+                                label = f"Page {int( pages.index( pages[pageno])) + 1}/{len( pages)}",
+                                id = "cur",
+                                style = ButtonStyle.grey,
+                                disabled = True)])
                 break
 
 

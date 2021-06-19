@@ -1,4 +1,5 @@
 import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp
+from discord import user
 from discord.ext import commands, tasks
 
 class FunCog(commands.Cog, name='Fun'):
@@ -39,25 +40,6 @@ class FunCog(commands.Cog, name='Fun'):
         result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
         await ctx.reply('https://discord.gift/' + result_str, mention_author=False)
 
-    @commands.command(name='guess')
-    @commands.cooldown(1,5)
-    async def guess(self, ctx):
-        """Guessing game"""
-        await ctx.reply('Guess a number between 1 and 10.', mention_author=False)
-        def is_correct(m):
-            return m.author == ctx.author and m.content.isdigit()
-        answer = random.randint(1, 10)
-
-        try:
-            guess = await self.bot.wait_for('message', check=is_correct, timeout=5.0)
-        except asyncio.TimeoutError:
-            return await ctx.reply(f'Sorry, you took too long it was **__{answer}__**.', mention_author=False)
-
-        if int(guess.content) == answer:
-            await guess.reply('Congrats!', mention_author=False)
-        else:
-            await guess.reply(f'No It is actually **__{answer}__**.', mention_author=False)
-
     @commands.command(name="draw", aliases=["rollreaction", "roll reactions"])
     @commands.cooldown(1,3)
     async def draw(self, ctx, numbers:int):
@@ -65,8 +47,12 @@ class FunCog(commands.Cog, name='Fun'):
         await ctx.trigger_typing()
         hex_int = random.randint(0,16777215)
         me = ctx.message.reference
+        users = []
+        winners = []
         if me == None:
             await ctx.reply("Eh you gotta reply to the message you wanna draw from!", mention_author=True)
+        elif numbers > 80:
+            await ctx.reply("Thats a little too much.")
         else:
             meh = me.message_id           
             message = await ctx.channel.fetch_message(meh)
@@ -74,9 +60,13 @@ class FunCog(commands.Cog, name='Fun'):
             if reactions == None:
                 await ctx.reply("Urm no one reacted to that message.")
             else:
-                for reaction in reactions:
-                    users = await reaction.users().flatten()
-                winners = (random.choices(users, k=numbers))
+                users = [await reaction.users().flatten() for reaction in reactions][0]
+                if numbers > len(users):
+                    numbers = len(users)
+                while len(winners) < numbers:
+                    win = random.choice(users)
+                    winners.append(win)
+                    users.remove(win)
                 embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
                 embed.timestamp=datetime.datetime.utcnow()
                 embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
@@ -101,56 +91,6 @@ class FunCog(commands.Cog, name='Fun'):
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(aliases=["ctp", "capturethephoenix"])
-    async def catchthephoenix(self, ctx, member: discord.Member=None):
-        points = {ctx.author: 0, member: 0}
-        random_time = random.randrange(30)
-
-        game = False
-        if member is None:
-            await ctx.send("...")
-        elif member == self.bot.user:
-            await ctx.send("...")
-        elif member.bot:
-            await ctx.send("...")
-        else:
-            game = True
-
-        await ctx.send(...)
-        while game:
-            try:
-                await asyncio.sleep(random_time)
-                await ctx.send(...)
-                message = await self.bot.wait_for(
-                    "message",
-                    check=lambda m: m.author.id == ctx.author.id,
-                    timout=45.0
-                )
-            except asyncio.TimeoutError:
-                game = False
-                ...
-            if not message.content.lower() == "catch":
-                continue
-            if message.author.id == member.id:
-                ...
-            elif message.author.id == ctx.author.id:
-                ...
-
-    @commands.command(name='ttt', aliases=['tictactoe'])
-    @commands.cooldown(1,10)
-    async def ttt(self, ctx, opponent:discord.Member):
-        win = [
-            [1,2,3],
-            [4,5,6],
-            [7,8,9],
-            [1,4,7],
-            [2,5,8],
-            [3,6,9],
-            [1,5,8],
-            [3,5,7]
-        ]
-
-        pass
 
 def setup(bot):
     bot.add_cog(FunCog(bot))

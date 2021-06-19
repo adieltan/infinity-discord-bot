@@ -83,6 +83,7 @@ initial_extensions = ['cogs.info',
                       'cogs.rh',
                       'cogs.profile',
                       'cogs.server',
+                      'cogs.minigames',
                       'cogs.cogcontroller']
 
 breakable_extentions = ['cogs.conversion']

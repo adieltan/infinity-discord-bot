@@ -9,7 +9,7 @@ class CogControllerCog(commands.Cog, name='CogController'):
     def __init__(self, bot):
         self.bot = bot
         
-    @commands.command(name='reload', aliases=['load'])
+    @commands.command(name='reload', aliases=['load', 'rl'])
     @commands.is_owner()
     async def reload(self, ctx, *, cog: str):
         """Command which Reloads/loads a Module."""

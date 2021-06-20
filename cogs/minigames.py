@@ -1,5 +1,6 @@
 from asyncio.tasks import Task
 import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, time
+from discord_components.interaction import InteractionEventType
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
@@ -145,21 +146,101 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             elif message.author.id == ctx.author.id:
                 ...
 
+
+    
+
     @commands.command(name='ttt', aliases=['tictactoe'], hidden=True)
     @commands.cooldown(1,10)
     async def ttt(self, ctx, opponent:discord.Member):
-        win = [
-            [1,2,3],
-            [4,5,6],
-            [7,8,9],
-            [1,4,7],
-            [2,5,8],
-            [3,6,9],
-            [1,5,8],
-            [3,5,7]
-        ]
 
-        pass
+        def checkForWin(board):
+            win = (
+                board[0] == board[1] and board[1] == board[2]
+                or board[3] == board[4] and board[4] == board[5]
+                or board[6] == board[7] and board[7] == board[8]
+                or board[0] == board[4] and board[4] == board[8]
+                or board[2] == board[4] and board[4] == board[6]
+                or board[0] == board[3] and board[3] == board[6]
+                or board[1] == board[4] and board[4] == board[7]
+                or board[2] == board[5] and board[5] == board[8]
+            )
+            if not any(i.isdigit() for i in board) and not win:
+                return 2
+            else:
+                return win
+
+        if ctx.author == opponent:
+            await ctx.reply(f"{ctx.author.mention} You can't challenge yourself!")
+            return
+        if opponent.bot:
+            await ctx.reply(f"{ctx.author.mention} You can't play with a bot. You will never hear a reply...")
+            return
+
+        components = [
+            [Button(style=ButtonStyle.gray,label=str(ia+i)) for ia in range(3)] for i in range(1,9,3)
+        ]
+        gamemsg = await ctx.send(f'{opponent.mention}, {ctx.author.name} has challenged thee to tic-tac-toe! You go first.', components=components)
+        turn = 'X'
+        players = {
+            'X': opponent,
+            'O': ctx.author
+        }
+
+        def checkEvent(event):
+            component = event.component
+            if type(component) is not dict:
+                component = event.component.to_dict()
+            return (
+                (component['label'] != 'X' and component['label'] != 'O')
+                and event.message.id == gamemsg.id
+                and (event.user == players[turn])
+            )
+
+        def getButtonStyle(value):
+            if value == 'X':
+                return ButtonStyle.blue
+            elif value == 'O':
+                return ButtonStyle.red
+            else:
+                return ButtonStyle.gray
+
+        while True:
+            try:
+                boardClick = await self.bot.wait_for('button_click', check=checkEvent, timeout=20)
+                moveComponent = boardClick.component
+                if type(moveComponent) is not dict:
+                    moveComponent = boardClick.component.to_dict()
+                board = [button.label for button in boardClick.message.components]
+                squareClicked = board.index(moveComponent["label"])
+                board[squareClicked] = turn
+
+                gameWon = checkForWin(board)
+
+                components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=bool(gameWon)) for ia in range(3)] for i in range(1,9,3)]
+
+                if gameWon:
+                    if gameWon == 2:
+                        await boardClick.respond(type=7,content=f'Game Over! It is a tie!', components = components)
+                    else:
+                        await boardClick.respond(type=7,content=f'Game Over! {players[turn].mention} has won!', components = components)
+                    break
+
+                if (turn == 'X'):
+                    turn = 'O'
+                else:
+                    turn = "X"
+                
+                await boardClick.respond(type=7,content=f"It is {players[turn].mention}'s turn.", components = components) 
+            except asyncio.TimeoutError:
+                try:
+                    boardClick
+                except:
+                    components = [[Button(style=ButtonStyle.grey,label=str(ia+i)) for ia in range(3)] for i in range(1,9,3)]
+                else:
+                    board = [button.label for button in boardClick.message.components]
+                    components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=True) for ia in range(3)] for i in range(1,9,3)]
+                await gamemsg.edit(content="Timeout", components=components)
+
     
 def setup(bot):
     bot.add_cog(MiniGamesCog(bot))

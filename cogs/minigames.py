@@ -1,6 +1,6 @@
 from asyncio.tasks import Task
-import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, time
-from discord_components.interaction import InteractionEventType
+import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, time, threading
+from discord.flags import MemberCacheFlags
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
@@ -34,75 +34,231 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
     async def corners(self, ctx, aliverole:discord.Role=None, deadrole:discord.Role=None):
         """8 corners Game."""
         await ctx.trigger_typing()
-        hex_int = random.randint(0,16777215)
+        teams = []
+        class team:
+            def __init__(tself, name, emoji, status:bool=True):
+                tself.name=name
+                tself.emoji=self.bot.get_emoji(emoji)
+                tself.members = []
+                tself.status = status
+                teams.append(tself)
+            def addmember(tself, person:discord.User):
+                tself.members.append(person)
+                return tself.members
+            def members(tself):
+                return tself.members
+            def count(tself):
+                return int(len(tself.members))
+        rainbow = team("Rainbow Team", 855682390905978922)
+        cyan = team("Cyan Team", 855682336107528192)
+        purple = team("Purple Team", 855682262460923956)
+        green = team("Green Team", 855682185641852979)
+        yellow = team("Yellow Team", 855682130414796811)
+        red = team("Red Team", 855682071786553375)
+        pink = team("Pink Team", 855682043157151784)
+        blue = team("Blue Team", 855681996490932224)
+
         emoji = discord.PartialEmoji(name='a:Join', animated=True, id=855683444310147113)
-        colours = ['\U0001f534', '\U0001f7e0', '\U0001f7e1', '\U0001f7e2', '\U0001f535', '\U0001f7e4', '\U0001f7e3', '\U000026aa']
-        embed=discord.Embed(title="8 Corners Game", description=f"React to the button on the message to join.\nTimer: 5 minutes\n`=8cg` to learn more about the game.", color=hex_int)
+        bomb = discord.PartialEmoji(name='a:Bomb', animated=True, id=855685941484847125)
+
+        #emojies for colour choosing
+        colours = ["<a:RainbowTeam:855682390905978922>","<a:CyanTeam:855682336107528192>","<a:PurpleTeam:855682262460923956>","<a:GreenTeam:855682185641852979>","<a:YellowTeam:855682130414796811>","<a:RedTeam:855682071786553375>","<a:PinkTeam:855682043157151784>","<a:BlueTeam:855681996490932224>"]
+        #first embed for joining
+        embed=discord.Embed(title="8 Corners Game", description=f"React to the message to join.\nTimer: 5 minutes\n`=8cg` to learn more about the game.", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        embed.set_footer(text="If you are already in the list of players, the interaction will fail. Else, please press the button again.")
         players = []
         alive = []
         dead = []
-        info = await ctx.reply(embed=embed, mention_author=False, components=[Button(id="join", emoji= emoji, style=ButtonStyle.grey)])
-        timeout = 5
+
+        info = await ctx.reply(embed=embed, mention_author=False)
+
+        timeout = 5*60
         timeout_start = time.time()
+
+        def check(reaction, user):
+            if reaction.message.id != info.id:
+                return False
+            if user.bot is True:
+                return False
+            return True
         await info.add_reaction(emoji)
+        await info.add_reaction(bomb)
+        #joining reaction check
         while time.time() < timeout_start + timeout:
             try:
-                interaction = await self.bot.wait_for("button_click", check=lambda i:i.component.id in ['join'], timeout =5)
-                if interaction.user in players:
-                    raise IndexError
-                players.append(interaction.user)
-                await interaction.respond(type=InteractionType.UpdateMessage, content=f"{len(players)} players.\n"+'\n'.join([f'{p.mention}'for p in players]), mention_author=False)
+                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=5)
+                if emoji == reaction.emoji and user not in players:
+                    players.append(user)
+                    try:
+                        await user.send(embed=discord.Embed(title="Game join confirmation", description=f"You have joined the game. [Message]({info.jump_url})", color=discord.Color.random()))
+                    except:
+                        await info.reply(f"{user.mention}, You have joined the game.")
+                elif bomb == reaction.emoji:
+                    break
             except:
                 timeleft = (timeout_start + timeout) - time.time()
-                embed.description=f"React to the button on the message to join.\nTimer: {round(timeleft)} seconds.\n`=8cg` to learn more about the game."
-                await info.edit(content=f"{len(players)} players.\n"+'\n'.join([f'{p.mention}'for p in players]), embed=embed, mention_author=False)
-        embed.description=f"Timer: Ended.\n`=8cg` to learn more about the game."
-        await info.edit(embed=embed, components=[Button(id="join", emoji= emoji, style=ButtonStyle.grey, disabled=True)])
-        playercountfrombuttons = len(players)
-        users = []
-        message = await ctx.channel.fetch_message(info.id)
-        reactions = message.reactions
-        for reaction in reactions:
-            if reaction.emoji == emoji:
-                people = await reaction.users().flatten()
-                for user in people:
-                    users.append(user)
-        await ctx.send(f'{reactions}')
-        embed=discord.Embed(title="8 Corners Game", description=f"Processing reactions...\n__**Statistics**__\nRegistered players count using buttons: {playercountfrombuttons}\nNumber of reactions: {len(users)}")
+                embed.description=f"React to the button on the message to join.\nTimer: {round(timeleft)} seconds.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
+                await info.edit(embed=embed, mention_author=False)
+        await info.clear_reactions()
+        embed.description=f"Timer: Ended.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
+        await info.edit(embed=embed)
+        embed=discord.Embed(title="8 corners game", description=f":yellow_circle: Adding roles to players...\n__**Statistics**__\nPlayers count:** {len(players)}", colour=discord.Color.orange())
         stats = await ctx.send(embed=embed)
-        validfromreaction = 0
-        for user in users:
-            if user in players:
-                pass
-            elif user.bot:
-                pass
-            else:
-                players.append(user)
-                validfromreaction += 1
-        embed.description=f"Reactions processed.\nAdding roles to players...\n__**Statistics**__\nRegistered players count using buttons: {playercountfrombuttons}\nNumber of reactions: {len(users)}\nRegistered players count using reactions: {validfromreaction}\n\n**Total players registered:** {len(players)}"
-        await stats.edit(embed=embed)
-        if aliverole:
+        #role
+        if aliverole is not None:
             for m in aliverole.members:
                 try:
                     await m.remove_roles(aliverole, reason="Minigame")
                 except:pass
-        if deadrole:
+            for p in players:
+                p = ctx.guild.get_member(p.id)
+                await p.add_roles(aliverole, reason='Minigame')
+        if deadrole is not None:
             for m in deadrole.members:
                 try:
                     await m.remove_roles(aliverole, reason="Minigame")
                 except:pass
-        for p in players:
-            p = ctx.guild.get_member(p.id)
-            await p.add_roles(aliverole, reason='Minigame')
+        embed.description=f":white_check_mark: Added roles to players...\n__**Statistics**__\nPlayers count:** {len(players)}"
+        embed.color = discord.Color.green()
+        await stats.edit(embed=embed)
+        paged = [players[i:i + 80] for i in range(0, len(players), 80)]
+        pageno = 0
+        while pageno < len(paged):
+            lis = [f'{m.mention}' for m in paged[pageno]]
+            await ctx.send(f"**Players Page {pageno+1}**\n"+''.join(lis))
+            pageno += 1
 
-        
+        originalplayercount = len(players)
+        #colour choosing stage
+        embed=discord.Embed(title=f"8 corners game", description="Loading reactions.", colour=discord.Color.random())
+        cmes = await info.reply(embed=embed)
+        for t in teams:
+            await cmes.add_reaction(t.emoji)
+        await cmes.add_reaction(bomb)
+        embed.description=f"React to the specific colour to choose teams.\nTimer: 2m"
+        await cmes.edit(embed=embed)
+        chosen = []
+        timeout = 2*60
+        timeout_start = time.time()
+        rcount = 0
+        rcount = math.ceil(len(players)/len(colours))
+        def check(reaction, user):
+            if reaction.message.id != cmes.id:
+                return False
+            elif user not in players:
+                return False
+            return True
+        while time.time() < timeout_start + timeout:
+            try:
+                reaction, user= await self.bot.wait_for("reaction_add", check=check, timeout=5)
+                peop = len(await reaction.users().flatten())-1
+                if bomb == reaction.emoji:
+                    break
+                elif peop > rcount:
+                    await cmes.remove_reaction(reaction.emoji, user)
+                    await user.send("The team is full please chose another team/color.")
+                    return
+                elif user in chosen:
+                    pass
+                elif reaction.emoji == rainbow.emoji:
+                    rainbow.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {rainbow.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif reaction.emoji == cyan.emoji:    
+                    cyan.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {cyan.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif reaction.emoji == purple.emoji:
+                    purple.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {purple.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif reaction.emoji == green.emoji:
+                    green.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {green.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif reaction.emoji == yellow.emoji:
+                    yellow.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {yellow.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif reaction.emoji == red.emoji:
+                    red.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {red.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif reaction.emoji == pink.emoji:
+                    pink.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {pink.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif reaction.emoji == blue.emoji:
+                    blue.addmember(user)
+                    chosen.append(user)
+                    text = f"You joined the {blue.name}"
+                    try:
+                        await user.send(text)
+                    except:await ctx.send(f"{user.mention} {text}")
+                elif bomb == reaction.emoji:
+                    timeout = 0
+            except:
+                embed.description=f"React to the specific colour to choose teams.\nTimer: {round((timeout_start + timeout) - time.time())} seconds\n"
+                embed.color= discord.Color.random()
+                await cmes.edit(embed=embed)
+        embed.description=f"Timer ended"
+        await cmes.edit(embed=embed)
+        await cmes.clear_reactions()
+        text = '\n'.join([f"{t.emoji} {t.name}: {t.count()}" for t in teams])
+        embed = discord.Embed(title="8 corners game", description=f"""**Team Members Count**\n{text}""")
+        await cmes.reply(embed=embed)
+
+        winners = []
+        for player in players:
+            winners.append(player)
+
+        winningtxt= ''
+        if len(winners) == 0:
+            winningtxt = "No one"
+        else:
+            for winner in winners:
+                x = 1
+                winningtxt = winningtxt + f"{x}) {winner.mention}\n"
+                winningtxt = winningtxt.replace("1)", ":first_place:")
+                winningtxt = winningtxt.replace("2)", ":second_place:")
+                winningtxt = winningtxt.replace("3)", ":third_place:")
+                x += 1
+
+
+        embed=discord.Embed(title="8 Corners Game", description=f"Game Ended", colour=discord.Colour.red())
+        embed.add_field(name="Winners", value=winningtxt, inline=False)
+        embed.set_footer(text="Credits: Mixel, A Typical Beggar")
+        await ctx.send(embed=embed)
+
+
+
+
     @commands.command(name='8cornersguide', aliases=['8cg'])
     @commands.cooldown(1,3,BucketType.channel)
     async def eightcg(self, ctx):
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="8 Corners Game Guide", description=f"Info about the 8 corners game.", color=hex_int)
+        
+        embed=discord.Embed(title="8 Corners Game Guide", description=f"Info about the 8 corners game.", color=discord.Color.random())
         embed.add_field(name="Introduction", value=f"The idea originally came from [Link](https://youtu.be/SEmKz665hnY) because <@703135131459911740> is unoriginal as you guys can tell. But the challenges that you will face to either revive yourself, or get spared when your corner is chosen, will be harder than those in the video.")
         embed.add_field(name="Before Game", value=f"160 Players max.\nAn eliminated role can be selected at the start of the game.\nIf a player is AFK and does not select a corner, they will be out.", inline=False)
         embed.add_field(name="Colour selection", value="At the start of each round, all players with the role `@Alive` are able to choose a corner. While users with `@Eliminated` or without `@Alive` will not be allowed to select.\nWhen chosen a colour, look at the embed and make sure that your name is in the respective team and not under the Have Not Chosen Section.", inline=False)
@@ -149,10 +305,10 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
 
     
 
-    @commands.command(name='ttt', aliases=['tictactoe'], hidden=True)
+    @commands.command(name='ttt', aliases=['tictactoe'])
     @commands.cooldown(1,10)
     async def ttt(self, ctx, opponent:discord.Member):
-
+        """Starts a game of tic-tac-toe."""
         def checkForWin(board):
             win = (
                 board[0] == board[1] and board[1] == board[2]
@@ -204,6 +360,12 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             else:
                 return ButtonStyle.gray
 
+        def placed(value):
+            if value in ['X', 'O']:
+                return True
+            else:
+                return False
+
         while True:
             try:
                 boardClick = await self.bot.wait_for('button_click', check=checkEvent, timeout=20)
@@ -216,9 +378,10 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
 
                 gameWon = checkForWin(board)
 
-                components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=bool(gameWon)) for ia in range(3)] for i in range(1,9,3)]
+                components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=placed(board[i+ia-1])) for ia in range(3)] for i in range(1,9,3)]
 
                 if gameWon:
+                    components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=bool(gameWon)) for ia in range(3)] for i in range(1,9,3)]
                     if gameWon == 2:
                         await boardClick.respond(type=7,content=f'Game Over! It is a tie!', components = components)
                     else:

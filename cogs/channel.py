@@ -15,8 +15,8 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.trigger_typing()
         meh = await ctx.channel.history(limit=1, oldest_first=True).flatten()
         message = meh[0]
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="First Message", url=message.jump_url, description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
+        
+        embed=discord.Embed(title="First Message", url=message.jump_url, description=f"[Jump]({message.jump_url})\n{message.content}", color=discord.Color.random())
         embed.timestamp = message.created_at
         embed.set_author(icon_url=message.author.avatar_url, name=message.author)
         await ctx.reply(embed=embed, mention_author=False)
@@ -71,7 +71,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="export")
-    @commands.cooldown(1,240)
+    @commands.cooldown(1,100)
     @commands.has_permissions(administrator=True)
     async def export(self, ctx, destination_channel:discord.TextChannel, limit:int=100):
         """Exports chat messages to another channel."""
@@ -96,17 +96,17 @@ class ChannelCog(commands.Cog, name='Channel'):
                 embeds = None
             else:
                 embeds = m.embeds
-            await webhook.send(content=m.content, username=m.author.nick, avatar_url=m.author.avatar_url, files=files, embeds=embeds)
+            await webhook.send(content=m.content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds)
         await ctx.reply("Done")
 
-    @commands.group(pass_context=True)
+    @commands.group()
     @commands.has_permissions(manage_messages=True)
     async def purge(self,ctx):
         """Different types of purging commands."""
         if ctx.invoked_subcommand is None:
-            await ctx.send("`purge <no>` command moved to `purge count <no>`")
+            ctx.invoked_subcommand = self.purge.command.count()
     
-    @purge.command(pass_context=True)
+    @purge.command()
     async def user(self, ctx, user:discord.Member, no:int=100):
         """Purges messages from a user."""
         def pinc(msg):
@@ -128,7 +128,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
-    @purge.command(pass_context=True)
+    @purge.command()
     async def pins(self, ctx, no:int=100):
         """Purges a number of pinned messages."""
         def pinc(msg):
@@ -139,7 +139,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
-    @purge.command(pass_context=True)
+    @purge.command()
     async def bot(self, ctx, no:int=100):
         """Purges messages from bots."""
         def pinc(msg):

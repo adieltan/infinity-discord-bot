@@ -7,13 +7,19 @@ class customCog(commands.Cog, name='custom'):
     def __init__(self, bot):
         self.bot = bot
         
-    def udevent():
+    def server(id:list):
         def predicate(ctx):
-            return ctx.guild.id==841654825456107530 or ctx.guild.id==830731085955989534 
+            return ctx.guild.id in id
         return commands.check(predicate)
 
+    @commands.command(name='prestige')
+    @server(id=[796941354533388338])
+    async def prestige(self, ctx):
+        """Hi"""
+        await ctx.send("HI")
+
     @commands.command(name='bb')
-    @udevent()
+    @server(id=[841654825456107530, 830731085955989534])
     #ban battle
     @commands.has_role(841805626300301374)
     async def bb(self, ctx, victim:discord.Member):
@@ -46,12 +52,12 @@ class customCog(commands.Cog, name='custom'):
             await ctx.reply(f"Banned {victim.mention}")
 
     @commands.command(name='group', aliases=['g'])
-    @udevent()
+    @server(id=[841654825456107530, 830731085955989534])
     @commands.has_permissions(administrator=True)
     async def group(self, ctx, code:str, groupleader:discord.User, member1:discord.User=None, member2:discord.User=None, *, message:str="Good luck"):
         """Dmes the group members the code."""
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Kahoot Event Info", description="Message to your group from the host. [Server Invite](https://discord.gg/gEetr37)", color=hex_int)
+        
+        embed=discord.Embed(title="Kahoot Event Info", description="Message to your group from the host. [Server Invite](https://discord.gg/gEetr37)", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
         embed.add_field(name="Verification Code", value=f"Type `{code}` in <#841657242053771274> to be verified and handed the group role.")
@@ -83,8 +89,8 @@ class customCog(commands.Cog, name='custom'):
         channel = self.bot.get_channel(842738964385497108)
         valu = math.trunc(raw)*quantity
         human = format(int(valu), ',')
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator** : {user.mention}\n**Donation** : {quantity} {item}(s) worth {human} [Proof]({proof})", color=hex_int)
+        
+        embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator** : {user.mention}\n**Donation** : {quantity} {item}(s) worth {human} [Proof]({proof})", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=f"Logged by: {ctx.author.name}")
         embed.add_field(name="Logging command", value=f"`,d a {user.id} {valu:.2e} {proof}`\nLog in <#814490036842004520>", inline=False)

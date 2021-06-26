@@ -112,8 +112,8 @@ class profileCog(commands.Cog, name='profile'):
             status="severely obese"
 
         birthday = datetime.datetime.fromtimestamp(bd)
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Profile", color=hex_int)
+        
+        embed=discord.Embed(title="Profile", color=discord.Color.random())
         embed.set_author(icon_url=member.avatar_url, name=member.display_name)
         embed.add_field(name="BMI", value=f"Height : {height} cm\nWeight : {weight} kg\nBMI : {bmi} ({status})")
         embed.set_footer(text="Birthday: ")

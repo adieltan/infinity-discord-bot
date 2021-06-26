@@ -54,8 +54,8 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         else:
             reports = self.bot.get_channel(825900714013360199)
-            hex_int = random.randint(0,16777215)
-            embed=discord.Embed(title="Error", description=f"{ctx.author.mention}\n{er}", color=hex_int)
+            
+            embed=discord.Embed(title="Error", description=f"{ctx.author.mention}\n{er}", color=discord.Color.random())
             embed.timestamp=datetime.datetime.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             embed.set_footer(text=ctx.author.id)

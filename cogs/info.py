@@ -1,4 +1,5 @@
 import discord, random, asyncio, discord.voice_client, datetime, psutil
+from discord.ext.commands.cooldowns import BucketType
 from discord.emoji import Emoji
 from discord.ext import commands, tasks
 from psutil._common import bytes2human
@@ -8,13 +9,12 @@ class InfoCog(commands.Cog, name='Info'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite'])
-    @commands.cooldown(1,5)
+    @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite', 'appeal'])
     async def links(self, ctx):
         """Gets the links related to the bot."""
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title = "Infinity" , url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", description="[Admin](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)\n[~~Admin~~](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=0&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)", color=hex_int)
-        embed.add_field(name="RH Server", value="[Join Now](https://discord.gg/dHGqUZNqCu)")
+        
+        embed=discord.Embed(title = "Infinity" , url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", description="Invite link: [Admin](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)  [~~Admin~~](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=0&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)", color=discord.Color.random())
+        embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal :arrow_up: [<a:jump:856511832486969364>](https://discord.gg/dHGqUZNqCu) <#851637967952412723>")
         embed.add_field(name="Website", value="[Infinity Website](https://sites.google.com/view/rh6)")
         embed.timestamp=datetime.datetime.utcnow()
         
@@ -36,9 +36,9 @@ class InfoCog(commands.Cog, name='Info'):
     @commands.cooldown(1,4)
     async def info(self, ctx):
         """Info about the bot."""
-        hex_int = random.randint(0,16777215)
+        
         app = await self.bot.application_info()
-        embed=discord.Embed(title="Bot Info", description="Info about the bot.", color=hex_int)
+        embed=discord.Embed(title="Bot Info", description="Info about the bot.", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(name=self.bot.user, url=self.bot.user.avatar_url)
         embed.add_field(name="Owner", value=f"<@701009836938231849>")
@@ -49,6 +49,13 @@ class InfoCog(commands.Cog, name='Info'):
         embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
         await ctx.reply(embed=embed, mention_author=False)
         
+    @commands.command(name='partners')
+    @commands.cooldown(1,8, type=BucketType.channel)
+    async def partners(self, ctx):
+        """Servers/Bots this bot is partnered with."""
+        partners = ['https://discord.gg/HUpye3bnzq']
+        text = '\n'.join(partners)
+        await ctx.send(text)
 
 
 def setup(bot):

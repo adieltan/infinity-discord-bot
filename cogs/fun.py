@@ -14,8 +14,8 @@ class FunCog(commands.Cog, name='Fun'):
         if number_of_dice > 25: 
             await ctx.send(f"*number_of_dice* cannot be over 25.\nYour input: **{number_of_dice}**")
             return
-        hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title=f"{ctx.author}'s Rolling Game", color=hex_int)
+        
+        embed = discord.Embed(title=f"{ctx.author}'s Rolling Game", color=discord.Color.random())
         embed.set_author(icon_url=ctx.author.avatar_url, name=str(ctx.author))
         embed.timestamp=datetime.datetime.utcnow()
         for _ in range(number_of_dice):
@@ -45,7 +45,7 @@ class FunCog(commands.Cog, name='Fun'):
     async def draw(self, ctx, numbers:int):
         """Reply to the message you wanna draw from."""
         await ctx.trigger_typing()
-        hex_int = random.randint(0,16777215)
+        
         me = ctx.message.reference
         users = []
         winners = []
@@ -67,7 +67,7 @@ class FunCog(commands.Cog, name='Fun'):
                     win = random.choice(users)
                     winners.append(win)
                     users.remove(win)
-                embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=hex_int)
+                embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=discord.Color.random())
                 embed.timestamp=datetime.datetime.utcnow()
                 embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
                 text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
@@ -82,10 +82,10 @@ class FunCog(commands.Cog, name='Fun'):
         if "suicide" in mess.lower():
             await ctx.reply("NO SUICIDE.")
             return
-        hex_int = random.randint(0,16777215)
+        
         fac = requests.get(url="https://api.monkedev.com/fun/8ball", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'})
         fact = fac.json()["answer"]
-        embed=discord.Embed(title="8ball", description=mess, color=hex_int)
+        embed=discord.Embed(title="8ball", description=mess, color=discord.Color.random())
         embed.add_field(name="Conclusion", value=fact)
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_footer(text="MonkeDev Api")

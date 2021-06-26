@@ -48,8 +48,8 @@ class rhCog(commands.Cog, name='rh'):
         """Gets people ready for a heist."""
         heistping = ctx.guild.get_role(807925829009932330)
         heistchannel = ctx.guild.get_channel(783135856017145886)
-        hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title='Dank Memer Heist', color=hex_int)
+        
+        embed = discord.Embed(title='Dank Memer Heist', color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.add_field(name='Info', value=f"{msg} ", inline=False)
         embed.set_footer(text='Remember to thank them !')
@@ -63,9 +63,9 @@ class rhCog(commands.Cog, name='rh'):
         """Sends your partnered heist ad."""
         heistping = ctx.guild.get_role(807925829009932330)
         pheistchannel = ctx.guild.get_channel(848429520263839784)
-        hex_int = random.randint(0,16777215)
+        
         into = format(amount, ',')
-        embed = discord.Embed(title='Heist', description=f'Amount: {into}', color=hex_int)
+        embed = discord.Embed(title='Heist', description=f'Amount: {into}', color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.add_field(name='Info', value=f"{msg} ", inline=False)
         embed.set_footer(text='Remember to thank them !')
@@ -119,8 +119,8 @@ class rhCog(commands.Cog, name='rh'):
                     pass
                 pass
 
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Status Check", description=f"Checking for guys that advertised our server in their status.", color=hex_int)
+        
+        embed=discord.Embed(title="Status Check", description=f"Checking for guys that advertised our server in their status.", color=discord.Color.random())
         embed.set_author(name=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar_url}')
         embed.add_field(name="Added", value=f"`{len(added)}`\n{[m.mention for m in added]}")
         embed.add_field(name="Removed", value=f"`{len(removed)}`\n{[m.mention for m in removed]}")

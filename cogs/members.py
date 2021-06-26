@@ -19,8 +19,8 @@ class MembersCog(commands.Cog, name='Members'):
         if member is None:
             member = ctx.author
         await ctx.trigger_typing()
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="User Info", description=f"{member.mention} [Avatar]({member.avatar_url_as(static_format='png')})\n`Status  :` {member.raw_status}\n`Activity:` {member.activity}", color=hex_int)
+        
+        embed=discord.Embed(title="User Info", description=f"{member.mention} [Avatar]({member.avatar_url_as(static_format='png')})\n`Status  :` {member.raw_status}\n`Activity:` {member.activity}", color=discord.Color.random())
         embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
         embed.add_field(name="User ID", value=f"`{member.id}`")
         embed.add_field(name="Nickname", value=member.display_name)
@@ -46,8 +46,8 @@ class MembersCog(commands.Cog, name='Members'):
         if who == None:
             who = ctx.guild.get_role(id)
             perms = '\n'.join(perm for perm, value in who.permissions if value)
-        hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title='Permissions for:', description=who.mention, color=hex_int)
+        
+        embed = discord.Embed(title='Permissions for:', description=who.mention, color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         if who is discord.Member:
             embed.set_author(icon_url=who.avatar_url, name=str(who))
@@ -71,9 +71,9 @@ class MembersCog(commands.Cog, name='Members'):
             win = random.choice(people)
             winners.append(win)
             people.remove(win)
-        hex_int = random.randint(0,16777215)
+        
         text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
-        embed = discord.Embed(title='Member randomizer', description=f'{text}', color=hex_int)
+        embed = discord.Embed(title='Member randomizer', description=f'{text}', color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_footer(text=f'Drawn {len(winners)} winners.')
         await ctx.reply(embed=embed, mention_author=False)
@@ -98,8 +98,8 @@ class MembersCog(commands.Cog, name='Members'):
         except:
             await ctx.reply("Failed")
         else:
-            hex_int = random.randint(0,16777215)
-            embed = discord.Embed(title='Role deletion', description=f"{role.name} deleted.", color=hex_int)
+            
+            embed = discord.Embed(title='Role deletion', description=f"{role.name} deleted.", color=discord.Color.random())
             embed.timestamp=datetime.datetime.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
@@ -113,12 +113,12 @@ class MembersCog(commands.Cog, name='Members'):
         except:
             await ctx.reply("Failed")
         else:
-            hex_int = random.randint(0,16777215)
+            
             embed = discord.Embed(title='Role creation', description=f"{role.mention} created.", color=role.color)
             embed.timestamp=datetime.datetime.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
-    @role.command(pass_context=True)
+    @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def add(self,ctx, member:discord.Member, *,  role:discord.Role):
@@ -138,7 +138,7 @@ class MembersCog(commands.Cog, name='Members'):
             embed.timestamp=datetime.datetime.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
-    @role.command(pass_context=True)
+    @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def remove(self,ctx, member:discord.Member, *, role:discord.Role):
@@ -158,7 +158,7 @@ class MembersCog(commands.Cog, name='Members'):
             embed.timestamp=datetime.datetime.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
-    @role.command(pass_context=True, aliases=['i'])
+    @role.command(aliases=['i'])
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def info(self,ctx, *, role:discord.Role=None):
@@ -171,7 +171,7 @@ class MembersCog(commands.Cog, name='Members'):
         embed.timestamp = role.created_at
         await ctx.reply(embed=embed, mention_author=True)
 
-    @role.command(pass_context=True, aliases=['d'])
+    @role.command(aliases=['d'])
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def dump(self,ctx, *, role:discord.Role):
@@ -180,7 +180,7 @@ class MembersCog(commands.Cog, name='Members'):
         text ="```css\n" + '\n'.join((f'{m.name} ({m.id})')for m in people) + "```"
         await ctx.reply(text)
     
-    @role.command(pass_context=True)
+    @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
     async def clear(self,ctx, *, role:discord.Role):
@@ -204,8 +204,8 @@ class MembersCog(commands.Cog, name='Members'):
         n = 10
         pageno = 0
         pages = [roles[i:i + n] for i in range(0, len(roles), n)]
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", color=hex_int)
+        
+        embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         lis = [f'{r.mention} `{r.id}`' for r in pages[pageno]]
         text = '\n'.join(lis)
@@ -246,7 +246,7 @@ class MembersCog(commands.Cog, name='Members'):
                     pageno = len( pages) - 1
 
                 #Edit to new page + the center counter changes
-                await interaction.respond(type = InteractionType.UpdateMessage,embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=hex_int, timestamp=datetime.datetime.utcnow()),
+                await interaction.respond(type = InteractionType.UpdateMessage,embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=discord.Color.random(), timestamp=datetime.datetime.utcnow()),
                     components = [
                         [   Button(
                                 label = "Prev",

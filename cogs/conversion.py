@@ -17,8 +17,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         """Defines a word."""
         await ctx.trigger_typing()
         arg = word.lower()
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title=word, url=f"https://www.thefreedictionary.com/{word}", description="**Definition:**", color=hex_int)
+        
+        embed=discord.Embed(title=word, url=f"https://www.thefreedictionary.com/{word}", description="**Definition:**", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         out: dict = dictionary.meaning(arg)
         if out == None:
@@ -71,8 +71,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         img.save(buffer, format="PNG")
         buffer.seek(0)
         f = discord.File(buffer, filename="qr.png")
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Qr Generator", description=f"{text}", color=hex_int)
+        
+        embed=discord.Embed(title="Qr Generator", description=f"{text}", color=discord.Color.random())
         embed.set_image(url="attachment://qr.png")
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(file=discord.File(buffer, filename="qr.png"), embed=embed, mention_author=True)
@@ -122,8 +122,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
                 # 1 space indicates different characters 
                 # and 2 indicates different words 
                 cipher += ' '
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(name="Morse Encoder", description=cipher, color=hex_int)
+        
+        embed=discord.Embed(name="Morse Encoder", description=cipher, color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=True)
 
@@ -153,8 +153,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
                     # accessing the keys using their values (reverse of encryption) 
                     decipher += list(morse.keys())[list(morse.values()).index(citext)] 
                     citext = '' 
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(name="Morse Decoder", description=decipher, color=hex_int)
+        
+        embed=discord.Embed(name="Morse Decoder", description=decipher, color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=True)
 
@@ -167,8 +167,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         text = ''
         for b in binlist:
             text = text + ' ' + b
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Binary converter", description=f"{input}", color=hex_int)
+        
+        embed=discord.Embed(title="Binary converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
@@ -182,8 +182,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         for b in binlist:
             b = int(b, 2)
             text = text + chr(b)
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Binary converter", description=f"{input}", color=hex_int)
+        
+        embed=discord.Embed(title="Binary converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
@@ -196,8 +196,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         text = ''
         for b in binlist:
             text = text + ' ' + b
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Hexadecimal converter", description=f"{input}", color=hex_int)
+        
+        embed=discord.Embed(title="Hexadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
@@ -211,8 +211,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         for b in binlist:
             b = int(b, 16)
             text = text + chr(b)
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Hexadecimal converter", description=f"{input}", color=hex_int)
+        
+        embed=discord.Embed(title="Hexadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
@@ -225,8 +225,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         text = ''
         for b in binlist:
             text = text + ' ' + b
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Octadecimal converter", description=f"{input}", color=hex_int)
+        
+        embed=discord.Embed(title="Octadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
@@ -240,8 +240,8 @@ class ConversionCog(commands.Cog, name='Conversion'):
         for b in binlist:
             b = int(b, 8)
             text = text + chr(b)
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Octadecimal converter", description=f"{input}", color=hex_int)
+        
+        embed=discord.Embed(title="Octadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)

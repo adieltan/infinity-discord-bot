@@ -25,11 +25,11 @@ class CurrencyCog(commands.Cog, name='Currency'):
     @commands.command(name="balance", aliases=["bal", 'b'])
     @commands.cooldown(3,1)
     async def bal(self,ctx, user:discord.User=None):
-        hex_int = random.randint(0,16777215)
+        
         if user == None:
             user = ctx.author
         bal = await updatebal(self, who=user)
-        embed = discord.Embed(title="Balance", color=hex_int)
+        embed = discord.Embed(title="Balance", color=discord.Color.random())
         embed.set_author(name=user.display_name, icon_url=user.avatar_url)
         embed.add_field(name="Wallet", value=format(bal,','), inline=True)
         await ctx.reply(embed=embed, mention_author=False)

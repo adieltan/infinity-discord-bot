@@ -90,8 +90,8 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def updates(self, ctx, status:str, *args):
         """Bot updates."""
         info = str(' '.join(args))
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Bot updates", description=status , color=hex_int)
+        
+        embed=discord.Embed(title="Bot updates", description=status , color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
         embed.add_field(name="Details", value=info, inline=False)
@@ -129,18 +129,18 @@ class OwnerCog(commands.Cog, name='Owner'):
         if secondint < 0 or secondint == 0:
             await ctx.send("Do YoU SpEaK NuMbErS?")
             raise BaseException
-        hex_int = random.randint(0,16777215)
-        embed = discord.Embed(title=f"{name}", description=f"{seconds} seconds remaining" ,color=hex_int)
+        
+        embed = discord.Embed(title=f"{name}", description=f"{seconds} seconds remaining" ,color=discord.Color.random())
         message = await ctx.send(ctx.message.author.mention, embed=embed)
         while True:
             secondint = secondint - 1
             if secondint == 0:
-                hex_int = random.randint(0,16777215)
-                embed = discord.Embed(title=f"{name}", description="Ended" ,color=hex_int)
+                
+                embed = discord.Embed(title=f"{name}", description="Ended" ,color=discord.Color.random())
                 await message.edit(embed=embed)
                 break
-            hex_int = random.randint(0,16777215)
-            embed = discord.Embed(title=f"{name}", description=f"{secondint} seconds remaining" ,color=hex_int)
+            
+            embed = discord.Embed(title=f"{name}", description=f"{secondint} seconds remaining" ,color=discord.Color.random())
             await message.edit(embed=embed)
             await asyncio.sleep(1)
         await message.reply(ctx.message.author.mention + " Your countdown Has ended!")
@@ -225,8 +225,8 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def dm(self,ctx, member: discord.Member, *, message:str):
         """Gets the bot to DM your friend."""
-        hex_int = random.randint(0,16777215)
-        embed=discord.Embed(title="Message from your friend", color=hex_int)
+        
+        embed=discord.Embed(title="Message from your friend", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
         embed.add_field(name="Message", value=message, inline=False)

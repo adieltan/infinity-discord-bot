@@ -49,13 +49,12 @@ bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case
 bot.dba = dba
 bot.bled = bled
 
-global hex_int
-hex_int = random.randint(0,16777215)
+
 
 menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove="a:infi:851081962491478026", active_time=20)
 # Custom ending note
 ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
-bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=hex_int, no_category='Others')
+bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
 
 bot.load_extension('jishaku')
 os.environ["JISHAKU_NO_UNDERSCORE"]="true"
@@ -133,7 +132,7 @@ async def on_ready():
 @bot.event
 async def on_error(event, *args, **kwargs):
     errors = bot.get_channel(855359960354652160)
-    await errors.send(f"```\n{event}\n\n{''.join(*args)}\n\n{''.join(**kwargs)}\n```")
+    await errors.send(f"```\n{event}\n\n{''.join(args)}\n\n{''.join(kwargs)}\n```")
     pass
 
 @tasks.loop(seconds=100, reconnect=True)
@@ -156,13 +155,13 @@ async def performance():
     #Report on performance every 15 mins.
     await bot.wait_until_ready()
     performance = bot.get_channel(847011689882189824)
-    hex_int = random.randint(0,16777215)
+    
     rawping = bot.latency
     if rawping != float('inf'): 
         ping = round(rawping *1000 )
     else:
         ping = "∞"
-    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {ping}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory().percent}%", color=hex_int)
+    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {ping}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory().percent}%", color=discord.Color.random())
     embed.timestamp=datetime.datetime.utcnow()
     await performance.send(embed=embed)
 performance.start()

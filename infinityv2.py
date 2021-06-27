@@ -1,8 +1,9 @@
-import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio, dns, motor.motor_tornado
+import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio, dns, motor.motor_tornado, io
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
 from psutil._common import bytes2human
 from discord_components import DiscordComponents, Button
+import matplotlib.pyplot as plt
 
 try:
     from win10toast import ToastNotifier
@@ -127,7 +128,7 @@ async def on_ready():
                    icon_path="D:\TRH\code\py\infinity discord bot\infinity.ico",
                    duration=15,
                    threaded=True)
-    except:pass    
+    except:pass
 
 @bot.event
 async def on_error(event, *args, **kwargs):
@@ -150,21 +151,64 @@ async def uptime():
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"with the infinity for {d.days} Days {round(d.seconds/60/60,2)} Hours "))
 uptime.start()
 
+ping = []
+time = []
+cpu = []
+memory = []
+@tasks.loop(minutes=5, reconnect=True)
+async def performanceupdate():
+    await bot.wait_until_ready()
+    rawping = bot.latency
+    if rawping != float('inf'): 
+        pingvalue = round(rawping *1000 )
+        ping.append(pingvalue)
+    else:
+        pingvalue = "∞"
+        ping.append(0)
+    cpuvalue = psutil.cpu_percent()
+    memoryvalue= psutil.virtual_memory().percent
+    timenow = datetime.datetime.now().strftime('%H:%M')
+    cpu.append(cpuvalue)
+    memory.append(memoryvalue)
+    time.append(timenow)
+performanceupdate.start()
+
 @tasks.loop(minutes=30, reconnect=True)
 async def performance():
     #Report on performance every 30 mins.
     await bot.wait_until_ready()
     performance = bot.get_channel(847011689882189824)
-    
     rawping = bot.latency
     if rawping != float('inf'): 
-        ping = round(rawping *1000 )
+        pingvalue = round(rawping *1000 )
+        ping.append(pingvalue)
     else:
-        ping = "∞"
-    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {ping}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory().percent}%", color=discord.Color.random())
+        pingvalue = "∞"
+        ping.append(0)
+    cpuvalue = psutil.cpu_percent()
+    memoryvalue= psutil.virtual_memory().percent
+    timenow = datetime.datetime.now().strftime('%H:%M')
+    cpu.append(cpuvalue)
+    memory.append(memoryvalue)
+    time.append(timenow)
+    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {pingvalue}ms\n`CPU   :` {cpuvalue}%\n`Memory:` {memoryvalue}%", color=discord.Color.random())
+    plt.plot(time, ping, label = "Ping (ms)")
+    plt.plot(time, cpu, label = "CPU (%)")
+    plt.plot(time, memory, label= "Memory (%)")
+    plt.xlabel('Time')
+    plt.ylabel('y - axis')
+    plt.title('Performance')
+    plt.legend()
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    f = discord.File(fp=buf, filename="image.png")
+    embed.set_image(url="attachment://image.png")
     embed.timestamp=datetime.datetime.utcnow()
-    await performance.send(embed=embed)
-    print(f"{datetime.datetime.now().strftime('%H:%M')} - {ping}ms")
+    await performance.send(file=f, embed=embed)
+    plt.close()
+    buf.close()
+    print(f"{timenow} ^ {pingvalue}ms")
 performance.start()
 
 

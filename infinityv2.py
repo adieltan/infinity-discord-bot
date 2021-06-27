@@ -150,9 +150,9 @@ async def uptime():
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"with the infinity for {d.days} Days {round(d.seconds/60/60,2)} Hours "))
 uptime.start()
 
-@tasks.loop(minutes=15, reconnect=True)
+@tasks.loop(minutes=30, reconnect=True)
 async def performance():
-    #Report on performance every 15 mins.
+    #Report on performance every 30 mins.
     await bot.wait_until_ready()
     performance = bot.get_channel(847011689882189824)
     
@@ -164,6 +164,7 @@ async def performance():
     embed=discord.Embed(title="Performance report", description=f"`Ping  :` {ping}ms\n`CPU   :` {psutil.cpu_percent()}%\n`Memory:` {psutil.virtual_memory().percent}%", color=discord.Color.random())
     embed.timestamp=datetime.datetime.utcnow()
     await performance.send(embed=embed)
+    print(f"{datetime.datetime.now().strftime('%H:%M')} - {ping}ms")
 performance.start()
 
 

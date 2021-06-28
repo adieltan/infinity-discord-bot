@@ -16,3 +16,4 @@ dateparser
 pillow
 numpy
 tornado
+discord_components

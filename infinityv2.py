@@ -155,9 +155,14 @@ ping = []
 time = []
 cpu = []
 memory = []
-@tasks.loop(minutes=5, reconnect=True)
+@tasks.loop(minutes=1, reconnect=True)
 async def performanceupdate():
     await bot.wait_until_ready()
+    if (len(ping) and len(time) and len(cpu) and len(memory) > 30):
+        ping.pop(0)
+        time.pop(0)
+        cpu.pop(0)
+        memory.pop(0)
     rawping = bot.latency
     if rawping != float('inf'): 
         pingvalue = round(rawping *1000 )
@@ -167,7 +172,7 @@ async def performanceupdate():
         ping.append(0)
     cpuvalue = psutil.cpu_percent()
     memoryvalue= psutil.virtual_memory().percent
-    timenow = datetime.datetime.now().strftime('%H:%M')
+    timenow = datetime.datetime.now().strftime('%M')
     cpu.append(cpuvalue)
     memory.append(memoryvalue)
     time.append(timenow)
@@ -187,7 +192,7 @@ async def performance():
         ping.append(0)
     cpuvalue = psutil.cpu_percent()
     memoryvalue= psutil.virtual_memory().percent
-    timenow = datetime.datetime.now().strftime('%H:%M')
+    timenow = datetime.datetime.now().strftime('%M')
     cpu.append(cpuvalue)
     memory.append(memoryvalue)
     time.append(timenow)
@@ -195,8 +200,8 @@ async def performance():
     plt.plot(time, ping, label = "Ping (ms)")
     plt.plot(time, cpu, label = "CPU (%)")
     plt.plot(time, memory, label= "Memory (%)")
-    plt.xlabel('Time')
-    plt.ylabel('y - axis')
+    plt.xlabel('Time (minute)')
+    #plt.ylabel('')
     plt.title('Performance')
     plt.legend()
     buf = io.BytesIO()
@@ -208,7 +213,7 @@ async def performance():
     await performance.send(file=f, embed=embed)
     plt.close()
     buf.close()
-    print(f"{timenow} ^ {pingvalue}ms")
+
 performance.start()
 
 

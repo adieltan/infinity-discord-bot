@@ -17,3 +17,4 @@ pillow
 numpy
 tornado
 discord_components
+matplotlib

@@ -67,7 +67,6 @@ def blacklisted(ctx) -> bool:
 
 initial_extensions = ['cogs.info',
                       'cogs.members',
-                      'cogs.fun',
                       'cogs.maths',
                       'cogs.owner',
                       'cogs.others',
@@ -86,7 +85,7 @@ initial_extensions = ['cogs.info',
                       'cogs.minigames',
                       'cogs.cogcontroller']
 
-breakable_extentions = ['cogs.conversion']
+breakable_extentions = ['cogs.conversion', 'cogs.fun']
 
 if __name__ == '__main__':
     for extension in initial_extensions:

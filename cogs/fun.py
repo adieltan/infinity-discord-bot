@@ -1,9 +1,11 @@
-import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, io
-from discord_components.interaction import InteractionType
-from discord_components.button import ButtonStyle
+import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, io, discord_components
 from discord import user
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button
+DiscordComponents = discord_components.DiscordComponents
+Button = discord_components.Button
+ButtonStyle = discord_components.button.ButtonStyle
+InteractionType = discord_components.interaction.InteractionType
+
 
 class FunCog(commands.Cog, name='Fun'):
     """*Fun commands.*"""
@@ -98,7 +100,7 @@ class FunCog(commands.Cog, name='Fun'):
         while True:
             try:
                 interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 10)
-                await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, tts=True, content="Never Gonna Gift You Up", components=[[Button(label="Claim", style=ButtonStyle.URL, url="https://www.youtube.com/watch?v=dQw4w9WgXcQ")]])
+                await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, tts=True, content="Never Gonna Gift You Up", components=[[Button(label="Claim", style=Button.ButtonStyle.URL, url="https://www.youtube.com/watch?v=dQw4w9WgXcQ")]])
             except asyncio.TimeoutError:
                 break
 

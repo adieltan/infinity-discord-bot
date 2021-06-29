@@ -94,11 +94,11 @@ class FunCog(commands.Cog, name='Fun'):
         text = ''.join([random.choice(letters) for _ in range(16)])
         embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
         embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
-        await ctx.send(f"<https://discord.gg.gift/{text}>",embed=embed, components=[Button(label="Accept", id="Accept", style=Button.ButtonStyle.green)])
+        await ctx.send(f"<https://discord.gg.gift/{text}>",embed=embed, components=[Button(label="Accept", id="Accept", style=discord_components.button.ButtonStyle.green)])
         while True:
             try:
                 interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 10)
-                await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, tts=True, content="Never Gonna Gift You Up", components=[[Button(label="Claim", style=Button.ButtonStyle.URL, url="https://www.youtube.com/watch?v=dQw4w9WgXcQ")]])
+                await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, tts=True, content="Never Gonna Gift You Up", components=[[Button(label="Claim", style=discord_components.button.ButtonStyle.URL, url="https://www.youtube.com/watch?v=dQw4w9WgXcQ")]])
             except asyncio.TimeoutError:
                 break
 

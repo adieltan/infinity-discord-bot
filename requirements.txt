@@ -18,5 +18,4 @@ numpy
 tornado
 discord_components
 matplotlib
-discord_components.button
-discord_components.interaction
+discord_components[button,interaction]

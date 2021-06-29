@@ -1,9 +1,7 @@
 import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, io, discord_components
 from discord import user
 from discord.ext import commands, tasks
-DiscordComponents = discord_components.DiscordComponents
-Button = discord_components.Button
-ButtonStyle = discord_components.button.ButtonStyle
+from discord_components import DiscordComponents, Button
 InteractionType = discord_components.interaction.InteractionType
 
 

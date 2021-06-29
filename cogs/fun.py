@@ -1,6 +1,9 @@
-import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp
+import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, io
+from discord_components.interaction import InteractionType
+from discord_components.button import ButtonStyle
 from discord import user
 from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button
 
 class FunCog(commands.Cog, name='Fun'):
     """*Fun commands.*"""
@@ -31,14 +34,6 @@ class FunCog(commands.Cog, name='Fun'):
         msg = await ctx.reply(f'(*&^{choice1}%$^$#%%^&{choice2}**&(#&$&#^&))', mention_author=False)
         await asyncio.sleep(1.0)
         await msg.edit(content=f'I choose **{ran}**')
-
-    @commands.command()
-    @commands.cooldown(1,3)
-    async def gift(self, ctx):
-        """Generates few alphanumeric letters to join to become a discord gift code. You are VERY lucky if you managed to get one."""
-        letters_and_digits = string.ascii_letters + string.digits
-        result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
-        await ctx.reply('https://discord.gift/' + result_str, mention_author=False)
 
     @commands.command(name="draw", aliases=["rollreaction", "roll reactions"])
     @commands.cooldown(1,3)
@@ -91,6 +86,21 @@ class FunCog(commands.Cog, name='Fun'):
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
 
+
+    @commands.command(name="nitro")
+    async def nitro(self, ctx):
+        """Generates nitro codes."""
+        letters = string.ascii_lowercase + string.ascii_lowercase + string.digits
+        text = ''.join([random.choice(letters) for _ in range(16)])
+        embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
+        embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
+        await ctx.send(f"<https://discord.gg.gift/{text}>",embed=embed, components=[Button(label="Accept", id="Accept", style=ButtonStyle.green)])
+        while True:
+            try:
+                interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 10)
+                await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, tts=True, content="Never Gonna Gift You Up", components=[[Button(label="Claim", style=ButtonStyle.URL, url="https://www.youtube.com/watch?v=dQw4w9WgXcQ")]])
+            except asyncio.TimeoutError:
+                break
 
 def setup(bot):
     bot.add_cog(FunCog(bot))

@@ -174,51 +174,20 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.message.add_reaction("\U00002705")
 
-    @commands.command(name="break")
-    @commands.cooldown(1,0)
-    @commands.is_owner()
-    async def b(self, ctx, slowmo:int=-1):
-        """Designed definitly to break."""
-        await ctx.channel.edit(slowmode_delay=slowmo)
-        await ctx.reply("There sure is error!")
-
     @commands.command(name="gg")
     @commands.cooldown(1,0)
     @commands.is_owner()
     async def gg(self, ctx, invite:str):
         """Frames your discord invite link"""
-        await ctx.reply(f'https://discord.gg/{invite}')
-
-    @commands.command(name="addrole")
-    @commands.cooldown(1,0)
-    @commands.is_owner()
-    async def addrole(self, ctx, role:discord.Role):
-        await ctx.author.add_role(role)
-
-    @commands.command(name="nitro")
-    @commands.is_owner()
-    async def nitro(self, ctx, times:int=200):
-        """Generates nitro codes."""
-        error = 0
-        while times > 0:
-            letters_and_digits = string.ascii_letters + string.digits
-            result_str = ''.join((random.choice(letters_and_digits)for _ in range(16)))
-            semaphore = asyncio.Semaphore(1)
-            async with semaphore:
-                async with aiohttp.ClientSession() as session:
-                    validator = f"https://discord.com/api/v9/entitlements/gift-codes/{result_str}?with_application=false&with_subscription_plan=true"
-                    async with session.get(validator) as resp:
-                        content = await resp.json()
-                try:
-                    if content['code'] == 10038:
-                        error += 1
-                        pass
-                    else:
-                        await ctx.author.send('https://discord.gift/' + result_str)
-                    times -= 1
-                except:
-                    await asyncio.sleep(content['retry_after'])
-        await ctx.send(f"`Done` with {error} fails.")
+        try:
+            inv = await self.bot.fetch_invite(url=f'https://discord.gg/{invite}', with_counts=True)
+        except:
+            member = 0
+            online = 0
+        else:
+            member = format(inv.approximate_member_count,',')
+            online = format(inv.approximate_presence_count, ',')
+        await ctx.reply(f'https://discord.gg/{invite}\nOnline: {online} Members: {member}')
 
     @commands.command(name='dm')
     @commands.cooldown(1,3)

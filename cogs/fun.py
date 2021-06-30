@@ -98,7 +98,7 @@ class FunCog(commands.Cog, name='Fun'):
             try:
                 interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 20)
                 await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey.", components=[[Button(label="Claim", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
-            except asyncio.TimeoutError:
+            except:
                 embed.description="Looks like someone already redeemed this gift."
                 await mes.edit(embed=embed, components=[Button(label="Accept", id="Accept", style=ButtonStyle.green, disabled=True)])
 

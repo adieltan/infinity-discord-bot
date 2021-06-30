@@ -28,6 +28,19 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif ("732917262297595925") in message.content.lower():
             await message.add_reaction("♾️")
 
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        changes = self.bot.get_channel(859779506038505532)
+        embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}")
+        embed.set_author(name=guild.name, icon_url=guild.icon)
+        await changes.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        changes = self.bot.get_channel(859779506038505532)
+        embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}")
+        embed.set_author(name=guild.name, icon_url=guild.icon)
+        await changes.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_command_error (self, ctx, error):

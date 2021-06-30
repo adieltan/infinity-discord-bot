@@ -87,7 +87,6 @@ initial_extensions = ['cogs.info',
                       'cogs.server',
                       'cogs.minigames',
                       'cogs.cogcontroller', 
-                      'cogs.fun', 
                       'cogs.conversion']
 
 

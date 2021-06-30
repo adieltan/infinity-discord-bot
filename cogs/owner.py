@@ -19,7 +19,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='blacklist', aliases=['bl'], hidden=True)
     async def blacklist(self, ctx, user:discord.User, *, reason:str=None):
         """Blacklists a member from using the bot."""
-        if ctx.author.id not in self.bot.managers:
+        if ctx.author not in self.bot.managers:
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = True
@@ -36,7 +36,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='unblacklist', aliases=['ubl'], hidden=True)
     async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
         """unBlacklists a member from using the bot."""
-        if ctx.author.id not in self.bot.managers:
+        if ctx.author not in self.bot.managers:
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = False
@@ -53,7 +53,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='blacklistcheck', aliases=['blc'], hidden=True)
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
-        if ctx.author.id not in self.bot.managers:
+        if ctx.author not in self.bot.managers:
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         try:

@@ -245,6 +245,25 @@ class OwnerCog(commands.Cog, name='Owner'):
                 quit = True
                 return await ctx.reply(f'Session timeout. The broadcast session has ended.', mention_author=False)
 
+    @commands.command(name="botstatus")
+    @commands.is_owner()
+    async def botstatus(self, ctx, activitytype, title, info, link=None):
+        if link is None:
+            link = 'https://discord.gg//RJFfFHH'
+        if 'play' in activitytype.lower():
+            activity = discord.ActivityType.playing
+        elif 'stream' in activitytype.lower():
+            activity = discord.ActivityType.streaming
+        elif 'listen' in activitytype.lower():
+            activity = discord.ActivityType.listening
+        elif 'watch' in activitytype.lower():
+            activity = discord.ActivityType.watching
+        elif 'custom' in activitytype.lower():
+            activity = discord.ActivityType.custom
+        elif 'competing' in activitytype.lower():
+            activity = discord.ActivityType.competing
+        await self.bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=activity, name=title, details=info, url=link))
+
     @commands.command(name='test')
     @commands.is_owner()
     async def test(self, ctx):

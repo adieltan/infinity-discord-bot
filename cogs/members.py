@@ -78,6 +78,13 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_footer(text=f'Drawn {len(winners)} winners.')
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(name="mutual")
+    async def mutual(self, ctx, user:discord.User):
+        """Returns the servers that are shared with the user."""
+        embed=discord.Embed(title="Mutual servers", description=f"{'\n'.join([f'`{guild.id}` **{guild.name}**' for guild in user.mutual_guilds])}", color=discord.Color.random())
+        embed.set_author(name=user.name, icon_url=user.avatar_url)
+        await ctx.reply(embed=embed)
+
     @commands.group(aliases=['r'])
     @commands.guild_only()
     async def role(self, ctx):

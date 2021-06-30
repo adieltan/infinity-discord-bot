@@ -101,6 +101,7 @@ class FunCog(commands.Cog, name='Fun'):
             except:
                 embed.description="Looks like someone already redeemed this gift."
                 await mes.edit(embed=embed, components=[Button(label="Accept", id="Accept", style=ButtonStyle.green, disabled=True)])
+                break
 
 def setup(bot):
     bot.add_cog(FunCog(bot))

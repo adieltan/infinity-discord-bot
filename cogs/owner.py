@@ -247,9 +247,11 @@ class OwnerCog(commands.Cog, name='Owner'):
 
     @commands.command(name="botstatus")
     @commands.is_owner()
-    async def botstatus(self, ctx, activitytype, title, info, link=None):
+    async def botstatus(self, ctx, activitytype, title, info=None, link=None):
         if link is None:
             link = 'https://discord.gg//RJFfFHH'
+        if info is None:
+            info = "._."
         if 'play' in activitytype.lower():
             activity = discord.ActivityType.playing
         elif 'stream' in activitytype.lower():

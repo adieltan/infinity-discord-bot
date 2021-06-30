@@ -89,19 +89,17 @@ class ModerationCog(commands.Cog, name='Moderation'):
     async def massban(self, ctx, reason:str, *, ids:str):
         """Massban users."""
         await ctx.trigger_typing()
-        ids.replace(",",'')
-        people = re.findall("^(\d{18})$", ids)
+        ids = ids.split(' ')
         reason = f"Massbanned by {ctx.author.name} for {reason}"
         banned = []
         error = []
-        for id in people:
-            user = self.bot.get_user(id)
+        for id in ids:
             try:
-                await ctx.guild.ban(user, reason=reason)
+                await self.bot.http.ban(int(id), ctx.guild.id, delete_message_days=0, reason=reason)
             except:
-                error.append(str(user))
+                error.append(id)
             else:
-                banned.append(str(user))
+                banned.append(id)
         await ctx.send(f"Banned {len(banned)} users: {', '.join(banned)}")
         await ctx.send(f"Failed to ban {len(error)} users:{', '.join(error)}")
 

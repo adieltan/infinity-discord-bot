@@ -86,9 +86,10 @@ initial_extensions = ['cogs.info',
                       'cogs.profile',
                       'cogs.server',
                       'cogs.minigames',
-                      'cogs.cogcontroller']
+                      'cogs.cogcontroller', 
+                      'cogs.fun']
 
-breakable_extentions = ['cogs.conversion', 'cogs.fun']
+breakable_extentions = ['cogs.conversion']
 
 if __name__ == '__main__':
     for extension in initial_extensions:

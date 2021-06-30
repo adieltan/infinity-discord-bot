@@ -1,4 +1,4 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, qrcode, datetime, io, pyzbar.pyzbar
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, qrcode, datetime, io
 from PIL import Image
 from PyDictionary import PyDictionary
 dictionary=PyDictionary()
@@ -76,16 +76,15 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(file=discord.File(buffer, filename="qr.png"), embed=embed, mention_author=True)
 
-    @commands.command(name='qrdecode', aliases=['qrde', 'deqr'])
-    @commands.cooldown(1,4)
-    async def decode(self,ctx):
-        """Decodes a qr code"""
-        file = ctx.message.attachments[0]
-        im = await file.read()
-        image = Image.open(io.BytesIO(initial_bytes=im))
-        byte = pyzbar.decode(image=image)[0].data
-        text = byte.decode("utf-8")
-        await ctx.reply(f"Decoded: \n{text}", mention_author=False)
+#    @commands.command(name='qrdecode', aliases=['qrde', 'deqr'])
+    #@commands.cooldown(1,4)
+    #async def decode(self,ctx):
+        #"""Decodes a qr code"""
+        #fim = await file.read()
+        #image = Image.open(io.BytesIO(initial_bytes=im))
+        #byte = pyzbar.decode(image=image)[0].data
+        #text = byte.decode("utf-8")
+        #await ctx.reply(f"Decoded: \n{text}", mention_author=False)
 
     @commands.command(name='morse')
     @commands.cooldown(1,2)

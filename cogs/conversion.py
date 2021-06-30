@@ -1,4 +1,4 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, qrcode, datetime, io, pyzbar
+import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, qrcode, datetime, io, pyzbar.pyzbar
 from PIL import Image
 from PyDictionary import PyDictionary
 dictionary=PyDictionary()
@@ -83,7 +83,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         file = ctx.message.attachments[0]
         im = await file.read()
         image = Image.open(io.BytesIO(initial_bytes=im))
-        byte = pyzbar.pyzbar.decode(image=image)[0].data
+        byte = pyzbar.decode(image=image)[0].data
         text = byte.decode("utf-8")
         await ctx.reply(f"Decoded: \n{text}", mention_author=False)
 

@@ -131,16 +131,16 @@ async def on_error(event, *args, **kwargs):
     await errors.send(f"```\n{event}\n\n{''.join(args)}\n\n{''.join(kwargs)}\n```")
     pass
 
-@tasks.loop(seconds=100, reconnect=True)
+@tasks.loop(minutes=100, reconnect=True)
 async def status():
     await bot.wait_until_ready()
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers"))
 status.start()
 
-@tasks.loop(seconds=100, reconnect=True)
+@tasks.loop(minutes=100, reconnect=True)
 async def uptime():
     await bot.wait_until_ready()
-    await asyncio.sleep(50)
+    await asyncio.sleep(100*60)
     timenow = datetime.datetime.now()
     d = timenow-est
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"with the infinity for {d.days} Days {round(d.seconds/60/60,2)} Hours "))

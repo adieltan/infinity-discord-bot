@@ -100,8 +100,8 @@ class ModerationCog(commands.Cog, name='Moderation'):
                 error.append(id)
             else:
                 banned.append(id)
-        await ctx.send(f"Banned {len(banned)} users: {', '.join(banned)}")
-        await ctx.send(f"Failed to ban {len(error)} users:{', '.join(error)}")
+        await ctx.send(f"""Banned {len(banned)} users: {', '.join([f"<@{id}>" for id in banned])}""")
+        await ctx.send(f"""Failed to ban {len(error)} users:{', '.join([f"<@{id}>" for id in error])}""")
 
 
     @commands.command(name='kick')

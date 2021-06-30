@@ -1,24 +1,21 @@
 import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio, dns, motor.motor_tornado, io
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
-from psutil._common import bytes2human
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
 
 try:
     from win10toast import ToastNotifier
     toaster = ToastNotifier()
-except:
-    pass
+except:pass
 
 global bot
 clustera = motor.motor_tornado.MotorClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 dba = clustera["infinity"]
-cola=dba["server"]
+server=dba["server"]
 
 owners = set({701009836938231849,703135131459911740})
 managers = set({})
-
 bled = set({})
 
 
@@ -38,23 +35,22 @@ class Hierarchy(commands.Converter):
 async def get_prefix(bot, message):
     if not message.guild:
         return ('')
-    if await cola.count_documents({"_id":message.guild.id}) > 0:
-        results= await cola.find_one({"_id":message.guild.id})
+    if await server.count_documents({"_id":message.guild.id}) > 0:
+        results= await server.find_one({"_id":message.guild.id})
         pref = results["prefix"]
         return commands.when_mentioned_or(pref)(bot, message)
     else:
-        await cola.insert_one({"_id":message.guild.id, "prefix": "="})
+        await server.insert_one({"_id":message.guild.id, "prefix": "="})
         return commands.when_mentioned_or("=")(bot, message)
 
 bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), owner_ids=owners)
 bot.dba = dba
 bot.bled = bled
-bot.owner = owners
+bot.owners = owners
 bot.managers = managers
+bot.infinityemoji = "\U0000267e"
 
-
-
-menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove="a:infi:851081962491478026", active_time=20)
+menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove=bot.infinityemoji, active_time=20)
 # Custom ending note
 ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
 bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
@@ -96,14 +92,17 @@ if __name__ == '__main__':
 
 @bot.event
 async def on_ready():
-    #blacklisted chaching
+    #chaching
     bls = set({})
     blquery = {'bl':True}
     async for doc in dba['profile'].find(blquery):
         bls.add(doc['_id'])
     bot.bled = bls
-    guild = bot.get_guild(709711335436451901)
-    bot.managers = set(guild.get_role(843375370627055637).members)
+    manag = set({})
+    managquery = {'manager':True}
+    async for doc in dba['profile'].find(managquery):
+        manag.add(doc['_id'])
+    bot.managers = manag
     DiscordComponents(bot)
 
     t = datetime.datetime.now()
@@ -111,10 +110,8 @@ async def on_ready():
     login = f"\n{bot.user}\n{ti}\n"
     print(login)
     vc = bot.get_channel(736791916397723780)
-    try:
-        await vc.connect()
-    except:
-        pass
+    try:await vc.connect()
+    except:pass
 
     channel = bot.get_channel(813251835371454515)
     await channel.send("∞")
@@ -211,7 +208,6 @@ async def performance():
     await performance.send(file=f, embed=embed)
     plt.close()
     buf.close()
-
 performance.start()
 
 

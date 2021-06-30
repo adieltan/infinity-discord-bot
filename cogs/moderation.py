@@ -9,7 +9,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
         self.bot = bot
 
     @commands.command(name='prefix')
-    @commands.cooldown(1,20)
+    @commands.cooldown(1,8)
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def prefix(self, ctx, apref:str=None):

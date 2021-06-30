@@ -49,6 +49,13 @@ class InfoCog(commands.Cog, name='Info'):
         embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
         await ctx.reply(embed=embed, mention_author=False)
         
+    @commands.command(name="managers", aliases=["staff"])
+    async def managers(self, ctx):
+        """Shows the managers of the bot."""
+        managers = self.bot.managers
+        embed=discord.Embed(title="Infinity Managers", description=f"{' '.join([f'<@{manag}>' for manag in managers])}", color=discord.Color.random())
+        await ctx.reply(embed=embed)
+                
     @commands.command(name='partners')
     @commands.cooldown(1,8, type=BucketType.channel)
     async def partners(self, ctx):

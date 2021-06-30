@@ -1,5 +1,4 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime, requests, aiohttp
-from discord import message
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 try:
@@ -7,8 +6,6 @@ try:
     toaster = ToastNotifier()
 except:
     pass
-
-
 
 class OwnerCog(commands.Cog, name='Owner'):
     """*Only owner/managers can use this.*"""
@@ -19,7 +16,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='blacklist', aliases=['bl'], hidden=True)
     async def blacklist(self, ctx, user:discord.User, *, reason:str=None):
         """Blacklists a member from using the bot."""
-        if ctx.author not in self.bot.managers:
+        if ctx.author.id not in self.bot.managers:
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = True
@@ -36,7 +33,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='unblacklist', aliases=['ubl'], hidden=True)
     async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
         """unBlacklists a member from using the bot."""
-        if ctx.author not in self.bot.managers:
+        if ctx.author.id not in self.bot.managers:
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = False
@@ -48,12 +45,12 @@ class OwnerCog(commands.Cog, name='Owner'):
             bled.append(doc['_id'])
         self.bot.bled = bled
         await ctx.reply(f"unBlacklisted {user.mention}.")
-        await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and do continue to use and support our bot.")
+        await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and please do continue to use and support our bot.")
 
     @commands.command(name='blacklistcheck', aliases=['blc'], hidden=True)
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
-        if ctx.author not in self.bot.managers:
+        if ctx.author.id not in self.bot.managers:
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         try:
@@ -68,23 +65,54 @@ class OwnerCog(commands.Cog, name='Owner'):
 
     @commands.command(name='blacklisted', hidden=True)
     async def blacklisted(self, ctx):
-        guild = self.bot.get_guild(709711335436451901)
-        managers = guild.get_role(843375370627055637).members
-        if ctx.author not in managers:
+        if ctx.author.id not in self.bot.managers:
             return
         blquery = {'bl':True}
         bled = set({})
         async for doc in self.bot.dba['profile'].find(blquery):
             bled.add(doc['_id'])
         self.bot.bled = bled
-        await ctx.send(f"{bled}")
+        await ctx.send(f"{' '.join([f'<@{bl}>' for bl in bled])}")
+    
+    @commands.command(name="manageradd", aliases=['ma'], hidden=True)
+    @commands.is_owner()
+    async def manageradd(self, ctx, user:discord.User):
+        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results['manager'] = True
+        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        managquery = {'manager':True}
+        managers = []
+        async for doc in self.bot.dba['profile'].find(managquery):
+            managers.append(doc['_id'])
+        self.bot.managers = managers
+        await ctx.reply(f"Added {user.mention} as Infinity Managers.")
+        guild = self.bot.get_guild(709711335436451901)
+        member = await guild.fetch_member(user.id)
+        role = guild.get_role(843375370627055637)
+        await member.add_roles(role)
+
+    @commands.command(name="managerremove", aliases=['mr'], hidden=True)
+    @commands.is_owner()
+    async def manageradd(self, ctx, user:discord.User):
+        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results['manager'] = False
+        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        managquery = {'manager':True}
+        managers = []
+        async for doc in self.bot.dba['profile'].find(managquery):
+            managers.append(doc['_id'])
+        self.bot.managers = managers
+        await ctx.reply(f"Removed {user.mention} as Infinity Managers.")
+        guild = self.bot.get_guild(709711335436451901)
+        member = await guild.fetch_member(user.id)
+        role = guild.get_role(843375370627055637)
+        await member.remove_roles(role)
 
     @commands.command(name="update")
     @commands.is_owner()
     async def updates(self, ctx, status:str, *args):
         """Bot updates."""
         info = str(' '.join(args))
-        
         embed=discord.Embed(title="Bot updates", description=status , color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
@@ -156,17 +184,6 @@ class OwnerCog(commands.Cog, name='Owner'):
         await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
         await asyncio.sleep(0.5)
         await self.bot.logout()
-
-    @commands.command(name='execute', aliases=['eval ', 'exe'])
-    @commands.is_owner()
-    async def exe(self, ctx, *, code):
-        """Executes some code."""
-        try:
-            exec(code)
-        except:
-            await ctx.message.add_reaction("\U0000274c")
-        else:
-            await ctx.message.add_reaction("\U00002705")
 
     @commands.command(name="gg")
     @commands.cooldown(1,0)

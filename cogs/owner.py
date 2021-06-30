@@ -13,7 +13,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.bot = bot
     
 
-    @commands.command(name='blacklist', aliases=['bl'], hidden=True)
+    @commands.command(name='blacklist', aliases=['bl'])
     async def blacklist(self, ctx, user:discord.User, *, reason:str=None):
         """Blacklists a member from using the bot."""
         if ctx.author.id not in self.bot.managers:
@@ -30,7 +30,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.reply(f"Blacklisted {user.mention}.")
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
 
-    @commands.command(name='unblacklist', aliases=['ubl'], hidden=True)
+    @commands.command(name='unblacklist', aliases=['ubl'])
     async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
         """unBlacklists a member from using the bot."""
         if ctx.author.id not in self.bot.managers:
@@ -47,7 +47,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.reply(f"unBlacklisted {user.mention}.")
         await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and please do continue to use and support our bot.")
 
-    @commands.command(name='blacklistcheck', aliases=['blc'], hidden=True)
+    @commands.command(name='blacklistcheck', aliases=['blc'])
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
         if ctx.author.id not in self.bot.managers:
@@ -63,7 +63,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             reason = None
         await ctx.reply(f"{user.mention}'s blacklist status: {out}.\nReason: {reason}")
 
-    @commands.command(name='blacklisted', hidden=True)
+    @commands.command(name='blacklisted')
     async def blacklisted(self, ctx):
         if ctx.author.id not in self.bot.managers:
             return
@@ -74,7 +74,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.bot.bled = bled
         await ctx.send(f"{' '.join([f'<@{bl}>' for bl in bled])}")
     
-    @commands.command(name="manageradd", aliases=['ma'], hidden=True)
+    @commands.command(name="manageradd", aliases=['ma'])
     @commands.is_owner()
     async def manageradd(self, ctx, user:discord.User):
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
@@ -91,7 +91,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         role = guild.get_role(843375370627055637)
         await member.add_roles(role)
 
-    @commands.command(name="managerremove", aliases=['mr'], hidden=True)
+    @commands.command(name="managerremove", aliases=['mr'])
     @commands.is_owner()
     async def manageradd(self, ctx, user:discord.User):
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}

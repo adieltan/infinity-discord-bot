@@ -93,7 +93,7 @@ class OwnerCog(commands.Cog, name='Owner'):
 
     @commands.command(name="managerremove", aliases=['mr'])
     @commands.is_owner()
-    async def manageradd(self, ctx, user:discord.User):
+    async def managerremove(self, ctx, user:discord.User):
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['manager'] = False
         await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)

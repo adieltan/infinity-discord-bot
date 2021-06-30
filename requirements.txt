@@ -6,6 +6,7 @@ psutil
 motor
 qrcode
 pyzbar
+zbar
 PyDictionary
 wordfreq
 py_expression_eval

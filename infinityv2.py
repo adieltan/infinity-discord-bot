@@ -16,7 +16,8 @@ clustera = motor.motor_tornado.MotorClient("mongodb+srv://rh:1234@infinitycluste
 dba = clustera["infinity"]
 cola=dba["server"]
 
-owners = {701009836938231849,703135131459911740}
+owners = set({701009836938231849,703135131459911740})
+managers = set({})
 
 bled = set({})
 
@@ -34,7 +35,6 @@ class Hierarchy(commands.Converter):
 
         return target
 
-
 async def get_prefix(bot, message):
     if not message.guild:
         return ('')
@@ -49,6 +49,8 @@ async def get_prefix(bot, message):
 bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), owner_ids=owners)
 bot.dba = dba
 bot.bled = bled
+bot.owner = owners
+bot.managers = managers
 
 
 
@@ -63,7 +65,7 @@ os.environ["JISHAKU_NO_UNDERSCORE"]="true"
 @bot.check
 def blacklisted(ctx) -> bool:
     bls = bot.bled
-    return (ctx.author.id not in bls or ctx.author.id in owners)
+    return (ctx.author.id not in bls or ctx.author.id in owners or ctx.author.id in bot.managers)
 
 initial_extensions = ['cogs.info',
                       'cogs.members',
@@ -105,7 +107,8 @@ async def on_ready():
     async for doc in dba['profile'].find(blquery):
         bls.add(doc['_id'])
     bot.bled = bls
-
+    guild = bot.get_guild(709711335436451901)
+    bot.managers = set(guild.get_role(843375370627055637).members)
     DiscordComponents(bot)
 
     t = datetime.datetime.now()

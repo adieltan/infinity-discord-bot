@@ -2,7 +2,7 @@ import discord, random, string, os, asyncio, discord.voice_client, sys, math, re
 from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
 from psutil._common import bytes2human
-from discord_components import DiscordComponents, Button
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
 
 try:
@@ -67,6 +67,7 @@ def blacklisted(ctx) -> bool:
 
 initial_extensions = ['cogs.info',
                       'cogs.members',
+                      'cogs.fun',
                       'cogs.maths',
                       'cogs.owner',
                       'cogs.others',

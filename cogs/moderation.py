@@ -95,15 +95,11 @@ class ModerationCog(commands.Cog, name='Moderation'):
         error = []
         for id in ids:
             try:
-                user = self.bot.get_user(id)
+                await self.bot.http.ban(int(id), ctx.guild.id, delete_message_days=0, reason=reason)
             except:
-                error.append(f"{id}")
-            try:
-                await ctx.guild.ban(user, reason=reason)
-            except:
-                error.append(str(user))
+                error.append(id)
             else:
-                banned.append(str(user))
+                banned.append(id)
         await ctx.send(f"Banned {len(banned)} users: {', '.join(banned)}")
         await ctx.send(f"Failed to ban {len(error)} users:{', '.join(error)}")
 

@@ -181,7 +181,7 @@ class rhCog(commands.Cog, name='rh'):
             if role not in message.author.roles:
                 try:
                     await message.author.add_roles(role, reason="Self role.")
-                    await message.reply(f"Added {role.mention} to {message.author.mention}")
+                    await message.reply(f"Added {role.name} to {message.author.mention}")
                 except:
                     await message.reply("Failed")
             else:
@@ -190,7 +190,7 @@ class rhCog(commands.Cog, name='rh'):
                 except:
                     await message.replay(f"The code `{message.content}` is invalid.")
                 else:
-                    await message.reply(f"Removed {role.mention} from {message.author.mention}")
+                    await message.reply(f"Removed {role.name} from {message.author.mention}")
 
 def setup(bot):
     bot.add_cog(rhCog(bot))

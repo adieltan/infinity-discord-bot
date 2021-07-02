@@ -19,3 +19,4 @@ tornado
 discord_components
 matplotlib
 discord_components[button,interaction]
+dotenv

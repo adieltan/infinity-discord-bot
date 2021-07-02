@@ -1,11 +1,6 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, requests, inspect, re, datetime, requests, aiohttp
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
-try:
-    from win10toast import ToastNotifier
-    toaster = ToastNotifier()
-except:
-    pass
 
 class OwnerCog(commands.Cog, name='Owner'):
     """*Only owner/managers can use this.*"""
@@ -171,13 +166,6 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def logout(self, ctx):
         """Logs out."""
-        try:
-            toaster.show_toast("Infinity",
-                   "Is shutting down.",
-                   icon_path="D:\TRH\code\py\infinity discord bot\infinity.ico",
-                   duration=10,
-                   threaded=True)
-        except:pass
         channel = self.bot.get_channel(813251835371454515)
         await channel.send(f"<@701009836938231849> <@703135131459911740>\nThe bot is being shut down by {ctx.author.mention}.")
         await ctx.reply("👋")

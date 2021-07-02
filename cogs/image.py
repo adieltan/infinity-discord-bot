@@ -1,5 +1,6 @@
 import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, datetime, aiohttp
 from discord.ext import commands
+from dotenv import load_dotenv
 
 
 class ImageCog(commands.Cog, name='Image'):
@@ -13,10 +14,10 @@ class ImageCog(commands.Cog, name='Image'):
         """Random monkey image + fact."""
         
         async with aiohttp.ClientSession() as cs:
-            async with cs.get(url="https://api.monkedev.com/attachments/monkey", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'}) as pic:
+            async with cs.get(url="https://api.monkedev.com/attachments/monkey", params={'key':str(os.getenv("monkedevapi"))}) as pic:
                 picj = await pic.json()
                 imageurl = picj["url"]
-            async with cs.get(url="https://api.monkedev.com/facts/monkey", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'}) as fac:        
+            async with cs.get(url="https://api.monkedev.com/facts/monkey", params={'key':str(os.getenv("monkedevapi"))}) as fac:        
                 fa = await fac.json()
                 fact = fa['fact']
         embed=discord.Embed(title="Monkey", description=f"[Image]({imageurl})", color=discord.Color.random())
@@ -33,7 +34,7 @@ class ImageCog(commands.Cog, name='Image'):
         """Random bird image + fact."""
         
         async with aiohttp.ClientSession() as cs:
-            async with cs.get(url="https://api.monkedev.com/attachments/bird", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'}) as pic:
+            async with cs.get(url="https://api.monkedev.com/attachments/bird", params={'key':str(os.getenv("monkedevapi"))}) as pic:
                 picj = await pic.json()
         imageurl = picj["url"]
         embed=discord.Embed(title="Bird", description=f"[Image]({imageurl})", color=discord.Color.random())
@@ -49,7 +50,7 @@ class ImageCog(commands.Cog, name='Image'):
         """Random cat image + fact."""
         
         async with aiohttp.ClientSession() as cs:
-            async with cs.get(url="https://api.monkedev.com/facts/cat", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'}) as fa:
+            async with cs.get(url="https://api.monkedev.com/facts/cat", params={'key':str(os.getenv("monkedevapi"))}) as fa:
                 fac = await fa.json()
                 fact = fac["fact"]
             async with cs.get('https://api.thecatapi.com/v1/images/search?apikey=4df9ec4d-2037-4c28-bb99-95307fcdae9a') as ca:
@@ -69,7 +70,7 @@ class ImageCog(commands.Cog, name='Image'):
         """Random dog image + fact."""
         
         async with aiohttp.ClientSession() as cs:
-            async with cs.get(url="https://api.monkedev.com/facts/dog", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'}) as fa:
+            async with cs.get(url="https://api.monkedev.com/facts/dog", params={'key':str(os.getenv("monkedevapi"))}) as fa:
                 fac = await fa.json()
                 fact = fac["fact"]
             async with cs.get('https://dog.ceo/api/breeds/image/random') as do:

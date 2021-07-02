@@ -1,7 +1,10 @@
-import discord, random, asyncio, discord.voice_client, datetime, psutil
-from discord.ext.commands.cooldowns import BucketType
-from discord.emoji import Emoji
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
 from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+
+from discord.ext.commands.cooldowns import BucketType
 from psutil._common import bytes2human
 
 class InfoCog(commands.Cog, name='Info'):

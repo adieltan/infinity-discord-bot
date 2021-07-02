@@ -1,10 +1,8 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math
-from discord.ext import commands
-from pymongo import MongoClient
-
-cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-db = cluster["infinity"]
-col=db["server"]
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
 class SlashCog(commands.Cog, name='Slash'):
     """*Slash Commands*"""

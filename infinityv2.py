@@ -1,9 +1,11 @@
-import discord, random, string, os, asyncio, discord.voice_client, sys, math, requests, json, pymongo, datetime, psutil,  motor.motor_asyncio, dns, motor.motor_tornado, io
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
 from discord.ext import commands, tasks
-from pretty_help import PrettyHelp, DefaultMenu
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
+
+import motor.motor_asyncio, motor.motor_tornado
+from pretty_help import PrettyHelp, DefaultMenu
 
 load_dotenv()  # take environment variables from .env.
 # Code of your application, which uses environment variables (e.g. from `os.environ` or

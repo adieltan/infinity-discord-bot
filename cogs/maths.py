@@ -1,5 +1,9 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math
-from discord.ext import commands
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+
 from py_expression_eval import Parser
 from fractions import Fraction
 parser = Parser()

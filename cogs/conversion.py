@@ -1,9 +1,14 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, qrcode, datetime, io
-from PIL import Image
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+
+import qrcode
 from PyDictionary import PyDictionary
-dictionary=PyDictionary()
-from discord.ext import commands
 from wordfreq import zipf_frequency
+
+dictionary=PyDictionary()
 
 class ConversionCog(commands.Cog, name='Conversion'):
     """*Conversion commands.*"""

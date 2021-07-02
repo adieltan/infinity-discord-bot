@@ -1,6 +1,8 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client
-from discord.ext.commands.errors import ExtensionNotLoaded, TooManyArguments
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
 from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
 
 
@@ -18,7 +20,7 @@ class CogControllerCog(commands.Cog, name='CogController'):
             try:
                 self.bot.unload_extension(cog)
                 self.bot.load_extension(cog)
-            except ExtensionNotLoaded:
+            except commands.errors.ExtensionNotLoaded:
                 self.bot.load_extension(cog)
         except Exception as e:
             await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}', mention_author=False)

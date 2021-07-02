@@ -1,7 +1,7 @@
-import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, io, os
-from discord import user
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
 

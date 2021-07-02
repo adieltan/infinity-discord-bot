@@ -1,6 +1,8 @@
-from click import pass_context
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, math, datetime
-from discord.ext import commands
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re
+from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
 
 class ChannelCog(commands.Cog, name='Channel'):

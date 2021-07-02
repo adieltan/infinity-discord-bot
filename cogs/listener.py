@@ -1,11 +1,8 @@
-import discord, random, string, os, logging, asyncio, discord.voice_client, sys, traceback, json, datetime
-from discord.ext.commands.errors import CheckFailure
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
 from discord.ext import commands, tasks
-from pymongo import MongoClient
-
-cluster = MongoClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-db = cluster["infinity"]
-col=db["server"]
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
 class ListenerCog(commands.Cog, name='Listener'):
     """*Listening Commands.*"""

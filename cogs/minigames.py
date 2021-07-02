@@ -1,9 +1,11 @@
-from asyncio.tasks import Task
-import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, time, threading
-from discord.flags import MemberCacheFlags
-from discord.ext.commands.cooldowns import BucketType
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+
+import time
+from discord.ext.commands.cooldowns import BucketType
 
 class MiniGamesCog(commands.Cog, name='MiniGames'):
     """*Minigames.*"""

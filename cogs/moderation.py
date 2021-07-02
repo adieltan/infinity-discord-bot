@@ -1,7 +1,8 @@
-import discord, discord.voice_client, sys, traceback, json, pymongo, datetime, motor.motor_asyncio, re
-from discord.enums import NotificationLevel
-from discord.ext import commands
-from discord.guild import Guild
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from discord.ext import commands, tasks
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
 class ModerationCog(commands.Cog, name='Moderation'):
     """*Moderation Commands.*"""

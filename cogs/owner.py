@@ -26,6 +26,10 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.bot.bled = bled
         await ctx.reply(f"Blacklisted {user.mention}.")
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
+        changes = self.bot.get_channel(859779506038505532)
+        embed=discord.Embed(title="Blacklist", description=f"{user.mention} for {reason}", color=discord.Color.red())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        await changes.send(embed)
 
     @commands.command(name='unblacklist', aliases=['ubl'])
     async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
@@ -43,6 +47,10 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.bot.bled = bled
         await ctx.reply(f"unBlacklisted {user.mention}.")
         await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and please do continue to use and support our bot.")
+        changes = self.bot.get_channel(859779506038505532)
+        embed=discord.Embed(title="Unlacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        await changes.send(embed)
 
     @commands.command(name='blacklistcheck', aliases=['blc'])
     async def blacklistcheck(self, ctx, user:discord.User):
@@ -87,6 +95,10 @@ class OwnerCog(commands.Cog, name='Owner'):
         member = await guild.fetch_member(user.id)
         role = guild.get_role(843375370627055637)
         await member.add_roles(role)
+        changes = self.bot.get_channel(859779506038505532)
+        embed=discord.Embed(title="Promoted to manager", description=f"{user.mention}", color=discord.Color.blurple())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        await changes.send(embed)
 
     @commands.command(name="managerremove", aliases=['mr'])
     @commands.is_owner()
@@ -104,6 +116,10 @@ class OwnerCog(commands.Cog, name='Owner'):
         member = await guild.fetch_member(user.id)
         role = guild.get_role(843375370627055637)
         await member.remove_roles(role)
+        changes = self.bot.get_channel(859779506038505532)
+        embed=discord.Embed(title="Demoted from manager", description=f"{user.mention}", color=discord.Color.dark_orange())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        await changes.send(embed)
 
     @commands.command(name="update")
     @commands.is_owner()

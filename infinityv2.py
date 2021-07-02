@@ -3,14 +3,14 @@ from discord.ext import commands, tasks
 from pretty_help import PrettyHelp, DefaultMenu
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
-try:
-    from win10toast import ToastNotifier
-    toaster = ToastNotifier()
-except:pass
+load_dotenv()  # take environment variables from .env.
+# Code of your application, which uses environment variables (e.g. from `os.environ` or
+# `os.getenv`) as if they came from the actual environment.
 
 global bot
-clustera = motor.motor_tornado.MotorClient("mongodb+srv://rh:1234@infinitycluster.yupj9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+clustera = motor.motor_tornado.MotorClient(str(os.getenv("mongo_server")))
 dba = clustera["infinity"]
 server=dba["server"]
 
@@ -117,13 +117,6 @@ async def on_ready():
     await channel.send("∞")
     global est
     est = datetime.datetime.now()
-    try:
-        toaster.show_toast("Infinity",
-                   login,
-                   icon_path="D:\TRH\code\py\infinity discord bot\infinity.ico",
-                   duration=15,
-                   threaded=True)
-    except:pass
 
 @bot.event
 async def on_error(event, *args, **kwargs):
@@ -211,5 +204,5 @@ async def performance():
 performance.start()
 
 
-token = ('NzMyOTE3MjYyMjk3NTk1OTI1.Xw7kZA.OYcA4UssHArLl_7HyYFKSMNhCE0')
+token = str(os.getenv("DISCORD_TOKEN"))
 bot.run(token, bot=True, reconnect=True)

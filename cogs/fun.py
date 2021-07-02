@@ -1,7 +1,8 @@
-import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, io
+import discord, random, string, asyncio, discord.voice_client, datetime, requests, math, aiohttp, io, os
 from discord import user
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+from dotenv import load_dotenv
 
 
 class FunCog(commands.Cog, name='Fun'):
@@ -77,7 +78,7 @@ class FunCog(commands.Cog, name='Fun'):
             await ctx.reply("NO SUICIDE.")
             return
         
-        fac = requests.get(url="https://api.monkedev.com/fun/8ball", params={'key':'mHigCVSfOLzuUI1yXwGFUSG0C'})
+        fac = requests.get(url="https://api.monkedev.com/fun/8ball", params={'key':str(os.getenv("monkedevapi"))})
         fact = fac.json()["answer"]
         embed=discord.Embed(title="8ball", description=mess, color=discord.Color.random())
         embed.add_field(name="Conclusion", value=fact)

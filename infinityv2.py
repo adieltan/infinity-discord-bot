@@ -2,7 +2,8 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
-from dotenv import load_dotenv
+try:from dotenv import load_dotenv
+except:pass
 
 import motor.motor_asyncio, motor.motor_tornado
 from pretty_help import PrettyHelp, DefaultMenu

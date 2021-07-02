@@ -33,7 +33,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
 
     @commands.command(name="8corners", aliases=['8c', 'corner', 'corners'])
     @commands.cooldown(1,10, BucketType.category)
-    async def corners(self, ctx, aliverole:discord.Role=None, deadrole:discord.Role=None):
+    async def corners(self, ctx):
         """8 corners Game."""
         await ctx.trigger_typing()
         teams = []
@@ -41,11 +41,11 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             def __init__(tself, name, emoji, status:bool=True):
                 tself.name=name
                 tself.emoji=self.bot.get_emoji(emoji)
-                tself.members = []
+                tself.members = set({})
                 tself.status = status
                 teams.append(tself)
             def addmember(tself, person:discord.User):
-                tself.members.append(person)
+                tself.members.add(person)
                 return tself.members
             def members(tself):
                 return tself.members
@@ -68,9 +68,9 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         #first embed for joining
         embed=discord.Embed(title="8 Corners Game", description=f"React to the message to join.\nTimer: 5 minutes\n`=8cg` to learn more about the game.", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        players = []
-        alive = []
-        dead = []
+        players = set({})
+        alive = set({})
+        dead = set({})
 
         info = await ctx.reply(embed=embed, mention_author=False)
 
@@ -90,7 +90,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             try:
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=5)
                 if emoji == reaction.emoji and user not in players:
-                    players.append(user)
+                    players.add(user)
                     try:
                         await user.send(embed=discord.Embed(title="Game join confirmation", description=f"You have joined the game. [Message]({info.jump_url})", color=discord.Color.random()))
                     except:
@@ -104,25 +104,8 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         await info.clear_reactions()
         embed.description=f"Timer: Ended.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
         await info.edit(embed=embed)
-        embed=discord.Embed(title="8 corners game", description=f":yellow_circle: Adding roles to players...\n__**Statistics**__\nPlayers count:** {len(players)}", colour=discord.Color.orange())
+        embed=discord.Embed(title="8 corners game", description=f"__**Statistics**__\nPlayers count:** {len(players)}", colour=discord.Color.green())
         stats = await ctx.send(embed=embed)
-        #role
-        if aliverole is not None:
-            for m in aliverole.members:
-                try:
-                    await m.remove_roles(aliverole, reason="Minigame")
-                except:pass
-            for p in players:
-                p = ctx.guild.get_member(p.id)
-                await p.add_roles(aliverole, reason='Minigame')
-        if deadrole is not None:
-            for m in deadrole.members:
-                try:
-                    await m.remove_roles(aliverole, reason="Minigame")
-                except:pass
-        embed.description=f":white_check_mark: Added roles to players...\n__**Statistics**__\nPlayers count:** {len(players)}"
-        embed.color = discord.Color.green()
-        await stats.edit(embed=embed)
         paged = [players[i:i + 80] for i in range(0, len(players), 80)]
         pageno = 0
         while pageno < len(paged):
@@ -256,14 +239,14 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
 
 
 
-    @commands.command(name='8cornersguide', aliases=['8cg'])
+    @commands.command(name='8cornersguide', aliases=['8cg'], hidden=True)
     @commands.cooldown(1,3,BucketType.channel)
     async def eightcg(self, ctx):
-        
+        """Guide for the 8 corners game."""
         embed=discord.Embed(title="8 Corners Game Guide", description=f"Info about the 8 corners game.", color=discord.Color.random())
         embed.add_field(name="Introduction", value=f"The idea originally came from [Link](https://youtu.be/SEmKz665hnY) because <@703135131459911740> is unoriginal as you guys can tell. But the challenges that you will face to either revive yourself, or get spared when your corner is chosen, will be harder than those in the video.")
-        embed.add_field(name="Before Game", value=f"160 Players max.\nAn eliminated role can be selected at the start of the game.\nIf a player is AFK and does not select a corner, they will be out.", inline=False)
-        embed.add_field(name="Colour selection", value="At the start of each round, all players with the role `@Alive` are able to choose a corner. While users with `@Eliminated` or without `@Alive` will not be allowed to select.\nWhen chosen a colour, look at the embed and make sure that your name is in the respective team and not under the Have Not Chosen Section.", inline=False)
+        embed.add_field(name="Before Game", value=f"React to the emoji to enter the game.", inline=False)
+        embed.add_field(name="Colour selection", value="At the start of each round, all players who are alive are able to choose a corner. While users that are eliminated or dead will not be allowed to select.\nIf a player is afk and does not select a corner, they will be out.", inline=False)
         embed.add_field(name="Gameplay", value="When the round starts, there will be a wheel of fate that spins all the colours. Whatever colour it lands on, all users that picked that colour is eliminated. After that, the colour cannot be chosen anymore.\nIf your colour is chosen, there will be a redemption round among the people in the corner unless there is less than 3 people.", inline=False)
         embed.add_field(name="Redemption round", value="When the redemption round starts, the bot will randomly select a mini game. It ranges from a ban battle, to the fastest reaction time, deciphering codes and even doing nothing and just seeing your luck as a wheel of redemption gets spun and the player it lands on, gets revived.", inline=False)
         embed.timestamp=datetime.datetime.utcnow()

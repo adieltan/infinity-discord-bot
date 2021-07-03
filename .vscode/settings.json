@@ -1,0 +1,8 @@
+{
+    "discord.detailsDebugging": "Debugging '{file_name}'",
+    "discord.detailsEditing": "Editing '{file_name}'",
+    "discord.largeImage": "Editing a '{LANG}' file",
+    "discord.lowerDetailsDebugging": "Debugging: '{workspace}'",
+    "discord.lowerDetailsEditing": "Workspace: '{workspace}'",
+    "discord.smallImage": "'{app_name}'"
+}

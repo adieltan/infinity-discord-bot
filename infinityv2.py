@@ -8,7 +8,8 @@ except:pass
 import motor.motor_asyncio, motor.motor_tornado
 from pretty_help import PrettyHelp, DefaultMenu
 
-load_dotenv()  # take environment variables from .env.
+try:load_dotenv()  # take environment variables from .env.
+except:pass
 # Code of your application, which uses environment variables (e.g. from `os.environ` or
 # `os.getenv`) as if they came from the actual environment.
 

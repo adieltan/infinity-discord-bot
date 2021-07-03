@@ -32,7 +32,7 @@ class InfoCog(commands.Cog, name='Info'):
 
     @commands.command(name='emoji')
     @commands.cooldown(1,3)
-    async def emoji(self, ctx, emoji:discord.Emoji or discord.PartialEmoji):
+    async def emoji(self, ctx, emoji:discord.PartialEmoji):
         """Shows info about an emoji."""
         await ctx.reply(f"```Name:{emoji.name}\nId: {emoji.id}\n{emoji}```", mention_author=False)
 

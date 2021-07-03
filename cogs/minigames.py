@@ -247,7 +247,11 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                     "Rick Astey rick rolled **{}**.", 
                     "Randomizer decided to trow **{}** to the trash bin.", 
                     "**{}** was hacked and destroyed.",
-                    "**{}** "]
+                    "**{}** got stuck in the Quantum Field.", 
+                    "**{}** pressed Alt+F4.", 
+                    "**{}**'s supercomputer got [hacked](https://bit.ly/3h5kbvl).", 
+                    "**{}** got hit by a F-35's Laser-Guided Bombs.", 
+                    "**{}** got infected with Covid-19."]
 
             for p in players:
                 if p not in chosen:

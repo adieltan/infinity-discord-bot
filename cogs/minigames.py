@@ -203,9 +203,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                         await user.send(text)
                     except:await ctx.send(f"{user.mention} {text}")
                 elif bomb == reaction.emoji:
-                    if user == ctx.author:
-                        timeout = 0
-                        break
+                    timeout = 0
             except:
                 embed.description=f"React to the specific colour to choose teams.\nTimer: {round((timeout_start + timeout) - time.time())} seconds\n"
                 embed.color= discord.Color.random()
@@ -236,8 +234,11 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
 
         embed=discord.Embed(title="8 Corners Game", description=f"Game Ended", colour=discord.Colour.red())
         embed.add_field(name="Winners", value=winningtxt, inline=False)
-        embed.set_footer(text="Credits: Mixel, Rh, A Typical Beggar")
+        embed.set_footer(text="Credits: Mixel, A Typical Beggar")
         await ctx.send(embed=embed)
+
+
+
 
     @commands.command(name='8cornersguide', aliases=['8cg'], hidden=True)
     @commands.cooldown(1,3,BucketType.channel)

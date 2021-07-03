@@ -246,7 +246,8 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                     "God wants **{}** dead.", 
                     "Rick Astey rick rolled **{}**.", 
                     "Randomizer decided to trow **{}** to the trash bin.", 
-                    "**{}** was hacked and destroyed."]
+                    "**{}** was hacked and destroyed.",
+                    "**{}** "]
 
             for p in players:
                 if p not in chosen:

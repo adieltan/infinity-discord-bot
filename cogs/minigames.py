@@ -33,53 +33,50 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             await guess.reply(f'No It is actually **__{answer}__**.', mention_author=False)
 
     @commands.command(name="8corners", aliases=['8c', 'corner', 'corners'])
-    @commands.cooldown(1,10, BucketType.category)
+    @commands.cooldown(1, 10, BucketType.category)
     async def corners(self, ctx):
         """8 corners Game."""
         await ctx.trigger_typing()
         teams = []
+
         class team:
-            def __init__(tself, name, emoji, status:bool=True):
-                tself.name=name
-                tself.emoji=self.bot.get_emoji(emoji)
+            def __init__(tself, name, emoji, status: bool = True):
+                tself.name = name
+                tself.emoji = self.bot.get_emoji(emoji)
                 tself.status = status
                 tself.members = []
                 teams.append(tself)
-            def add(tself, person:discord.User):
+
+            def add(tself, person: discord.User):
                 tself.members.append(person)
                 return tself.members
+
             def getmembers(tself):
                 return tself.members
+
             def count(tself):
                 return int(len(tself.members))
+
             def resetmembers(tself):
                 tself.members = []
                 return tself.members
-        rainbow = team("Rainbow Team", 855682390905978922)
-        cyan = team("Cyan Team", 855682336107528192)
-        purple = team("Purple Team", 855682262460923956)
-        green = team("Green Team", 855682185641852979)
-        yellow = team("Yellow Team", 855682130414796811)
-        red = team("Red Team", 855682071786553375)
-        pink = team("Pink Team", 855682043157151784)
-        blue = team("Blue Team", 855681996490932224)
+
 
         emoji = discord.PartialEmoji(name='Join', animated=True, id=855683444310147113)
         bomb = discord.PartialEmoji(name='Bomb', animated=True, id=855685941484847125)
 
-        #emojies for colour choosing
-        colours = ["a:RainbowTeam:855682390905978922","<a:CyanTeam:855682336107528192>","<a:PurpleTeam:855682262460923956>","<a:GreenTeam:855682185641852979>","<a:YellowTeam:855682130414796811>","<a:RedTeam:855682071786553375>","<a:PinkTeam:855682043157151784>","<a:BlueTeam:855681996490932224>"]
-
-        #first embed for joining
-        embed=discord.Embed(title="8 Corners Game", description=f"React to the message to join.\nTimer: 5 minutes\n`=8cg` to learn more about the game.", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
+        # first embed for joining
+        embed = discord.Embed(title="8 Corners Game",
+                              description=f"React to the message to join.\nTimer: 5 minutes\n`=8cg` to learn more about the game.",
+                              color=discord.Color.random())
+        embed.timestamp = datetime.datetime.utcnow()
         players = []
         alive = []
         dead = []
 
         info = await ctx.reply(embed=embed, mention_author=False)
 
-        timeout = 5*60
+        timeout = 5 * 60
         timeout_start = time.time()
 
         def check(reaction, user):
@@ -88,16 +85,19 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             if user.bot is True:
                 return False
             return True
+
         await info.add_reaction(emoji)
         await info.add_reaction(bomb)
-        #joining reaction check
+        # joining reaction check
         while time.time() < timeout_start + timeout:
             try:
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=5)
                 if reaction.emoji.name == emoji.name and user not in players:
                     players.append(user)
                     try:
-                        await user.send(embed=discord.Embed(title="Game join confirmation", description=f"You have joined the game. [Message]({info.jump_url})", color=discord.Color.random()))
+                        await user.send(embed=discord.Embed(title="Game join confirmation",
+                                                            description=f"You have joined the game. [Message]({info.jump_url})",
+                                                            color=discord.Color.random()))
                     except:
                         await info.reply(f"{user.mention}, You have joined the game.")
                 elif bomb == reaction.emoji:
@@ -105,53 +105,78 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                         break
             except:
                 timeleft = (timeout_start + timeout) - time.time()
-                embed.description=f"React to the button on the message to join.\nTimer: {round(timeleft)} seconds.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
+                embed.description = f"React to the button on the message to join.\nTimer: {round(timeleft)} seconds.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
                 await info.edit(embed=embed, mention_author=False)
         await info.clear_reactions()
-        embed.description=f"Timer: Ended.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
+        embed.description = f"Timer: Ended.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
         await info.edit(embed=embed)
+
+        rainbow = team("Rainbow Team", 855682390905978922)
+        cyan = team("Cyan Team", 855682336107528192)
+        if len(players) > 3 : purple = team("Purple Team", 855682262460923956)
+        if len(players) > 6 : green = team("Green Team", 855682185641852979)
+        if len(players) > 9 : yellow = team("Yellow Team", 855682130414796811)
+        if len(players) > 12: red = team("Red Team", 855682071786553375)
+        if len(players) > 15: pink = team("Pink Team", 855682043157151784)
+        if len(players) > 18: blue = team("Blue Team", 855681996490932224)
+
+        # emojies for colour choosing
+        colours = ["a:RainbowTeam:855682390905978922", "<a:CyanTeam:855682336107528192>"]
+        if len(players) > 3 : colours.append("<a:PurpleTeam:855682262460923956>")
+        if len(players) > 6 : colours.append("<a:GreenTeam:855682185641852979>")
+        if len(players) > 9 : colours.append("<a:YellowTeam:855682130414796811>")
+        if len(players) > 12: colours.append("<a:RedTeam:855682071786553375>")
+        if len(players) > 15: colours.append("<a:PinkTeam:855682043157151784>")
+        if len(players) > 18: colours.append("<a:BlueTeam:855681996490932224>")
+
         while len(players) > 1:
             chosen = []
             afk = []
-            for team in teams:
-                team.resetmembers()
-            embed=discord.Embed(title="8 corners game", description=f"__**Statistics**__\n**Players count:** {len(players)}", colour=discord.Color.green())
+            for team in teams:team.resetmembers()
+            embed = discord.Embed(title="8 corners game",
+                                  description=f"__**Statistics**__\n**Players count:** {len(players)}",
+                                  colour=discord.Color.green())
             stats = await ctx.send(embed=embed)
             paged = [players[i:i + 80] for i in range(0, len(players), 80)]
             pageno = 0
             while pageno < len(paged):
                 lis = [f'{m.mention}' for m in paged[pageno]]
-                await ctx.send(f"**Players Page {pageno+1}**\n"+''.join(lis))
+                await ctx.send(f"**Players Page {pageno + 1}**\n" + ''.join(lis))
                 pageno += 1
 
             originalplayercount = len(players)
-            #colour choosing stage
-            embed=discord.Embed(title=f"8 corners game", description="Loading reactions.", colour=discord.Color.random())
+            # colour choosing stage
+            embed = discord.Embed(title=f"8 corners game", description="Loading reactions.",
+                                  colour=discord.Color.random())
             cmes = await info.reply(embed=embed)
-            for t in teams:
-                await cmes.add_reaction(t.emoji)
+            for t in teams: await cmes.add_reaction(t.emoji)
             await cmes.add_reaction(bomb)
-            embed.description=f"React to the specific colour to choose teams.\nTimer: 2m"
+            embed.description = f"React to the specific colour to choose teams.\nTimer: 2m"
             await cmes.edit(embed=embed)
             chosen = []
-            timeout = 2*60
+            timeout = 2 * 60
             timeout_start = time.time()
-            rcount = math.ceil(len(players)/len(colours))
+            rcount = math.ceil(len(players) / len(colours))
+
             def check(reaction, user):
                 if reaction.message.id != cmes.id:
                     return False
                 elif user not in players:
                     return False
                 return True
-            async def choose(t:team, user):
+
+            async def choose(t: team, user):
                 t.add(user)
                 chosen.append(user)
-                try: await user.send(f"You joined the {t.name} ({t.count()})")
-                except: await ctx.send(f"{user.mention},  You joined the {t.name}.")
+                try:
+                    await user.send(f"You joined the {t.name} ({t.count()})")
+                except:
+                    await ctx.send(f"{user.mention},  You joined the {t.name}.")
+
             while time.time() < timeout_start + timeout:
                 try:
-                    reaction, user= await self.bot.wait_for("reaction_add", check=check, timeout=5)
-                    peop = len(await reaction.users().flatten())-1
+                    reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=5)
+                    peop = len(await reaction.users().flatten()) - 1
                     if bomb == reaction.emoji:
                         if ctx.author == user:
                             break
@@ -169,29 +194,36 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                     elif reaction.emoji == cyan.emoji:
                         await choose(cyan, user)
                         continue
+
                     elif reaction.emoji == purple.emoji:
-                        await choose(purple, user)
-                        continue
+                        if len(players) > 3:
+                            await choose(purple, user)
+                            continue
                     elif reaction.emoji == green.emoji:
-                        await choose(green, user)
-                        continue
+                        if len(players) > 6:
+                            await choose(green, user)
+                            continue
                     elif reaction.emoji == yellow.emoji:
-                        await choose(yellow, user)
-                        continue
+                        if len(players) > 9:
+                            await choose(yellow, user)
+                            continue
                     elif reaction.emoji == red.emoji:
-                        await choose(red, user)
-                        continue
+                        if len(players) > 12:
+                            await choose(red, user)
+                            continue
                     elif reaction.emoji == pink.emoji:
-                        await choose(pink, user)
-                        continue
+                        if len(players) > 15:
+                            await choose(pink, user)
+                            continue
                     elif reaction.emoji == blue.emoji:
-                        await choose(blue, user)
-                        continue
+                        if len(players) > 18:
+                            await choose(blue, user)
+                            continue
                 except:
-                    embed.description=f"React to the specific colour to choose teams.\nTimer: {round((timeout_start + timeout) - time.time())} seconds\n"
+                    embed.description = f"React to the specific colour to choose teams.\nTimer: {round((timeout_start + timeout) - time.time())} seconds\n"
                     embed.color = discord.Color.random()
                     await cmes.edit(embed=embed)
-            embed.description=f"Timer ended"
+            embed.description = f"Timer ended"
             await cmes.edit(embed=embed)
             await cmes.clear_reactions()
             text = '\n'.join([f"{t.emoji} {t.name}: {t.count()}" for t in teams])
@@ -203,20 +235,44 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 dead.append(a)
                 players.remove(a)
 
-            die = ["**{}** has lava in their field and everyone there died.", "The plane carrying **{}**'s members crashed into a canyon.", "Beggar felt hungry suddently and ate up all members of **{}**", "**{}**'s members were no where to be found.", "**{}**'s members were found in the stomach of a shark.", "The plague doctor killed all members of **{}**", "**{}** is the impostor."]
+            die = ["**{}** has lava in their field and everyone there died.",
+                    "The plane carrying **{}**'s members crashed into a canyon.",
+                    "Beggar felt hungry suddently and ate up all members of **{}**",
+                    "**{}**'s members were no where to be found.",
+                    "**{}**'s members were found in the stomach of a shark.",
+                    "The plague doctor killed all members of **{}**",
+                    "**{}** is the impostor.",
+                    "**{}** got stomped by a giant toad.",
+                    "God wants **{}** dead.", 
+                    "Rick Astey rick rolled **{}**.", 
+                    "Randomizer decided to trow **{}** to the trash bin.", 
+                    "**{}** was hacked and destroyed."]
+
             for p in players:
                 if p not in chosen:
                     afk.append(p)
                     players.remove(p)
 
-            embed.description = f"{random.choice(die)}\n{len(afk)} died because they didn't choose anything.\n{len(players)} player left in the game".format(rancol.name)
+            mes = f"{random.choice(die)} \n{len(afk)} died because they didn't choose anything."
+            chance = random.randint(0, 100)
+            if len(dead)>0:
+                if chance < 10:
+                    lucky = random.choice(dead)
+                    players.append(lucky)
+                    dead.remove(lucky)
+                    mes = mes + f"\n{len(players)} player left in the game. \n{lucky.name} got revived"
+                else:
+                    mes = mes + f"\n{len(players)} player left in the game."
+            else:
+                mes = mes + f"\n{len(players)} player left in the game."
+
+            embed.description = mes.format(rancol.name)
             await teamstat.reply(embed=embed)
 
         winners = []
         for player in players:
             winners.append(player)
-
-        winningtxt= ''
+        winningtxt = ''
         if len(winners) == 0:
             winningtxt = "No one"
         else:
@@ -228,8 +284,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 winningtxt = winningtxt.replace("3)", ":third_place:")
                 x += 1
 
-
-        embed=discord.Embed(title="8 Corners Game", description=f"Game Ended", colour=discord.Colour.red())
+        embed = discord.Embed(title="8 Corners Game", description=f"Game Ended", colour=discord.Colour.red())
         embed.add_field(name="Winners", value=winningtxt, inline=False)
         embed.set_footer(text="Credits: Mixel, Rh, A Typical Beggar")
         await ctx.send(embed=embed)

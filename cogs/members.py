@@ -89,6 +89,18 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_footer(text=f"{len(user.mutual_guilds)} servers")
         await ctx.reply(embed=embed)
 
+    @commands.command(name="selfharm", aliases=["suicide", 'die'])
+    async def selfharm(self, ctx, victim:discord.Member=None):
+        """Gives you awareness about selfharm and useful contacts."""
+        if victim is None:
+            victim = ctx.author
+        embed=discord.Embed(title="Suicide & Selfharm Prevention", description="You are not alone. Everyone is special in their own ways and thats why you shouldn't give up.", url="https://www.who.int/health-topics/suicide", color=discord.Color(0,255,255))
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.add_field(name="Get some help today.", value=f"[Suicide prevention](https://www.who.int/health-topics/suicide)\n[Contact Numbers](https://www.opencounseling.com/suicide-hotlines)\n[Crisis Lines](https://en.wikipedia.org/wiki/List_of_suicide_crisis_lines)")
+        embed.set_thumbnail(url="https://www.nursingcenter.com/getattachment/NCBlog/September-2016-(1)/World-Suicide-Prevention-Day/2016_wspd_ribbon_250X250.png.aspx?width=200&height=200")
+        embed.set_image(url="https://sm.mashable.com/mashable_me/photo/default/gettyimages-6130324100_675p.jpg")
+        await victim.send(embed=embed)
+
     @commands.group(aliases=['r'])
     @commands.guild_only()
     async def role(self, ctx):

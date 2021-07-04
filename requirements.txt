@@ -20,4 +20,3 @@ discord_components
 matplotlib
 discord_components[button,interaction]
 lxml
-bs4

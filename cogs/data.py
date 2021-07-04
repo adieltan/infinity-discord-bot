@@ -20,7 +20,7 @@ class DataCog(commands.Cog, name='Data'):
         xp = []
         async with aiohttp.ClientSession() as cs:
             async with cs.get(url=f"https://lb.amaribot.com/index.php?gID={ctx.guild.id}") as data:
-                soup = BeautifulSoup(data.content, "html.parser")
+                soup = await BeautifulSoup(data.content, "html.parser")
         doc = lh.fromstring(soup.content)
         tr_elements = doc.xpath('//tr')
         for t in tr_elements:

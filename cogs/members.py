@@ -94,7 +94,7 @@ class MembersCog(commands.Cog, name='Members'):
         """Gives you awareness about selfharm and useful contacts."""
         if victim is None:
             victim = ctx.author
-        embed=discord.Embed(title="Suicide & Selfharm Prevention", description="You are not alone. Everyone is special in their own ways and thats why you shouldn't give up.", url="https://www.who.int/health-topics/suicide", color=discord.Color(0,255,255))
+        embed=discord.Embed(title="Suicide & Selfharm Prevention", url="https://www.who.int/health-topics/suicide", description="You are not alone. Everyone is special in their own ways and thats why you shouldn't give up.", color=discord.Color.blurple())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         embed.add_field(name="Get some help today.", value=f"[Suicide prevention](https://www.who.int/health-topics/suicide)\n[Contact Numbers](https://www.opencounseling.com/suicide-hotlines)\n[Crisis Lines](https://en.wikipedia.org/wiki/List_of_suicide_crisis_lines)")
         embed.set_thumbnail(url="https://www.nursingcenter.com/getattachment/NCBlog/September-2016-(1)/World-Suicide-Prevention-Day/2016_wspd_ribbon_250X250.png.aspx?width=200&height=200")

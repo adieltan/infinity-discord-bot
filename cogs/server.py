@@ -184,9 +184,10 @@ class ServerCog(commands.Cog, name='server'):
     async def list_ar(self, ctx):
         """Lists the autoresponses that are registered in the guild."""
         results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
-        try:results['autoresponse']
-        except:results['autoresponse'] = {}
-        await ctx.reply(f"{results['autoresponse']}")
+        try:dic = results['autoresponse']
+        except:dic =  {}
+        text='\n'.join([f"{result} ➡ {dic[result]}"for result in dic])
+        await ctx.reply(embed=discord.Embed(title=f"{ctx.guild.name}'s Autoresponses", description=f"{text}"))
 
 def setup(bot):
     bot.add_cog(ServerCog(bot))

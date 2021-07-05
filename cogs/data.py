@@ -2,8 +2,7 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
-try:from dotenv import load_dotenv
-except:pass
+ 
 
 import lxml.html as lh
 
@@ -48,6 +47,23 @@ class DataCog(commands.Cog, name='Data'):
             await ctx.reply(file=f, embed=embed)
             plt.close()
             buf.close()
+            await cs.close()
+
+    @commands.command(name="youtube", aliases=['yt'])
+    async def youtube(self, ctx, channelid:str):
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as cs:
+                async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channelid}&key={os.getenv('googleapi')}") as data:
+                    json = await data.json()
+                    items = json['items']
+            id=items[0]['id']
+            stats= items[0]['statistics']
+            embed=discord.Embed(title="Youtube Statistics", url=f"https://youtube.com/channel/{channelid}", description=f"{id}")
+            embed.add_field(name="Subscribers", value=f"{format(int(stats['subscriberCount']), ',')}")
+            embed.add_field(name="View Count", value=f"{format(int(stats['viewCount']), ',')}")
+            embed.add_field(name="Video Count", value=f"{format(int(stats['videoCount']), ',')}")
+            embed.set_footer(text="Google API")
+            await ctx.reply(embed=embed)
             await cs.close()
 
 def setup(bot):

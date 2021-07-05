@@ -2,8 +2,7 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
-try:from dotenv import load_dotenv
-except:pass
+ 
 
 
 class ImageCog(commands.Cog, name='Image'):

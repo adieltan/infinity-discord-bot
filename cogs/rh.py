@@ -2,8 +2,7 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
-try:from dotenv import load_dotenv
-except:pass
+ 
 
 from discord.ext.commands import BucketType
 from numpy import append
@@ -15,6 +14,7 @@ class rhCog(commands.Cog, name='rh'):
         self.bot = bot
         self.rh = bot.get_guild(709711335436451901)
         self.ba = bot.get_guild(703135571710705815)
+        self.youtubeupdate.start()
 
     def rhserver():
         def predicate(ctx):
@@ -196,6 +196,28 @@ class rhCog(commands.Cog, name='rh'):
                     await message.replay(f"The code `{message.content}` is invalid.")
                 else:
                     await message.reply(embed=discord.Embed(title="Roles add", description=f"Removed {role.name} from {message.author.mention}"))
+
+    @tasks.loop(hours=24, reconnect=True)
+    async def youtubeupdate(self):
+        await self.bot.wait_until_ready()
+        rhsub = self.bot.get_channel(859359926526935061)
+        rhviews = self.bot.get_channel(859361059302277120)
+        tbsub = self.bot.get_channel(861445998630273056)
+        tbviews = self.bot.get_channel(861446020026466334)
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UCW4gBQyPWrTeyKN6EPV6sGA&key={os.getenv('googleapi')}") as data:
+                json = await data.json()
+                items = json['items']
+                stats= items[0]['statistics']
+                await rhsub.edit(name=f"{format(int(stats['subscriberCount']), ',')} ⬅ rh's Subscribers")
+                await rhviews.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ rh's Views")
+            async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UC52Xt2wq5H16HglMwNAvLeg&key={os.getenv('googleapi')}") as data:
+                json = await data.json()
+                items = json['items']
+                stats= items[0]['statistics']
+                await tbsub.edit(name=f"{format(int(stats['subscriberCount']), ',')} ⬅ Beggar's Subscribers")
+                await tbviews.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ Beggar's Views")
+        await cs.close()
 
 def setup(bot):
     bot.add_cog(rhCog(bot))

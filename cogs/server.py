@@ -1,4 +1,5 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from discord.ext.commands.core import check
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
@@ -11,7 +12,8 @@ class ServerCog(commands.Cog, name='server'):
     """*Server Commands*"""
     def __init__(self, bot):
         self.bot = bot
-    
+
+
     @commands.command(name='serverinfo', aliases=['guildinfo', 'si'])
     @commands.guild_only()
     async def serverinfo(self, ctx, *, guild_id: int = None):
@@ -128,6 +130,60 @@ class ServerCog(commands.Cog, name='server'):
         e.add_field(name='Emoji', value=fmt, inline=False)
         e.set_footer(text='Created').timestamp = guild.created_at
         await ctx.send(embed=e)
+
+    @commands.group(name="autoresponse", aliases=["ar"])
+    @commands.guild_only()
+    @commands.has_guild_permissions(kick_members=True)
+    async def ar(self,ctx):
+        """Autoresponse commands for the server."""
+        if ctx.invoked_subcommand is None:
+            pass
+
+    @ar.command(name="add")
+    async def add_ar(self, ctx, trigger:str):
+        """Adds a text response for the trigger."""
+        trigger = trigger.lower()
+        results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
+        try:results['autoresponse']
+        except:results['autoresponse'] = {}
+        if len(list(results['autoresponse'].keys())) >= 5:
+            await ctx.reply("This guild has reached the maximum number of autoresponse which is 5.")
+            return
+        def check(m):
+            return m.author == ctx.author
+        await ctx.reply(embed=discord.Embed(title="Autoresponse", description=f"Type the response you want for `{trigger}`."))
+        try:
+            response = await self.bot.wait_for('message', check=check, timeout=10.0)
+        except asyncio.TimeoutError:
+            return await ctx.reply(f'Sorry, you took too long.')
+        results['autoresponse'][trigger] = f"{response.content}"
+        await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
+        await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response.content}`"))
+        results = self.bot.dba['server']
+        self.bot.serverdb = results
+
+    @ar.command(name="remove")
+    async def remove_ar(self, ctx, trigger:str):
+        """Removes the trigger."""
+        trigger = trigger.lower()
+        results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
+        try:results['autoresponse']
+        except:results['autoresponse'] = {}
+        try:
+            results['autoresponse'].pop(f'{trigger}')
+            await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
+            await ctx.reply(embed=discord.Embed(title="Removed Autoresponse", description=f"Removed response for `{trigger}`."))
+            results = self.bot.dba['server']
+            self.bot.serverdb = results
+        except:await ctx.reply("Error")
+
+    @ar.command(name="list")
+    async def list_ar(self, ctx):
+        """Lists the autoresponses that are registered in the guild."""
+        results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
+        try:results['autoresponse']
+        except:results['autoresponse'] = {}
+        await ctx.reply(f"{results['autoresponse']}")
 
 def setup(bot):
     bot.add_cog(ServerCog(bot))

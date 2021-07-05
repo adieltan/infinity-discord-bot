@@ -11,19 +11,20 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_message (self, message: discord.Message):
-        if message.author.bot == True:
+        if message.author.bot is True:
             return
-        elif message.author == self.bot.user:
-            return
-        elif ('*f*') in message.content.lower():
-            await message.add_reaction("a:f_:819009528204099624")
-            pass
-        elif ("701009836938231849") in message.content.lower():
-            emoji =["a:heartgif:813391491552641044"]
-            for emj in emoji:
-                await message.add_reaction(emj)
-        elif ("732917262297595925") in message.content.lower():
-            await message.add_reaction("♾️")
+        else:
+            server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
+            try:keys = list(server['autoresponse'].keys())
+            except:return
+            clean = message.content.lower()
+            if any(key in clean for key in keys):
+                for key in keys:
+                    if key in clean:
+                        server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
+                        response = server['autoresponse'][f'{key}']
+                        await message.reply(response)
+
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):

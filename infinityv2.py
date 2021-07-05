@@ -52,6 +52,7 @@ bot.bled = bled
 bot.owners = owners
 bot.managers = managers
 bot.infinityemoji = "\U0000267e"
+bot.serverdb = None
 
 menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove=bot.infinityemoji, active_time=20)
 # Custom ending note

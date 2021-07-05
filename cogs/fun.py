@@ -105,7 +105,7 @@ class FunCog(commands.Cog, name='Fun'):
             else:
                 await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey.", components=[[Button(label="Claim", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
 
-    @commands.command(name="哥哥", alises=['geigei', 'gege'])
+    @commands.command(name="哥哥", aliases=['geigei'])
     async def gege(self, ctx):
         await ctx.reply("我只会心疼哥哥\nhttps://cdn.discordapp.com/attachments/717962272093372556/861518164160151582/video-1625470606.mp4")
 

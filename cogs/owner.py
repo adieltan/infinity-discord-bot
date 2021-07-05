@@ -274,17 +274,9 @@ class OwnerCog(commands.Cog, name='Owner'):
 
     @commands.command(name='test')
     @commands.is_owner()
-    async def test(self, ctx, *, message:str):
-        server = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
-        keys = list(server['autoresponse'].keys())
-        await ctx.reply(f"{keys}")
-        clean = message.lower()
-        if any(key in clean for key in keys):
-            for key in keys:
-                if key in clean:
-                    server = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
-                    response = server['autoresponse'][f'{key}']
-                    await ctx.reply(response)
+    async def test(self, ctx):
+        server = self.bot.dba['server']
+        await ctx.send(f"{server}")
 
 
 

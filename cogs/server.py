@@ -137,7 +137,7 @@ class ServerCog(commands.Cog, name='server'):
     async def ar(self,ctx):
         """Autoresponse commands for the server."""
         if ctx.invoked_subcommand is None:
-            pass
+            await ctx.reply("Its `= ar add` nabbie. Depending on your prefix tho.")
 
     @ar.command(name="add")
     async def add_ar(self, ctx, trigger:str):
@@ -153,14 +153,17 @@ class ServerCog(commands.Cog, name='server'):
             return m.author == ctx.author
         await ctx.reply(embed=discord.Embed(title="Autoresponse", description=f"Type the response you want for `{trigger}`."))
         try:
-            response = await self.bot.wait_for('message', check=check, timeout=10.0)
+            response = await self.bot.wait_for('message', check=check, timeout=40.0)
         except asyncio.TimeoutError:
             return await ctx.reply(f'Sorry, you took too long.')
-        results['autoresponse'][trigger] = f"{response.content}"
-        await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
-        await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response.content}`"))
-        results = self.bot.dba['server']
-        self.bot.serverdb = results
+        if len(response.content) >= 500:
+            await ctx.reply("You can't have such a long text response.")
+        else:
+            results['autoresponse'][trigger] = f"{response.content}"
+            await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
+            await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response.content}`"))
+            results = self.bot.dba['server']
+            self.bot.serverdb = results
 
     @ar.command(name="remove")
     async def remove_ar(self, ctx, trigger:str):

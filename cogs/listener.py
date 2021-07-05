@@ -11,7 +11,9 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_message (self, message: discord.Message):
-        if message.author.bot is True:
+        if ('732917262297595925') in message.content.lower():
+            await message.add_reaction("\U0000267e")
+        elif message.author.bot is True:
             return
         else:
             server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
@@ -24,6 +26,9 @@ class ListenerCog(commands.Cog, name='Listener'):
                         server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
                         response = server['autoresponse'][f'{key}']
                         await message.reply(response)
+        if ('732917262297595925') in message.content.lower():
+            await message.add_reaction("\U0000267e")
+
 
 
     @commands.Cog.listener()

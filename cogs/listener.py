@@ -11,7 +11,7 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_message (self, message: discord.Message):
-        if ('732917262297595925') in message.content.lower():
+        if ('732917262297595925') in message.clean_content.lower():
             await message.add_reaction("\U0000267e")
         elif message.author.bot is True:
             return

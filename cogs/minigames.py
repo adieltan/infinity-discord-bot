@@ -36,7 +36,8 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
     async def corners(self, ctx):
         """8 corners Game."""
         await ctx.trigger_typing()
-        teams = []
+        self.teams = []
+        self.minigames = []
 
         class team:
             def __init__(tself, name, emoji, status: bool = True):
@@ -44,27 +45,23 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 tself.emoji = self.bot.get_emoji(emoji)
                 tself.status = status
                 tself.members = []
-                teams.append(tself)
-
+                self.teamsteams.append(tself)
             def add(tself, person: discord.User):
                 tself.members.append(person)
                 return tself.members
-
             def getmembers(tself):
                 return tself.members
-
             def count(tself):
                 return int(len(tself.members))
-
             def resetmembers(tself):
                 tself.members = []
                 return tself.members
-
+            def resetteam(defaultteams:list=[]):
+                self.teams = defaultteams
 
         emoji = discord.PartialEmoji(name='Join', animated=True, id=855683444310147113)
         bomb = discord.PartialEmoji(name='Bomb', animated=True, id=855685941484847125)
 
-        # first embed for joining
         embed = discord.Embed(title="8 Corners Game",
                               description=f"React to the message to join.\nTimer: 5 minutes\n`=8cg` to learn more about the game.",
                               color=discord.Color.random())
@@ -72,7 +69,6 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         players = []
         alive = []
         dead = []
-
         info = await ctx.reply(embed=embed, mention_author=False)
 
         timeout = 5 * 60
@@ -99,9 +95,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                                                             color=discord.Color.random()))
                     except:
                         await info.reply(f"{user.mention}, You have joined the game.")
-                elif bomb == reaction.emoji:
-                    if user == ctx.author:
-                        break
+                elif bomb == reaction.emoji and user == ctx.author:break
             except:
                 timeleft = (timeout_start + timeout) - time.time()
                 embed.description = f"React to the button on the message to join.\nTimer: {round(timeleft)} seconds.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
@@ -110,28 +104,10 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         embed.description = f"Timer: Ended.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
         await info.edit(embed=embed)
 
-        rainbow = team("Rainbow Team", 855682390905978922)
-        cyan = team("Cyan Team", 855682336107528192)
-        if len(players) > 3 : purple = team("Purple Team", 855682262460923956)
-        if len(players) > 6 : green = team("Green Team", 855682185641852979)
-        if len(players) > 9 : yellow = team("Yellow Team", 855682130414796811)
-        if len(players) > 12: red = team("Red Team", 855682071786553375)
-        if len(players) > 15: pink = team("Pink Team", 855682043157151784)
-        if len(players) > 18: blue = team("Blue Team", 855681996490932224)
-
-        # emojies for colour choosing
-        colours = ["a:RainbowTeam:855682390905978922", "<a:CyanTeam:855682336107528192>"]
-        if len(players) > 3 : colours.append("<a:PurpleTeam:855682262460923956>")
-        if len(players) > 6 : colours.append("<a:GreenTeam:855682185641852979>")
-        if len(players) > 9 : colours.append("<a:YellowTeam:855682130414796811>")
-        if len(players) > 12: colours.append("<a:RedTeam:855682071786553375>")
-        if len(players) > 15: colours.append("<a:PinkTeam:855682043157151784>")
-        if len(players) > 18: colours.append("<a:BlueTeam:855681996490932224>")
-
         while len(players) > 1:
             chosen = []
             afk = []
-            for team in teams:team.resetmembers()
+            for team in self.teams:team.resetmembers()
             embed = discord.Embed(title="8 corners game",
                                   description=f"__**Statistics**__\n**Players count:** {len(players)}",
                                   colour=discord.Color.green())
@@ -142,13 +118,35 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 lis = [f'{m.mention}' for m in paged[pageno]]
                 await ctx.send(f"**Players Page {pageno + 1}**\n" + ''.join(lis))
                 pageno += 1
+            team.resetteam()
+            rainbow = team("Rainbow Team", 855682390905978922)
+            cyan = team("Cyan Team", 855682336107528192)
+            colours = ["a:RainbowTeam:855682390905978922", "<a:CyanTeam:855682336107528192>"]
+            cyan = team("Cyan Team", 855682336107528192)
+            if len(players) > 3 :
+                purple = team("Purple Team", 855682262460923956)
+                colours.append("<a:PurpleTeam:855682262460923956>")
+            if len(players) > 6 : 
+                green = team("Green Team", 855682185641852979)
+                colours.append("<a:GreenTeam:855682185641852979>")
+            if len(players) > 9 : 
+                yellow = team("Yellow Team", 855682130414796811)
+                colours.append("<a:YellowTeam:855682130414796811>")
+            if len(players) > 12: 
+                red = team("Red Team", 855682071786553375)
+                colours.append("<a:RedTeam:855682071786553375>")
+            if len(players) > 15: 
+                pink = team("Pink Team", 855682043157151784)
+                colours.append("<a:PinkTeam:855682043157151784>")
+            if len(players) > 18: 
+                blue = team("Blue Team", 855681996490932224)
+                colours.append("<a:BlueTeam:855681996490932224>")
 
-            originalplayercount = len(players)
             # colour choosing stage
             embed = discord.Embed(title=f"8 corners game", description="Loading reactions.",
                                   colour=discord.Color.random())
             cmes = await info.reply(embed=embed)
-            for t in teams: await cmes.add_reaction(t.emoji)
+            for t in self.teams: await cmes.add_reaction(t.emoji)
             await cmes.add_reaction(bomb)
             embed.description = f"React to the specific colour to choose teams.\nTimer: 2m"
             await cmes.edit(embed=embed)
@@ -225,11 +223,11 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             embed.description = f"Timer ended"
             await cmes.edit(embed=embed)
             await cmes.clear_reactions()
-            text = '\n'.join([f"{t.emoji} {t.name}: {t.count()}" for t in teams])
+            text = '\n'.join([f"{t.emoji} {t.name}: {t.count()}" for t in self.teams])
             embed = discord.Embed(title="8 corners game", description=f"""**Team Members Count**\n{text}""")
             teamstat = await cmes.reply(embed=embed)
 
-            rancol = random.choice(teams)
+            rancol = random.choice(self.teams)
             for a in rancol.getmembers():
                 dead.append(a)
                 players.remove(a)
@@ -265,13 +263,13 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                     players.append(lucky)
                     dead.remove(lucky)
                     mes = mes + f"\n{len(players)} player left in the game. \n{lucky.name} got revived"
-                else:
-                    mes = mes + f"\n{len(players)} player left in the game."
-            else:
-                mes = mes + f"\n{len(players)} player left in the game."
-
+                else:mes = mes + f"\n{len(players)} player left in the game."
+            else:mes = mes + f"\n{len(players)} player left in the game."
             embed.description = mes.format(rancol.name)
             await teamstat.reply(embed=embed)
+
+            #if random.randint(0,100) < 40:
+                #await random.choice(self.minigames)(dead)
 
         winners = []
         for player in players:

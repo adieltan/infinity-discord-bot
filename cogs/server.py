@@ -91,7 +91,7 @@ class ServerCog(commands.Cog, name='server'):
 
         for feature, label in all_features.items():
             if feature in features:
-                info.append(f'{ctx.tick(True)}: {label}')
+                info.append(f'\U00002705: {label}')
 
         if info:
             e.add_field(name='Features', value='\n'.join(info))
@@ -106,7 +106,7 @@ class ServerCog(commands.Cog, name='server'):
             e.add_field(name='Boosts', value=boosts, inline=False)
 
         bots = sum(m.bot for m in guild.members)
-        fmt = f'Total: {guild.member_count} ({discord.utils.formats.plural(bots):bot})'
+        fmt = f'Total: {guild.member_count} members.'
 
         e.add_field(name='Members', value=fmt, inline=False)
         e.add_field(name='Roles', value=', '.join(roles) if len(roles) < 10 else f'{len(roles)} roles')

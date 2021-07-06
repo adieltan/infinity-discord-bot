@@ -60,7 +60,6 @@ ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
 bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
 
 bot.load_extension('jishaku')
-os.environ["JISHAKU_NO_UNDERSCORE"]="true"
 
 @bot.check
 def blacklisted(ctx) -> bool:

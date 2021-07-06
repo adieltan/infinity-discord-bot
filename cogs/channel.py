@@ -74,9 +74,9 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="export")
-    @commands.cooldown(1,100, BucketType.guild)
+    @commands.cooldown(1,100, BucketType.category)
     @commands.has_permissions(administrator=True)
-    async def export(self, ctx, destination_channel:discord.TextChannel, limit:int=1000000):
+    async def export(self, ctx, destination_channel:discord.TextChannel, limit:int=None):
         """Exports chat messages to another channel."""
         presentwebhooks = await destination_channel.webhooks() or []
         if len(presentwebhooks) > 0:

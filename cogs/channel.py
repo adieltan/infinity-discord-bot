@@ -1,4 +1,5 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re
+from discord.ext.commands.cooldowns import BucketType
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
@@ -73,9 +74,9 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="export")
-    @commands.cooldown(1,100)
+    @commands.cooldown(1,100, BucketType.guild)
     @commands.has_permissions(administrator=True)
-    async def export(self, ctx, destination_channel:discord.TextChannel, limit:int=100):
+    async def export(self, ctx, destination_channel:discord.TextChannel, limit:int=1000000):
         """Exports chat messages to another channel."""
         presentwebhooks = await destination_channel.webhooks() or []
         if len(presentwebhooks) > 0:
@@ -86,19 +87,16 @@ class ChannelCog(commands.Cog, name='Channel'):
         messagestop.reverse()
         await ctx.send(f"Estimated time: {len(messagestop)} seconds.")
         for m in messagestop:
-            try:
-                m.files
-            except:
-                files = None
-            else:
-                files = m.files
-            try:
-                m.embeds
-            except:
-                embeds = None
-            else:
-                embeds = m.embeds
-            await webhook.send(content=m.content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds)
+            try:m.files
+            except:files = None
+            else:files = m.files
+            try:m.embeds
+            except:embeds = None
+            else:embeds = m.embeds
+            try:m.attachments
+            except:attachments=None
+            else:attachments=m.attachments
+            await webhook.send(content=m.content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds, attachments=attachments, allowed_mentions=discord.AllowedMentions.none())
         await ctx.reply("Done")
 
     @commands.group()

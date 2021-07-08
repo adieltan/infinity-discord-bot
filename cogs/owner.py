@@ -271,6 +271,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         elif 'competing' in activitytype.lower():
             activity = discord.ActivityType.competing
         await self.bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=activity, name=title, details=info, url=link))
+        await ctx.reply("Done")
 
     @commands.command(name='test')
     @commands.is_owner()

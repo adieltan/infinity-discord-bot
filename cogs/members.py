@@ -101,7 +101,7 @@ class MembersCog(commands.Cog, name='Members'):
         try:
             await victim.send(embed=embed)
         except:
-            await ctx.reply(f"Error sending file to {victim.mention}")
+            await ctx.reply(f"Error sending message to {victim.mention}")
         else:
             await ctx.message.add_reaction("\U00002705")
 

@@ -76,7 +76,7 @@ class InfoCog(commands.Cog, name='Info'):
         for message in messagestop:
             newsembed = message.embeds[0]
             field = newsembed.fields[0]
-            embed.add_field(name=f"{field.name} `{message.created_at.strftime('%Y %b %-d')}`", value=f"{field.value}", inline=False)
+            embed.add_field(name=f"{newsembed.description} `{message.created_at.strftime('%Y %b %-d')}`", value=f"{field.value}", inline=False)
         await ctx.reply(embed=embed)
 
 def setup(bot):

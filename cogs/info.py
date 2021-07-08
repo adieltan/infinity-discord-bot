@@ -67,6 +67,18 @@ class InfoCog(commands.Cog, name='Info'):
         text = '\n'.join(partners)
         await ctx.send(text)
 
+    @commands.command(name="newsupdate", aliases=['latestnews', 'news'])
+    async def newsupdate(self, ctx):
+        """Shows the update log of the bot."""
+        updatechannel = self.bot.get_channel(813251614449074206)
+        messagestop = await updatechannel.history(limit=5).flatten()
+        messagestop.reverse()
+        embed=discord.Embed(title="News Update", description="<#813251614449074206>")
+        for message in messagestop:
+            newsembed = message.embeds[0]
+            field = newsembed.fields[0]
+            embed.add_field(name=f"{field.name} `{message.created_at.strftime('%Y %b %-d')}`", value=f"{field.value}")
+        await ctx.reply(embed=embed)
 
 def setup(bot):
     bot.add_cog(InfoCog(bot))

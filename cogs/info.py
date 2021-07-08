@@ -72,7 +72,7 @@ class InfoCog(commands.Cog, name='Info'):
         """Shows the update log of the bot."""
         updatechannel = self.bot.get_channel(813251614449074206)
         messagestop = await updatechannel.history(limit=5).flatten()
-        embed=discord.Embed(title="News Update", description="<#813251614449074206>")
+        embed=discord.Embed(title="News Update", description="<#813251614449074206>", colour=discord.Color.random())
         for message in messagestop:
             newsembed = message.embeds[0]
             field = newsembed.fields[0]

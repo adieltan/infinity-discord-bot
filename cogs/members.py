@@ -103,7 +103,7 @@ class MembersCog(commands.Cog, name='Members'):
         except:
             await ctx.reply(f"Error sending file to {victim.mention}")
         else:
-            await ctx.add_reaction("\U00002705")
+            await ctx.message.add_reaction("\U00002705")
 
     @commands.group(aliases=['r'])
     @commands.guild_only()

@@ -98,7 +98,12 @@ class MembersCog(commands.Cog, name='Members'):
         embed.add_field(name="Get some help today.", value=f"[Suicide prevention](https://www.who.int/health-topics/suicide)\n[Contact Numbers](https://www.opencounseling.com/suicide-hotlines)\n[Crisis Lines](https://en.wikipedia.org/wiki/List_of_suicide_crisis_lines)")
         embed.set_thumbnail(url="https://www.nursingcenter.com/getattachment/NCBlog/September-2016-(1)/World-Suicide-Prevention-Day/2016_wspd_ribbon_250X250.png.aspx?width=200&height=200")
         embed.set_image(url="https://sm.mashable.com/mashable_me/photo/default/gettyimages-6130324100_675p.jpg")
-        await victim.send(embed=embed)
+        try:
+            await victim.send(embed=embed)
+        except:
+            await ctx.reply(f"Error sending file to {victim.mention}")
+        else:
+            await ctx.add_reaction("\U00002705")
 
     @commands.group(aliases=['r'])
     @commands.guild_only()

@@ -2,7 +2,8 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
- 
+
+from PIL import Image, ImageDraw, ImageFont
 
 class OwnerCog(commands.Cog, name='Owner'):
     """*Only owner/managers can use this.*"""
@@ -270,14 +271,61 @@ class OwnerCog(commands.Cog, name='Owner'):
             activity = discord.ActivityType.custom
         elif 'competing' in activitytype.lower():
             activity = discord.ActivityType.competing
+        else:
+            await ctx.reply(f"Activity Type {activitytype} not recognised.")
+            return
         await self.bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=activity, name=title, details=info, url=link))
         await ctx.reply("Done")
+
+    @commands.command(name="delete")
+    @commands.is_owner()
+    async def delete(self, ctx):
+        """Deletes the referenced message."""
+        ref = ctx.message.reference
+        if ref == None:
+            await ctx.reply("Eh you gotta reply to the message you wanna delete!", mention_author=True)
+        else:
+            message = await ctx.channel.fetch_message(ref.message_id)
+            await message.delete()
 
     @commands.command(name='test')
     @commands.is_owner()
     async def test(self, ctx):
-        server = self.bot.dba['server']
-        await ctx.send(f"{server}")
+        winner1 = ctx.guild.get_member(703135131459911740)
+        winner2 = ctx.guild.get_member(703135131459911740)
+        winner3 = ctx.guild.get_member(703135131459911740)
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get("https://i.imgur.com/iJ4XpZb.png") as img:
+                bg = Image.open(io.BytesIO(await img.read()))
+            async with cs.get(f"{winner1.avatar_url_as(static_format='png', size=1024)}") as img:
+                offset = (1300,1100)
+                ava1 = Image.open(io.BytesIO(await img.read()))
+                img = ava1.resize((1024, 1024), Image.ANTIALIAS)
+                bg.paste(img, offset)
+            async with cs.get(f"{winner2.avatar_url_as(static_format='png', size=1024)}") as img:
+                offset = (30,2160)
+                ava2 = Image.open(io.BytesIO(await img.read()))
+                img = ava2.resize((1024, 1024), Image.ANTIALIAS)
+                bg.paste(img, offset)
+            async with cs.get(f"{winner3.avatar_url_as(static_format='png', size=1024)}") as img:
+                offset = (3100,2360)
+                ava3 = Image.open(io.BytesIO(await img.read()))
+                img = ava3.resize((1024, 1024), Image.ANTIALIAS)
+                bg.paste(img, offset)
+        fnt = ImageFont.truetype(font="verdana.ttf", size=150)
+        draw = ImageDraw.Draw(bg)
+        draw.text((2400, 1100), '\n'.join([winner1.name[i:i+20] for i in range(0, len(winner1.name), 20)]), font=fnt, fill=(0,0,0))
+        draw.text((30, 3300), '\n'.join([winner2.name[i:i+14] for i in range(0, len(winner2.name), 14)]), font=fnt, fill=(0,0,0))
+        draw.text((3100, 3500), '\n'.join([winner3.name[i:i+12] for i in range(0, len(winner3.name), 12)]), font=fnt, fill=(0,0,0))
+        byte_io = io.BytesIO()
+        bg.save(byte_io, 'PNG')
+        byte_io.seek(0)
+        f = discord.File(fp=byte_io, filename="image.png")
+        embed=discord.Embed(title="test", description=f"{winner3.avatar_url_as(static_format='png', size=1024)}")
+        embed.set_image(url="attachment://image.png")
+        embed.timestamp=datetime.datetime.utcnow()
+        await ctx.reply(file=f, embed=embed)
+        await cs.close()
 
 
 

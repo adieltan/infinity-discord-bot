@@ -21,6 +21,13 @@ owners = set({701009836938231849,703135131459911740})
 managers = set({})
 bled = set({})
 
+os.environ['JISHAKU_UNDERSCORE'] = 'True'
+# don't clean variable values on command exit
+os.environ['JISHAKU_RETAIN'] = 'True'
+# hide jishaku from help command
+os.environ['JISHAKU_HIDE'] = 'True'
+# don't DM tracebacks, instead send to channel
+os.environ['JISHAKU_NO_DM_TRACEBACK'] = 'True'
 
 class MyBot(commands.Bot):
     def __init__(self, *args, **kwargs):
@@ -66,27 +73,27 @@ def blacklisted(ctx) -> bool:
     bls = bot.bled
     return (ctx.author.id not in bls or ctx.author.id in owners or ctx.author.id in bot.managers)
 
-initial_extensions = ['cogs.info',
-                      'cogs.members',
-                      'cogs.fun',
-                      'cogs.maths',
-                      'cogs.owner',
-                      'cogs.others',
-                      'cogs.image',
-                      'cogs.data',
-                      'cogs.channel',
-                      'cogs.utility',
-                      'cogs.moderation',
-                      'cogs.listener',
+initial_extensions = ['cogs.channel',
+                      'cogs.cogcontroller',
+                      'cogs.conversion',
                       'cogs.currency',
-                      'cogs.slash',
-                      'cogs.custom', 
-                      'cogs.rh',
-                      'cogs.profile',
-                      'cogs.server',
+                      'cogs.custom',
+                      'cogs.data',
+                      'cogs.fun',
+                      'cogs.image',
+                      'cogs.info',
+                      'cogs.listener',
+                      'cogs.maths',
+                      'cogs.members',
                       'cogs.minigames',
-                      'cogs.cogcontroller', 
-                      'cogs.conversion']
+                      'cogs.moderation',
+                      'cogs.others', 
+                      'cogs.owner',
+                      'cogs.profile',
+                      'cogs.rh',
+                      'cogs.server',
+                      'cogs.slash', 
+                      'cogs.utility']
 
 
 if __name__ == '__main__':

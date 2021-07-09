@@ -320,7 +320,8 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                     ava3 = Image.open(io.BytesIO(await img.read()))
                     img = ava3.resize((1024, 1024), Image.ANTIALIAS)
                     bg.paste(img, offset)
-        fnt = ImageFont.truetype(font="verdana.ttf", size=150)
+        #fnt = ImageFont.truetype(font="verdana.ttf", size=150)
+        fnt = ImageFont.truetype( size=150)
         draw = ImageDraw.Draw(bg)
         try:
             draw.text((2400, 1100), '\n'.join([winner1.name[i:i+20] for i in range(0, len(winner1.name), 20)]), font=fnt, fill=(0,0,0))

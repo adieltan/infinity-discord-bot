@@ -103,9 +103,8 @@ class ServerCog(commands.Cog, name='server'):
             e.add_field(name='Boosts', value=boosts, inline=False)
 
         bots = sum(m.bot for m in guild.members)
-        fmt = f'Total: {guild.member_count} members.'
 
-        e.add_field(name='Members', value=f"{fmt} ({fmt-bots} Humans, {bots} Bots)", inline=False)
+        e.add_field(name='Members', value=f"Total: {guild.member_count} members.\n{guild.member_count - bots} Humans\n{bots} Bots)")
         e.add_field(name='Roles', value=', '.join(roles) if len(roles) < 10 else f'{len(roles)} roles')
 
         emoji_stats = Counter()

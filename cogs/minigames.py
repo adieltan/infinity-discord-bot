@@ -247,19 +247,19 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             else:mes = mes + f"\n{len(players)} player left in the game."
             embed.description = mes.format(rancol.name)
             await teamstat.reply(embed=embed)
-        self.scores = {}
+        scores = {}
         defaultscore = float(0)
         for player in players:
-            self.scores.update({f"{player.id}":defaultscore})
-        sort = sorted(self.scores.items(), key=lambda key_value:key_value[1], reverse=True)
-        self.scores = collections.OrderedDict(sort)
-        text = '\n'.join([f"<@{k}> `🎈` **{v}** points"for k,v in self.scores.items()])
+             scores.update({f"{player.id}":defaultscore})
+        sort = sorted( scores.items(), key=lambda key_value:key_value[1], reverse=True)
+        scores = collections.OrderedDict(sort)
+        text = '\n'.join([f"<@{k}> `🎈` **{v}** points"for k,v in  scores.items()])
         embed=discord.Embed(title="8 Corners Hunger Game", description=f"""You have to complete certain tasks to earn a point in the leaderboards. \nIf <a:Bomb:855685941484847125> is in the message means you will get hurt (lose points) if you follow the task.\nYou have 1 minute to answer each task.\nFirst person to get 25 points wins.\n{text}""", color=discord.Color.magenta())
         hunger = await ctx.send(embed=embed)
-        def scoreedit(id, difference:float):
-            self.scores.update({f"{id}":float(self.scores[f"{id}"])+difference})
-            sort = sorted(self.scores.items(), key=lambda key_value:key_value[1], reverse=True)
-            self.scores = collections.OrderedDict(sort)
+        def scoreedit(scores, id, difference:float):
+            scores.update({f"{id}":float( scores[f"{id}"])+difference})
+            sort = sorted(scores.items(), key=lambda key_value:key_value[1], reverse=True)
+            scores = collections.OrderedDict(sort)
         tasks = [
                 "What is sodium's chemical name?",
                 "What is `Lqilqlwb` decrypted into plain text.\n||Ceaser cipher - 3||",
@@ -268,16 +268,16 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 "Na",
                 "Infinity",
                 ]
-        while float(list(self.scores.values())[0]) < float(25):
-            sort = sorted(self.scores.items(), key=lambda key_value:key_value[1], reverse=True)
-            self.scores = collections.OrderedDict(sort)
-            text = '\n'.join([f"<@{k}> `🎈` **{v}** points"for k,v in self.scores.items()])
+        while float(list( scores.values())[0]) < float(25):
+            sort = sorted( scores.items(), key=lambda key_value:key_value[1], reverse=True)
+            scores = collections.OrderedDict(sort)
+            text = '\n'.join([f"<@{k}> `🎈` **{v}** points"for k,v in  scores.items()])
             rand = random.randint(0,len(tasks)-1)
             embed=discord.Embed(title="Hunger Games", description=f"{tasks[rand]} {'||<a:Bomb:855685941484847125>||' if random.randint(1,10) < 3 else ''}", color=discord.Color.purple())
             embed.add_field(name="Scoreboard", value=text, inline=False)
             g_round = await hunger.reply(embed=embed)
             def check(m):
-                return f"{m.author.id}" in self.scores.keys() and answers[rand].lower() in m.content.lower() and m.channel.id == ctx.channel.id
+                return f"{m.author.id}" in  scores.keys() and answers[rand].lower() in m.content.lower() and m.channel.id == ctx.channel.id
             try:
                 res = await self.bot.wait_for("message", check=check, timeout=60)
             except asyncio.TimeoutError:
@@ -287,68 +287,51 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 point = random.randint(1,3)
                 if 'bomb' in embed.description.lower():
                     await res.reply(f"{res.author.mention} got bombed and lost **{point}** point(s).")
-                    scoreedit(res.author.id, point*-1)
+                    scoreedit(scores, res.author.id, point*-1)
                 else:
                     await res.reply(f"{res.author.mention} got the correct answer and earned **{point}** point(s).")
-                    scoreedit(res.author.id, point)
-        sort = sorted(self.scores.items(), key=lambda key_value:key_value[1], reverse=True)
-        self.scores = collections.OrderedDict(sort)
-        try:    winner1 = ctx.guild.get_member(int(list(self.scores.keys())[0]))
+                    scoreedit(scores, res.author.id, point)
+        sort = sorted( scores.items(), key=lambda key_value:key_value[1], reverse=True)
+        scores = collections.OrderedDict(sort)
+        try:    winner1 = ctx.guild.get_member(int(list(scores.keys())[0]))
         except: winner1 = None
-        try:    winner2 = ctx.guild.get_member(int(list(self.scores.keys())[1]))
+        try:    winner2 = ctx.guild.get_member(int(list(scores.keys())[1]))
         except: winner2 = None
-        try:    winner3 = await ctx.guild.get_member(int(list(self.scores.keys())[2]))
+        try:    winner3 = await ctx.guild.get_member(int(list( scores.keys())[2]))
         except: winner3 = None
         async with aiohttp.ClientSession() as cs:
             async with cs.get("https://i.imgur.com/iJ4XpZb.png") as img:
                 bg = Image.open(io.BytesIO(await img.read()))
             if winner1 is not None:
-                async with cs.get(f"{winner1.avatar_url_as(static_format='png', size=1024)}") as img:
-                    offset = (1300,1100)
+                async with cs.get(f"{winner1.avatar_url_as(static_format='png', size= 512)}") as img:
+                    offset = (1825, 1625)
                     ava1 = Image.open(io.BytesIO(await img.read()))
-                    img = ava1.resize((1024, 1024), Image.ANTIALIAS)
+                    img = ava1.resize((512, 512), Image.ANTIALIAS)
                     bg.paste(img, offset)
             if winner2 is not None:
                 async with cs.get(f"{winner2.avatar_url_as(static_format='png', size=1024)}") as img:
-                    offset = (30,2160)
+                    offset = (1150, 1790)
                     ava2 = Image.open(io.BytesIO(await img.read()))
-                    img = ava2.resize((1024, 1024), Image.ANTIALIAS)
+                    img = ava2.resize((512, 512), Image.ANTIALIAS)
                     bg.paste(img, offset)
             if winner3 is not None:
                 async with cs.get(f"{winner3.avatar_url_as(static_format='png', size=1024)}") as img:
-                    offset = (3100,2360)
+                    offset = (2400, 1790)
                     ava3 = Image.open(io.BytesIO(await img.read()))
-                    img = ava3.resize((1024, 1024), Image.ANTIALIAS)
+                    img = ava3.resize((512, 512), Image.ANTIALIAS)
                     bg.paste(img, offset)
-        try:
-            fnt = ImageFont.truetype(font="verdana.ttf", size=150)
-        except:
-            pass
-        draw = ImageDraw.Draw(bg)
-        try:
-            draw.text((2400, 1100), '\n'.join([winner1.name[i:i+20] for i in range(0, len(winner1.name), 20)]), font=fnt, fill=(0,0,0))
-            draw.text((30, 3300), '\n'.join([winner2.name[i:i+14] for i in range(0, len(winner2.name), 14)]), font=fnt, fill=(0,0,0))
-            draw.text((3100, 3500), '\n'.join([winner3.name[i:i+12] for i in range(0, len(winner3.name), 12)]), font=fnt, fill=(0,0,0))
-        except:
-            pass
         byte_io = io.BytesIO()
         bg.save(byte_io, 'PNG')
         byte_io.seek(0)
         f = discord.File(fp=byte_io, filename="image.png")
         embed = discord.Embed(title="8 Corners Game", description=f"Game Ended", colour=discord.Colour.red())
-        winningtxt = '\n'.join([f"<@{k}> ~ **{v}** points"for k,v in self.scores.items()])
+        winningtxt = '\n'.join([f"<@{k}> ~ **{v}** points"for k,v in  scores.items()])
         embed.add_field(name="Winners", value=winningtxt, inline=False)
         embed.set_footer(text="Credits: Mixel, Rh, A Typical Beggar")
         embed.set_image(url="attachment://image.png")
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(file=f, embed=embed)
         await cs.close()
-
-        embed = discord.Embed(title="8 Corners Game", description=f"Game Ended", colour=discord.Colour.red())
-        winningtxt = '\n'.join([f"<@{k}> ~ **{v}** points"for k,v in self.scores.items()])
-        embed.add_field(name="Winners", value=winningtxt, inline=False)
-        embed.set_footer(text="Credits: Mixel, Rh, A Typical Beggar")
-        await ctx.reply(embed=embed)
 
     @commands.command(name='8cornersguide', aliases=['8cg'], hidden=True)
     @commands.cooldown(1,3,commands.BucketType.channel)

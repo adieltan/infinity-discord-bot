@@ -186,7 +186,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def logout(self, ctx):
         """Logs out."""
         channel = self.bot.get_channel(813251835371454515)
-        await channel.send(f"<@701009836938231849> <@703135131459911740>\nThe bot is being shut down by {ctx.author.mention}.")
+        await channel.send(f"The bot is being shut down by {ctx.author.name}.")
         await ctx.reply("👋")
         await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
         await asyncio.sleep(0.5)
@@ -291,41 +291,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='test')
     @commands.is_owner()
     async def test(self, ctx):
-        winner1 = ctx.guild.get_member(703135131459911740)
-        winner2 = ctx.guild.get_member(703135131459911740)
-        winner3 = ctx.guild.get_member(703135131459911740)
-        async with aiohttp.ClientSession() as cs:
-            async with cs.get("https://i.imgur.com/iJ4XpZb.png") as img:
-                bg = Image.open(io.BytesIO(await img.read()))
-            async with cs.get(f"{winner1.avatar_url_as(static_format='png', size=1024)}") as img:
-                offset = (1300,1100)
-                ava1 = Image.open(io.BytesIO(await img.read()))
-                img = ava1.resize((1024, 1024), Image.ANTIALIAS)
-                bg.paste(img, offset)
-            async with cs.get(f"{winner2.avatar_url_as(static_format='png', size=1024)}") as img:
-                offset = (30,2160)
-                ava2 = Image.open(io.BytesIO(await img.read()))
-                img = ava2.resize((1024, 1024), Image.ANTIALIAS)
-                bg.paste(img, offset)
-            async with cs.get(f"{winner3.avatar_url_as(static_format='png', size=1024)}") as img:
-                offset = (3100,2360)
-                ava3 = Image.open(io.BytesIO(await img.read()))
-                img = ava3.resize((1024, 1024), Image.ANTIALIAS)
-                bg.paste(img, offset)
-        fnt = ImageFont.truetype(font="verdana.ttf", size=150)
-        draw = ImageDraw.Draw(bg)
-        draw.text((2400, 1100), '\n'.join([winner1.name[i:i+20] for i in range(0, len(winner1.name), 20)]), font=fnt, fill=(0,0,0))
-        draw.text((30, 3300), '\n'.join([winner2.name[i:i+14] for i in range(0, len(winner2.name), 14)]), font=fnt, fill=(0,0,0))
-        draw.text((3100, 3500), '\n'.join([winner3.name[i:i+12] for i in range(0, len(winner3.name), 12)]), font=fnt, fill=(0,0,0))
-        byte_io = io.BytesIO()
-        bg.save(byte_io, 'PNG')
-        byte_io.seek(0)
-        f = discord.File(fp=byte_io, filename="image.png")
-        embed=discord.Embed(title="test", description=f"{winner3.avatar_url_as(static_format='png', size=1024)}")
-        embed.set_image(url="attachment://image.png")
-        embed.timestamp=datetime.datetime.utcnow()
-        await ctx.reply(file=f, embed=embed)
-        await cs.close()
+        raise NameError("error")
 
 
 

@@ -472,18 +472,19 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
     async def coinflip(self, ctx):
         """Flips a coin ... Maybe giving you bonus if you guess the right face. Guess will be randomised if you didn't provide one so..."""
         embed=discord.Embed(title="Coinflip", description="Flips a coin.", color=discord.Color.orange())
-        choose = await ctx.reply("Choose a side.", embed=embed, components=Select(placeholder="Select coin side.", options=[SelectOption(label="heads", value="Heads"), SelectOption(label="tails", value="Tails")]))
+        choose = await ctx.reply("Choose a side.", embed=embed, components=[Select(placeholder="Select coin side.", options=[SelectOption(label="heads", value="Heads"), SelectOption(label="tails", value="Tails")])])
 
         try:
             interaction = await self.bot.wait_for("select_option", check = lambda i: i.component[0].label in ["heads","tails"], timeout=30)
             guess = interaction.component[0].label
         except:
             await ctx.reply("You didn't respond in time.")
+            await choose.edit(components=[])
             return
         face = ['heads', 'tails']
         heads = "https://media.discordapp.net/attachments/838703506743099422/862199206314770432/Untitled6_20210707131105.png?width=652&height=652"
         tails = "https://media.discordapp.net/attachments/838703506743099422/862215258218954832/Infinity_coin_head2_20210707140756.png?width=652&height=652"
-        embed.description=f"Flips a coin. {ctx.mention}'s guess ➡"
+        embed.description=f"Flips a coin. {ctx.author.mention}'s guess ➡"
         if guess == "heads":
             embed.set_thumbnail(url=f"{heads}")
         elif guess == "tails":

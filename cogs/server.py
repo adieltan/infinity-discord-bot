@@ -100,15 +100,12 @@ class ServerCog(commands.Cog, name='server'):
 
         if guild.premium_tier != 0:
             boosts = f'Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts'
-            last_boost = max(guild.members, key=lambda m: m.premium_since or guild.created_at)
-            if last_boost.premium_since is not None:
-                boosts = f'{boosts}\nLast Boost: {last_boost} ({discord.utils.time.human_timedelta(last_boost.premium_since, accuracy=2)})'
             e.add_field(name='Boosts', value=boosts, inline=False)
 
         bots = sum(m.bot for m in guild.members)
         fmt = f'Total: {guild.member_count} members.'
 
-        e.add_field(name='Members', value=fmt, inline=False)
+        e.add_field(name='Members', value=f"{fmt} ({fmt-bots} Humans, {bots} Bots)", inline=False)
         e.add_field(name='Roles', value=', '.join(roles) if len(roles) < 10 else f'{len(roles)} roles')
 
         emoji_stats = Counter()
@@ -129,7 +126,7 @@ class ServerCog(commands.Cog, name='server'):
         fmt = f'{fmt}Total Emoji: {len(guild.emojis)}/{guild.emoji_limit*2}'
         e.add_field(name='Emoji', value=fmt, inline=False)
         e.set_footer(text='Created').timestamp = guild.created_at
-        await ctx.send(embed=e)
+        await ctx.reply(embed=e)
 
     @commands.group(name="autoresponse", aliases=["ar"])
     @commands.guild_only()

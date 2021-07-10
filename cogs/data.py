@@ -49,8 +49,8 @@ class DataCog(commands.Cog, name='Data'):
             buf.close()
             await cs.close()
 
-    @commands.command(name="youtube", aliases=['yt'])
-    async def youtube(self, ctx, channelid:str):
+    @commands.command(name="youtubestats", aliases=['ytstats'])
+    async def youtubestats(self, ctx, channelid:str):
         async with ctx.typing():
             async with aiohttp.ClientSession() as cs:
                 async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channelid}&key={os.getenv('googleapi')}") as data:

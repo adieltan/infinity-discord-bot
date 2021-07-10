@@ -4,12 +4,13 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 import matplotlib.pyplot as plt
  
 import dateparser, pytz
-
+from discordTogether import DiscordTogether
 
 class utilityCog(commands.Cog, name='utility'):
     """*Utility commands for server.*"""
     def __init__(self, bot):
         self.bot = bot
+        self.togetherControl = DiscordTogether(bot)
         
     @commands.command(name='time')
     @commands.cooldown(1,2)
@@ -109,5 +110,49 @@ class utilityCog(commands.Cog, name='utility'):
         await ctx.reply(embed=embed, mention_author=False)
         await cs.close()
 
+    @commands.command(name="youtube", aliases=['yt'])
+    async def youtube(self, ctx):
+        """Discord Party Games"""
+        try:
+            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'youtube')
+            await ctx.send(f"Click the blue link!\n{link}")
+        except:
+            await ctx.reply(f"You have to join a voice channel first.")
+
+    @commands.command(name="poker")
+    async def poker(self, ctx):
+        """Discord Party Games"""
+        try:
+            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'poker')
+            await ctx.send(f"Click the blue link!\n{link}")
+        except:
+            await ctx.reply(f"You have to join a voice channel first.")
+            
+    @commands.command(name="chess")
+    async def chess(self, ctx):
+        """Discord Party Games"""
+        try:
+            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'chess')
+            await ctx.send(f"Click the blue link!\n{link}")
+        except:
+            await ctx.reply(f"You have to join a voice channel first.")
+
+    @commands.command(name="betrayal")
+    async def betrayal(self, ctx):
+        """Discord Party Games"""
+        try:
+            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'betrayal')
+            await ctx.send(f"Click the blue link!\n{link}")
+        except:
+            await ctx.reply(f"You have to join a voice channel first.")
+
+    @commands.command(name="fishing")
+    async def fishing(self, ctx):
+        """Discord Party Games"""
+        try:
+            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'fishing')
+            await ctx.send(f"Click the blue link!\n{link}")
+        except:
+            await ctx.reply(f"You have to join a voice channel first.")
 def setup(bot):
     bot.add_cog(utilityCog(bot))

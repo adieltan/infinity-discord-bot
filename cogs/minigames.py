@@ -323,7 +323,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         try:
             fnt = ImageFont.truetype(font="verdana.ttf", size=150)
         except:
-            fnt = ImageFont.truetype(font="/app/verdana.ttf", size=150)
+            pass
         draw = ImageDraw.Draw(bg)
         try:
             draw.text((2400, 1100), '\n'.join([winner1.name[i:i+20] for i in range(0, len(winner1.name), 20)]), font=fnt, fill=(0,0,0))

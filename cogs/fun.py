@@ -109,5 +109,9 @@ class FunCog(commands.Cog, name='Fun'):
     async def gege(self, ctx):
         await ctx.reply("我只会心疼哥哥\nhttps://cdn.discordapp.com/attachments/717962272093372556/861518164160151582/video-1625470606.mp4")
 
+    @commands.command(name="english")
+    async def canuspeakenglish(self,ctx):
+        await ctx.reply("Can you speak english?\nhttps://cdn.discordapp.com/attachments/779326170612367390/863212817360748594/video0-13.mp4")
+
 def setup(bot):
     bot.add_cog(FunCog(bot))

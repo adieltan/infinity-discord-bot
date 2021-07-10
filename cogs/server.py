@@ -55,8 +55,8 @@ class ServerCog(commands.Cog, name='server'):
 
         channel_info = []
         key_to_emoji = {
-            discord.TextChannel: '<:text_channel:586339098172850187>',
-            discord.VoiceChannel: '<:voice_channel:586339098524909604>',
+            discord.TextChannel: '<:text_channel:863265248585056316>',
+            discord.VoiceChannel: '<:voice_channel:863265294240055316>',
         }
         for key, total in totals.items():
             secrets = secret[key]
@@ -91,7 +91,7 @@ class ServerCog(commands.Cog, name='server'):
 
         for feature, label in all_features.items():
             if feature in features:
-                info.append(f'\U00002705: {label}')
+                info.append(f'\U00002705 {label}')
 
         if info:
             e.add_field(name='Features', value='\n'.join(info))
@@ -104,7 +104,7 @@ class ServerCog(commands.Cog, name='server'):
 
         bots = sum(m.bot for m in guild.members)
 
-        e.add_field(name='Members', value=f"Total: {guild.member_count} members.\n{guild.member_count - bots} Humans\n{bots} Bots)")
+        e.add_field(name='Members', value=f"Total: {guild.member_count} members\n{guild.member_count - bots} Humans\n{bots} Bots")
         e.add_field(name='Roles', value=', '.join(roles) if len(roles) < 10 else f'{len(roles)} roles')
 
         emoji_stats = Counter()

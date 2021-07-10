@@ -30,7 +30,7 @@ class InfoCog(commands.Cog, name='Info'):
         await ctx.reply(f"I am connected to {len(self.bot.guilds)} server(s).", mention_author=False)
 
     @commands.command(name='emoji')
-    @commands.cooldown(1,3)
+    @commands.cooldown(1,1)
     async def emoji(self, ctx, emoji:discord.PartialEmoji):
         """Shows info about an emoji."""
         await ctx.reply(f"```Name:{emoji.name}\nId: {emoji.id}\n{emoji}```", mention_author=False)

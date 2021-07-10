@@ -96,12 +96,17 @@ class ChannelCog(commands.Cog, name='Channel'):
             await webhook.send(content=m.clean_content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds, allowed_mentions=discord.AllowedMentions.none())
         await ctx.reply("Done")
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
-    async def purge(self,ctx):
-        """Different types of purging commands."""
-        if ctx.invoked_subcommand is None:
-            ctx.invoked_subcommand = self.purge.command.count()
+    async def purge(self,ctx, no:int=100):
+        """Purges a number of messages."""
+        def pinc(msg):
+            if msg.pinned:
+                return False
+            else:
+                return True
+        deleted = await ctx.channel.purge(limit=no+1, check=pinc)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
     
     @purge.command()
     async def user(self, ctx, user:discord.Member, no:int=100):
@@ -111,17 +116,6 @@ class ChannelCog(commands.Cog, name='Channel'):
                 return True
             else:
                 return False
-        deleted = await ctx.channel.purge(limit=no+1, check=pinc)
-        await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
-
-    @purge.command(aliases=['c'])
-    async def count(self, ctx, no:int=100):
-        """Purges a number of messages."""
-        def pinc(msg):
-            if msg.pinned:
-                return False
-            else:
-                return True
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 

@@ -287,11 +287,13 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
             await message.delete()
+            try:    await ctx.message.delete()
+            except: pass
 
     @commands.command(name='test')
     @commands.is_owner()
     async def test(self, ctx):
-        raise NameError("error")
+        await ctx.reply("hi")
 
 
 

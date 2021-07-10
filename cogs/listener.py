@@ -38,15 +38,21 @@ class ListenerCog(commands.Cog, name='Listener'):
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         changes = self.bot.get_channel(859779506038505532)
-        embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}")
-        embed.set_author(name=guild.name, icon_url=guild.icon)
+        embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
+        embed.set_author(name=guild.name, icon_url=guild.icon_url)
+        embed.set_thumbnail(url=f"{guild.icon_url}")
+        if guild.banner_url is not None:
+            embed.set_image(url=f"{guild.banner_url}")
         await changes.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         changes = self.bot.get_channel(859779506038505532)
-        embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}")
-        embed.set_author(name=guild.name, icon_url=guild.icon)
+        embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
+        embed.set_author(name=guild.name, icon_url=guild.icon_url)
+        embed.set_thumbnail(url=f"{guild.icon_url}")
+        if guild.banner_url is not None:
+            embed.set_image(url=f"{guild.banner_url}")
         await changes.send(embed=embed)
 
     @commands.Cog.listener()
@@ -105,9 +111,14 @@ class ListenerCog(commands.Cog, name='Listener'):
             embed.timestamp=datetime.datetime.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             embed.set_footer(text=ctx.author.id)
-            embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})")
+            embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})\n`⬇` **Traceback**")
             tb_str = traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__)
-            embed.add_field(name="Error", value=f"```py\n{''.join(tb_str)}\n```", inline=False)
+            text = ''.join(tb_str)
+            chunks = [text[i:i+1000] for i in range(0, len(text), 1000)]
+            page = 0
+            for chunk in chunks:
+                page += 1
+                embed.add_field(name=f"Page {page} ", value=f"```py\n{chunk}\n```", inline=False)
             
             await reports.send(embed=embed)
 

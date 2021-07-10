@@ -1,10 +1,10 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
 from discord.ext.commands.core import group
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType, Select, SelectOption
 import matplotlib.pyplot as plt
  
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 import time, collections
 
 class MiniGamesCog(commands.Cog, name='MiniGames'):
@@ -49,7 +49,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         players = []
         alive = []
         dead = []
-        info = await ctx.reply(embed=embed, mention_author=False)
+        info = await ctx.reply(embed=embed, mention_author=False, components=[[Button(emoji=emoji, style=ButtonStyle.green, id="join"), Button(emoji=bomb, style=ButtonStyle.red, id="skip")]])
 
         timeout = 5 * 60
         timeout_start = time.time()
@@ -61,29 +61,24 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 return False
             return True
 
-        await info.add_reaction(emoji)
-        await info.add_reaction(bomb)
         # joining reaction check
         while time.time() < timeout_start + timeout:
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=5)
-                if reaction.emoji.name == emoji.name and user not in players:
-                    players.append(user)
-                    try:
-                        await user.send(embed=discord.Embed(title="Game join confirmation",
-                                                            description=f"You have joined the game. [Message]({info.jump_url})",
-                                                            color=discord.Color.random()))
-                    except:
-                        await info.reply(f"{user.mention}, You have joined the game.")
-                elif bomb == reaction.emoji and user == ctx.author:break
+                interaction = await self.bot.wait_for("button_click", check=lambda i:i.component.id in ['join', 'skip'], timeout=5)
+                if interaction.component.id == 'join' and interaction.user not in players:
+                    players.append(interaction.user)
+                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, embed=discord.Embed(title="Game join confirmation",description=f"You have joined the game. [Message]({info.jump_url})",color=discord.Color.random()))
+                elif interaction.component.id == 'skip' and interaction.user == ctx.author:break
             except:
                 timeleft = (timeout_start + timeout) - time.time()
                 embed.description = f"React to the button on the message to join.\nTimer: {round(timeleft)} seconds.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
                 await info.edit(embed=embed, mention_author=False)
-        await info.clear_reactions()
         embed.description = f"Timer: Ended.\nPlayer count: {len(players)} players.\n`=8cg` to learn more about the game."
-        await info.edit(embed=embed)
+        await info.edit(embed=embed, components=[])
 
+        if len(players) <= 1:
+            await ctx.reply("Sadly, no enough players joined.")
+            return
         while len(players) > 10:
             chosen = []
             afk = []
@@ -254,7 +249,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         sort = sorted( scores.items(), key=lambda key_value:key_value[1], reverse=True)
         scores = collections.OrderedDict(sort)
         text = '\n'.join([f"<@{k}> `🎈` **{v}** points"for k,v in  scores.items()])
-        embed=discord.Embed(title="8 Corners Hunger Game", description=f"""You have to complete certain tasks to earn a point in the leaderboards. \nIf <a:Bomb:855685941484847125> is in the message means you will get hurt (lose points) if you follow the task.\nYou have 1 minute to answer each task.\nFirst person to get 25 points wins.\n{text}""", color=discord.Color.magenta())
+        embed=discord.Embed(title="8 Corners Hunger Game", description=f"""You have to complete certain tasks to earn a point in the leaderboards. \nIf <a:Bomb:855685941484847125> is in the message means you will get hurt (lose points) if you follow the task.\nYou have 1 minute to answer each normal task.\nFirst person to get 25 points wins.\n{text}""", color=discord.Color.magenta())
         hunger = await ctx.send(embed=embed)
         def scoreedit(scores, id, difference:float):
             scores.update({f"{id}":float( scores[f"{id}"])+difference})
@@ -263,12 +258,17 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         tasks = [
                 "What is sodium's chemical name?",
                 "What is `Lqilqlwb` decrypted into plain text.\n||Ceaser cipher - 3||",
+                "In a certain code language, ‘123’ means ‘bright little boy’, ‘145’ means ‘tall big boy’ and ‘637’ means ‘beautiful little flower’. Which digit in that language means ‘bright’?",
+                "In a certain language ‘go for morning walk’ is written as ‘$*?#’,  ‘good for health’ is written as ‘£?@’ and ‘good to walk fast’ is written as ‘+@↑#’, then what is the code for ‘health’ in that code language?",
                 ]
         answers = [
                 "Na",
                 "Infinity",
+                "2",
+                "£",
                 ]
-        while float(list( scores.values())[0]) < float(25):
+        inactive = 0
+        while float(list( scores.values())[0]) < float(25) or inactive > 20:
             sort = sorted( scores.items(), key=lambda key_value:key_value[1], reverse=True)
             scores = collections.OrderedDict(sort)
             text = '\n'.join([f"<@{k}> `🎈` **{v}** points"for k,v in  scores.items()])
@@ -277,12 +277,15 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
             embed.add_field(name="Scoreboard", value=text, inline=False)
             g_round = await hunger.reply(embed=embed)
             def check(m):
-                return f"{m.author.id}" in  scores.keys() and answers[rand].lower() in m.content.lower() and m.channel.id == ctx.channel.id
+                return f"{m.author.id}" in  scores.keys() and answers[rand].lower() in m.content.lower().split(' ')[0] and m.channel.id == ctx.channel.id
             try:
-                res = await self.bot.wait_for("message", check=check, timeout=60)
+                if 'bomb' in embed.description.lower():t = 20
+                else:t = 60
+                res = await self.bot.wait_for("message", check=check, timeout=t)
             except asyncio.TimeoutError:
                 if 'bomb' in embed.description:
                    await g_round.reply("No one got bombed.")
+                   inactive += 1
             else:
                 point = random.randint(1,3)
                 if 'bomb' in embed.description.lower():
@@ -466,37 +469,38 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
 
     @commands.command(name="coinflip", aliases=["flip", 'cf'])
     @commands.cooldown(1,10)
-    async def coinflip(self, ctx, amount:int, guess:str=None):
+    async def coinflip(self, ctx):
         """Flips a coin ... Maybe giving you bonus if you guess the right face. Guess will be randomised if you didn't provide one so..."""
-        face = ["heads", "tails"]
-        if guess == None:
-            guess = random.choice(face)
-        else: 
-            guess = guess.lower()
-            if guess[0] == "h":
-                guess = "heads"
-            elif guess[0] == "t":
-                guess = "tails"
-            else:
-                guess = random.choice(face)
+        embed=discord.Embed(title="Coinflip", description="Flips a coin.", color=discord.Color.orange())
+        choose = await ctx.reply("Choose a side.", embed=embed, components=Select(placeholder="Select coin side.", options=[SelectOption(label="heads", value="Heads"), SelectOption(label="tails", value="Tails")]))
+
+        try:
+            interaction = await self.bot.wait_for("select_option", check = lambda i: i.component[0].label in ["heads","tails"], timeout=30)
+            guess = interaction.component[0].label
+        except:
+            await ctx.reply("You didn't respond in time.")
+            return
+        face = ['heads', 'tails']
+        heads = "https://media.discordapp.net/attachments/838703506743099422/862199206314770432/Untitled6_20210707131105.png?width=652&height=652"
+        tails = "https://media.discordapp.net/attachments/838703506743099422/862215258218954832/Infinity_coin_head2_20210707140756.png?width=652&height=652"
+        embed.description=f"Flips a coin. {ctx.mention}'s guess ➡"
+        if guess == "heads":
+            embed.set_thumbnail(url=f"{heads}")
+        elif guess == "tails":
+            embed.set_thumbnail(url=f"{tails}")
+        await choose.edit(embed=embed, components=[])
+        
         correct = random.choice(face)
-        embed = discord.Embed(title="CoinFlip Machine", description=f"{ctx.author.mention}'s guess = {guess}", color=16776960)
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
-        embed.set_image("https://cdn.dribbble.com/users/58530/screenshots/2323771/coin-flip.gif")
-        message = await ctx.reply(embed=embed, mention_author=True)
-
+        if correct == "heads":embed.set_image(url=f"{heads}")
+        else:embed.set_image(url=f"{tails}")
         if guess == correct:
-            embed = discord.Embed(title="CoinFlip Machine", description=f"{ctx.author.mention}", color=1900331)
-            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
-            embed.timestamp=datetime.datetime.utcnow()
-            message.edit(embed=embed)
+            embed.color = discord.Color.green()
+            embed.set_footer(text="Correct Guess")
+        else:
+            embed.color = discord.Color.red()
+            embed.set_footer(text="Wrong Guess")
 
-        elif guess != correct:
-            embed = discord.Embed(title="CoinFlip Machine", description=f"{ctx.author.mention}", color=16711680)
-            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
-            embed.timestamp=datetime.datetime.utcnow()
-            message.edit(embed=embed)
-
+        await choose.reply(f"{ctx.author.mention}",embed=embed)
     
 def setup(bot):
     bot.add_cog(MiniGamesCog(bot))

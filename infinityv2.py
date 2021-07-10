@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 try:from dotenv import load_dotenv
 except:pass
 
-import motor.motor_asyncio, motor.motor_tornado
+import motor.motor_asyncio, motor.motor_tornado, traceback
 from pretty_help import PrettyHelp, DefaultMenu
 
 try:load_dotenv()  # take environment variables from .env.
@@ -131,8 +131,18 @@ async def on_ready():
 @bot.event
 async def on_error(event, *args, **kwargs):
     errors = bot.get_channel(855359960354652160)
-    await errors.send(f"```\n{event}\n\n{''.join(args)}\n\n{''.join(kwargs)}\n```")
-    pass
+    ctx = args[0] #Gets the message object
+    embed=discord.Embed(title="Error", description=f"{ctx.author.mention}\n{event}", color=discord.Color.random())
+    embed.timestamp=datetime.datetime.utcnow()
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+    embed.set_footer(text=ctx.author.id)
+    embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})")
+    text = traceback.format_exc()
+    chunks = [text[i:i+1024] for i in range(0, len(text), 1024)]
+    for chunk in chunks:
+        embed.add_field(name="Error", value=f"```py\n{chunk}\n```", inline=False)
+    await errors.send(embed=embed)
+
 
 @tasks.loop(minutes=100, reconnect=True)
 async def status():

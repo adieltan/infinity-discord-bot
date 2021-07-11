@@ -5,58 +5,36 @@ import matplotlib.pyplot as plt
  
 
 import qrcode
-from PyDictionary import PyDictionary
-from wordfreq import zipf_frequency
-
-dictionary=PyDictionary()
+from udpy import AsyncUrbanClient
 
 class ConversionCog(commands.Cog, name='Conversion'):
     """*Conversion commands.*"""
     def __init__(self, bot):
         self.bot = bot
+        self.urban = AsyncUrbanClient
 
     @commands.command(name="define", aliases=["meaning"])
     @commands.cooldown(1,6)
-    async def define(self, ctx, word):
+    async def define(self, ctx, *, phrase:str):
         """Defines a word."""
         await ctx.trigger_typing()
-        arg = word.lower()
+        defs = self.urban.get_definition(phrase)
+        text = '\n'.join([f"{def}" for def in defs])
         
-        embed=discord.Embed(title=word, url=f"https://www.thefreedictionary.com/{word}", description="**Definition:**", color=discord.Color.random())
+        embed=discord.Embed(title=phrase, description="**Definition:**", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        out: dict = dictionary.meaning(arg)
-        if out == None:
-            return
-        for this,that in out.items():
-            value = chr(10).join([f"{i+1}: {e}"for i,e in enumerate(that)])
-            embed.add_field(name=this, value=value, inline=False)
-        freque = zipf_frequency(arg, lang="en")
-        embed.set_footer(text=f"Zipf frequency value: {freque}")
+        for defi in defs:
+            if defi.example:
+                eg = f"Example {defi.example}"
+            else:eg=None
+            embed.add_field(name=defi.word, value=f"{defi.description}\n{eg}\nUpvotes: {defi.upvotes} Downvotes: {defi.downvotes}")
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="translate", aliases=['tr'])
     @commands.cooldown(1,6)
     async def translate(self, ctx,language:str, arg):
         """Translates a term."""
-        await ctx.trigger_typing()
-        out = str(dictionary.translate(arg, language))
-        await ctx.reply(out, mention_author=False)
-
-    @commands.command(name="synonym", aliases=['sy'])
-    @commands.cooldown(1,6)
-    async def synonym(self, ctx, arg):
-        """Gets the synonym of a term"""
-        await ctx.trigger_typing()
-        out = str(dictionary.synonym(arg))
-        await ctx.reply(out, mention_author=False)
-
-    @commands.command(name="antonym", aliases=['an'])
-    @commands.cooldown(1,6)
-    async def antonym(self, ctx, arg):
-        """Gets the antonym of a term"""
-        await ctx.trigger_typing()
-        out = str(dictionary.antonym(arg))
-        await ctx.reply(out, mention_author=False)
+        pass
 
     @commands.command(name='qrcode', aliases=['qr'])
     @commands.cooldown(1,6)

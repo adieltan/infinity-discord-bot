@@ -95,7 +95,10 @@ class ChannelCog(commands.Cog, name='Channel'):
             try:m.embeds
             except:embeds = None
             else:embeds = m.embeds
-            await webhook.send(content=m.clean_content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds, allowed_mentions=discord.AllowedMentions.none())
+            try:m.clean_content
+            except:content = None
+            else:content = m.clean_content
+            await webhook.send(content=content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds, allowed_mentions=discord.AllowedMentions.none())
         await ctx.reply("Done")
 
     @commands.group(invoke_without_command=True)

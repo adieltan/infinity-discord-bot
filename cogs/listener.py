@@ -93,7 +93,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.reply(embed=discord.Embed(title="Command is on cooldown", description=f"Retry again in {error.retry_after} seconds.", color=discord.Color.dark_gold()))
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}`` is a required argument that is missing.", color=discord.Color.dark_teal()))
+            await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}` is a required argument that is missing.", color=discord.Color.dark_teal()))
         elif isinstance(error, commands.NotOwner):
             embed=discord.Embed(title="Owner only command", description=f"Imagine using this.")
             embed.set_image(url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652")

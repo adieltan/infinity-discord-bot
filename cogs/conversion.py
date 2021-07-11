@@ -14,18 +14,18 @@ class ConversionCog(commands.Cog, name='Conversion'):
         self.urban = AsyncUrbanClient()
 
     @commands.command(name="define", aliases=["meaning"])
-    @commands.cooldown(1,6)
+    @commands.cooldown(1,3)
     async def define(self, ctx, *, phrase:str):
         """Defines a word."""
         await ctx.trigger_typing()
-        defs = await self.urban.get_definition(self,phrase)
+        defs = await self.urban.get_definition(term=phrase)
         embed=discord.Embed(title=phrase, description="**Definition:**", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         for defi in defs:
             if defi.example:
                 eg = f"Example {defi.example}"
             else:eg=None
-            embed.add_field(name=defi.word, value=f"{defi.description}\n{eg}\nUpvotes: {defi.upvotes} Downvotes: {defi.downvotes}")
+            embed.add_field(name=defi.word, value=f"{defi.definition}\n{eg}\n`⬆` {defi.upvotes} `⬇` {defi.downvotes}", inline=False)
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="translate", aliases=['tr'])

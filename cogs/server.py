@@ -185,5 +185,87 @@ class ServerCog(commands.Cog, name='server'):
         text='\n'.join([f"{result} ➡ {dic[result]}"for result in dic])
         await ctx.reply(embed=discord.Embed(title=f"{ctx.guild.name}'s Autoresponses", description=f"{text}"))
 
+    @commands.group(name="delete")
+    @commands.guild_only()
+    @commands.cooldown(1,8)
+    @commands.has_guild_permissions(administrator=True)
+    async def del(self, ctx):
+        """Warning: This might affect the server's structure."""
+        if ctx.invoked_subcommand is None:
+            await ctx.reply("Subcommands: `category` `channel` `allchannel`")
+
+    @del.command(name="category", aliases=['cat'])
+    async def catdel(self,ctx, category:discord.CategoryChannel, *, reason:str=None):
+        """Deletes all the channels in the category."""
+        verificationletter = random.choice(string.ascii_lowercase)
+        await ctx.reply(f"Send **{verificationletter}** to confirm your action.")
+        def check(m):
+            return m.content.lower() == verificationletter and m.author == ctx.author
+        try:
+            response = self.bot.wait_for('message', check=check, timeout=20)
+            verify = True
+        except asyncio.TimeoutError:
+            verify = False
+        if verify is True:
+            await ctx.reply(f"Starting to delete {category.mention}")
+        elif verify is False:
+            await ctx.reply(f"Failed to verify.")
+            return
+        channels = category.channels
+        for channel in channels:
+            await channel.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+        await category.delete(reason=f"Deleted by {ctx.author.name} for {reason}")
+        await ctx.reply(f"Deleted {category.name}")
+
+    @del.command(name="channel", aliases=['chan'])
+    async def chandel(self,ctx, channel:discord.TextChannel, *, reason:str=None):
+        """Deletes the channel."""
+        verificationletter = random.choice(string.ascii_lowercase)
+        await ctx.reply(f"Send **{verificationletter}** to confirm your action.")
+        def check(m):
+            return m.content.lower() == verificationletter and m.author == ctx.author
+        try:
+            response = self.bot.wait_for('message', check=check, timeout=20)
+            verify = True
+        except asyncio.TimeoutError:
+            verify = False
+        if verify is True:
+            await ctx.reply(f"Starting to delete {channel.mention}")
+        elif verify is False:
+            await ctx.reply(f"Failed to verify.")
+            return
+        await channel.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+        await ctx.reply(f"Deleted {channel.name}")
+
+    @del.command(name="allchannel")
+    async def purgeallchannel(self,ctx):
+        """Deletes all the channels."""
+        if ctx.author != ctx.guild.owner:
+            await ctx.reply("You are not server owner.")
+            return
+        verificationletter = random.choice(string.ascii_lowercase)
+        await ctx.reply(f"Send **{verificationletter}** to confirm your action.")
+        def check(m):
+            return m.content.lower() == verificationletter and m.author == ctx.author
+        try:
+            response = self.bot.wait_for('message', check=check, timeout=20)
+            verify = True
+        except asyncio.TimeoutError:
+            verify = False
+        if verify is True:
+            await ctx.reply(f"Starting to delete all channels.")
+        elif verify is False:
+            await ctx.reply(f"Failed to verify.")
+            return
+        channels = ctx.guild.channels
+        c=0
+        for channel in channels:
+            try:
+                await channel.delete(reason=f"Deleted by {ctx.author.name}.")
+                c += 1
+            except:
+                pass
+        await ctx.reply(f"Deleted {c} channels.")
+
 def setup(bot):
     bot.add_cog(ServerCog(bot))

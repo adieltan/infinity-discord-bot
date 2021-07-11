@@ -277,13 +277,13 @@ class OwnerCog(commands.Cog, name='Owner'):
         await self.bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=activity, name=title, details=info, url=link))
         await ctx.reply("Done")
 
-    @commands.command(name="delete")
+    @commands.command(name="remove")
     @commands.is_owner()
-    async def delete(self, ctx):
-        """Deletes the referenced message."""
+    async def remove(self, ctx):
+        """Removes the referenced message."""
         ref = ctx.message.reference
         if ref == None:
-            await ctx.reply("Eh you gotta reply to the message you wanna delete!", mention_author=True)
+            await ctx.reply("Eh you gotta reply to the message you wanna remove!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
             await message.delete()

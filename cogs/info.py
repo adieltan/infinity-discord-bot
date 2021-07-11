@@ -18,7 +18,7 @@ class InfoCog(commands.Cog, name='Info'):
         
         embed=discord.Embed(title = "Infinity" , url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", description="Invite link: [Admin](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)  [~~Admin~~](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=0&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)", color=discord.Color.random())
         embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal :arrow_up: [<a:jump:856511832486969364>](https://discord.gg/dHGqUZNqCu) <#851637967952412723>")
-        embed.add_field(name="Website", value="[Infinity Website](https://sites.google.com/view/rh6)")
+        embed.add_field(name="Website", value="[Infinity Website](https://infinityb.netlify.app/)")
         embed.timestamp=datetime.datetime.utcnow()
         
         await ctx.reply(embed=embed, mention_author=False)
@@ -39,9 +39,8 @@ class InfoCog(commands.Cog, name='Info'):
     @commands.cooldown(1,4)
     async def info(self, ctx):
         """Info about the bot."""
-        
         app = await self.bot.application_info()
-        embed=discord.Embed(title="Bot Info", description="Info about the bot.", color=discord.Color.random())
+        embed=discord.Embed(title="Bot Info", description=app.description, color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(name=self.bot.user, url=self.bot.user.avatar_url)
         embed.add_field(name="Owner", value=f"<@701009836938231849>")
@@ -58,14 +57,6 @@ class InfoCog(commands.Cog, name='Info'):
         managers = self.bot.managers
         embed=discord.Embed(title="Infinity Managers", description=f"{' '.join([f'<@{manag}>' for manag in managers])}", color=discord.Color.random())
         await ctx.reply(embed=embed)
-                
-    @commands.command(name='partners')
-    @commands.cooldown(1,8, type=BucketType.channel)
-    async def partners(self, ctx):
-        """Servers/Bots this bot is partnered with."""
-        partners = ['https://discord.gg/HUpye3bnzq']
-        text = '\n'.join(partners)
-        await ctx.send(text)
 
     @commands.command(name="newsupdate", aliases=['latestnews', 'news'])
     async def newsupdate(self, ctx):

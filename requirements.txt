@@ -22,3 +22,4 @@ discord_components[button,interaction]
 lxml
 discord-together
 udpy
+translate

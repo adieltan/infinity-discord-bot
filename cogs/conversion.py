@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
  
 
 import qrcode
+from translate import Translator
 from udpy import AsyncUrbanClient
 
 class ConversionCog(commands.Cog, name='Conversion'):
@@ -30,9 +31,13 @@ class ConversionCog(commands.Cog, name='Conversion'):
 
     @commands.command(name="translate", aliases=['tr'])
     @commands.cooldown(1,6)
-    async def translate(self, ctx,language:str, arg):
+    async def translate(self, ctx,language:str, *,text:str):
         """Translates a term."""
-        pass
+        translator= Translator(to_lang=language)
+        translation = translator.translate(f"{text}")
+        embed=discord.Embed(title="Translator", description=f"{text}", color=discord.Color.random())
+        embed.add_field(name=language, value=translation, inline=False)
+        await ctx.reply(embed=embed)
 
     @commands.command(name='qrcode', aliases=['qr'])
     @commands.cooldown(1,6)

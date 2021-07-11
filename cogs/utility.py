@@ -70,7 +70,6 @@ class utilityCog(commands.Cog, name='utility'):
             pass
         await ctx.reply(time,embed=embed)
 
-
     @commands.command(name="weather", aliases=['w', 'temperature', 'climate', 'windspeed', 'rain', 'snow', 'humidity'])
     @commands.cooldown(1,5)
     async def weather(self, ctx, *, city_name:str):

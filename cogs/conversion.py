@@ -24,7 +24,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         for defi in defs:
             if defi.example:
-                eg = f"Example {defi.example}"
+                eg = f"Example: {defi.example}"
             else:eg=None
             embed.add_field(name=defi.word, value=f"{defi.definition}\n{eg}\n`⬆` {defi.upvotes} `⬇` {defi.downvotes}", inline=False)
         await ctx.reply(embed=embed, mention_author=False)

@@ -11,7 +11,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
     """*Conversion commands.*"""
     def __init__(self, bot):
         self.bot = bot
-        self.urban = AsyncUrbanClient
+        self.urban = AsyncUrbanClient()
 
     @commands.command(name="define", aliases=["meaning"])
     @commands.cooldown(1,6)

@@ -189,12 +189,12 @@ class ServerCog(commands.Cog, name='server'):
     @commands.guild_only()
     @commands.cooldown(1,8)
     @commands.has_guild_permissions(administrator=True)
-    async def del(self, ctx):
+    async def delete(self, ctx):
         """Warning: This might affect the server's structure."""
         if ctx.invoked_subcommand is None:
             await ctx.reply("Subcommands: `category` `channel` `allchannel`")
 
-    @del.command(name="category", aliases=['cat'])
+    @delete.command(name="category", aliases=['cat'])
     async def catdel(self,ctx, category:discord.CategoryChannel, *, reason:str=None):
         """Deletes all the channels in the category."""
         verificationletter = random.choice(string.ascii_lowercase)
@@ -217,7 +217,7 @@ class ServerCog(commands.Cog, name='server'):
         await category.delete(reason=f"Deleted by {ctx.author.name} for {reason}")
         await ctx.reply(f"Deleted {category.name}")
 
-    @del.command(name="channel", aliases=['chan'])
+    @delete.command(name="channel", aliases=['chan'])
     async def chandel(self,ctx, channel:discord.TextChannel, *, reason:str=None):
         """Deletes the channel."""
         verificationletter = random.choice(string.ascii_lowercase)
@@ -237,7 +237,7 @@ class ServerCog(commands.Cog, name='server'):
         await channel.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
         await ctx.reply(f"Deleted {channel.name}")
 
-    @del.command(name="allchannel")
+    @delete.command(name="allchannel")
     async def purgeallchannel(self,ctx):
         """Deletes all the channels."""
         if ctx.author != ctx.guild.owner:

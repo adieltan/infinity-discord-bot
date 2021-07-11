@@ -78,7 +78,8 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.has_permissions(administrator=True)
     async def export(self, ctx, destination, limit:int=None):
         """Exports chat messages to another channel."""
-        destination_channel = discord.TextChannel(destination)
+        channelid = int(re.sub("[^0-9]", "", destination))
+        destination_channel = self.bot.get_channel(channelid)
         presentwebhooks = await destination_channel.webhooks() or []
         if len(presentwebhooks) > 0:
             webhook = presentwebhooks[0]

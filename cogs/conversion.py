@@ -19,8 +19,6 @@ class ConversionCog(commands.Cog, name='Conversion'):
         """Defines a word."""
         await ctx.trigger_typing()
         defs = self.urban.get_definition(phrase)
-        text = '\n'.join([f"{def}" for def in defs])
-        
         embed=discord.Embed(title=phrase, description="**Definition:**", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         for defi in defs:

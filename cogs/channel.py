@@ -76,8 +76,9 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="export")
     @commands.cooldown(1,100, BucketType.category)
     @commands.has_permissions(administrator=True)
-    async def export(self, ctx, destination_channel:discord.TextChannel, limit:int=None):
+    async def export(self, ctx, destination, limit:int=None):
         """Exports chat messages to another channel."""
+        destination_channel = discord.TextChannel(destination)
         presentwebhooks = await destination_channel.webhooks() or []
         if len(presentwebhooks) > 0:
             webhook = presentwebhooks[0]

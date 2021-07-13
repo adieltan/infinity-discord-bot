@@ -4,8 +4,8 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 import matplotlib.pyplot as plt
  
 import dateparser, pytz
+from discord.http import Route
 from discordTogether import DiscordTogether
-
 class utilityCog(commands.Cog, name='utility'):
     """*Utility commands for server.*"""
     def __init__(self, bot):
@@ -108,6 +108,52 @@ class utilityCog(commands.Cog, name='utility'):
             embed=discord.Embed(title="City Not Found", description=f"{city_name} is not found.", color=discord.Colour.red())
         await ctx.reply(embed=embed, mention_author=False)
         await cs.close()
+
+    @commands.command(name='app')
+    async def app(self, ctx, activity, voicechannel:discord.VoiceChannel=None):
+        """Discord Party Games"""
+        defaultApplications = {  # Credits to RemyK888
+            'youtube': '755600276941176913',
+            'poker': '755827207812677713',
+            'betrayal': '773336526917861400',
+            'fishing': '814288819477020702',
+            'chess': '832012586023256104'
+            }
+        if activity is None:
+            await ctx.reply(f"Avalible activities: {' '.join([defaultApplications.keys()])}")
+            return
+        if voicechannel is None:
+            voicechannel = ctx.author.voice.channel
+        if activity and (str(activity).lower().replace(" ", "") in defaultApplications.keys()):   
+
+            data = {
+                'max_age': 86400,
+                'max_uses': 0,
+                'target_application_id': defaultApplications[str(activity).lower().replace(" ","")],
+                'target_type': 2,
+                'temporary': False,
+                'validate': None
+            }
+            
+            try:
+                result = await self.bot.http.request(
+                    Route("POST", f"/channels/{voicechannel.id}/invites"), json = data
+                )
+            #Error Handling
+            except Exception as e:
+                if "10003" in str(e):
+                    raise discord.InvalidArgument("Voice Channel ID is invalid.")
+                elif "50013" in str(e):
+                    raise discord.InvalidArgument(["CREATE_LINK"])  
+                elif "130000" in str(e):
+                    raise ConnectionError("API resource is currently overloaded. Try again a little later.")      
+                else:
+                    raise ConnectionError("An error occurred while retrieving data from Discord API.")
+
+            if self.debug:
+                print('\033[95m'+'\033[1m'+'[DEBUG] (discord-together) Response Output:\n'+'\033[0m'+str(result))
+            
+            await ctx.send(f"Click on the blue link.\nhttps://discord.com/invite/{result['code']}")
 
     @commands.command(name="youtube", aliases=['yt'])
     async def youtube(self, ctx):

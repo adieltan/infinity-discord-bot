@@ -123,7 +123,9 @@ class utilityCog(commands.Cog, name='utility'):
             await ctx.reply(f"Avalible activities: {' '.join([defaultApplications.keys()])}")
             return
         if voicechannel is None:
-            voicechannel = ctx.author.voice.channel
+            voicechannelid = ctx.author.voice.channel.id
+        else:
+            voicechannelid = int(re.sub("[^0-9]", "", voicechannel))
         if activity and (str(activity).lower().replace(" ", "") in defaultApplications.keys()):   
 
             data = {
@@ -137,7 +139,7 @@ class utilityCog(commands.Cog, name='utility'):
             
             try:
                 result = await self.bot.http.request(
-                    Route("POST", f"/channels/{voicechannel.id}/invites"), json = data
+                    Route("POST", f"/channels/{voicechannelid}/invites"), json = data
                 )
             #Error Handling
             except Exception as e:
@@ -153,7 +155,7 @@ class utilityCog(commands.Cog, name='utility'):
             if self.debug:
                 print('\033[95m'+'\033[1m'+'[DEBUG] (discord-together) Response Output:\n'+'\033[0m'+str(result))
             
-            await ctx.send(f"Click on the blue link.\nhttps://discord.com/invite/{result['code']}")
+            await ctx.send(f"Click on the blue link. <#{voicechannelid}>\nhttps://discord.com/invite/{result['code']}")
 
     @commands.command(name="youtube", aliases=['yt'])
     async def youtube(self, ctx):

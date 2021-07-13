@@ -155,9 +155,6 @@ class utilityCog(commands.Cog, name='utility'):
                     raise ConnectionError("API resource is currently overloaded. Try again a little later.")      
                 else:
                     raise ConnectionError("An error occurred while retrieving data from Discord API.")
-
-            if self.debug:
-                print('\033[95m'+'\033[1m'+'[DEBUG] (discord-together) Response Output:\n'+'\033[0m'+str(result))
             
             await ctx.send(f"Click on the blue link. <#{voicechannelid}>\nhttps://discord.com/invite/{result['code']}")
 

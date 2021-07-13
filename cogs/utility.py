@@ -110,7 +110,7 @@ class utilityCog(commands.Cog, name='utility'):
         await cs.close()
 
     @commands.command(name='app')
-    async def app(self, ctx, activity, voicechannel:discord.VoiceChannel=None):
+    async def app(self, ctx, activity=None, voicechannel:discord.VoiceChannel=None):
         """Discord Party Games"""
         defaultApplications = {  # Credits to RemyK888
             'youtube': '755600276941176913',

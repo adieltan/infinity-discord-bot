@@ -123,7 +123,11 @@ class utilityCog(commands.Cog, name='utility'):
             await ctx.reply(f"Avalible activities: {' '.join([defaultApplications.keys()])}")
             return
         if voicechannel is None:
-            voicechannelid = ctx.author.voice.channel.id
+            try:
+                voicechannelid = ctx.author.voice.channel.id
+            except:
+                await ctx.reply(f"You have to join a voice channel first.")
+                return
         else:
             voicechannelid = int(re.sub("[^0-9]", "", voicechannel))
         if activity and (str(activity).lower().replace(" ", "") in defaultApplications.keys()):   

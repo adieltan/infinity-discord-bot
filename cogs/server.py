@@ -202,7 +202,7 @@ class ServerCog(commands.Cog, name='server'):
         def check(m):
             return m.content.lower() == verificationletter and m.author == ctx.author
         try:
-            response = self.bot.wait_for('message', check=check, timeout=20)
+            response = await self.bot.wait_for('message', check=check, timeout=20)
             if response != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
         except asyncio.TimeoutError:
@@ -223,7 +223,7 @@ class ServerCog(commands.Cog, name='server'):
         def check(m):
             return m.content.lower() == verificationletter and m.author == ctx.author
         try:
-            response = self.bot.wait_for('message', check=check, timeout=20)
+            response = await self.bot.wait_for('message', check=check, timeout=20)
             if response != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
         except asyncio.TimeoutError:
@@ -244,7 +244,7 @@ class ServerCog(commands.Cog, name='server'):
         def check(m):
             return m.content.lower() == verificationletter and m.author == ctx.author
         try:
-            response = self.bot.wait_for('message', check=check, timeout=20)
+            response = await self.bot.wait_for('message', check=check, timeout=20)
             if response != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
         except asyncio.TimeoutError:

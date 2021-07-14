@@ -25,7 +25,7 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
         try:
             result = await self.bot.http.request(
-                Route("GET", f"/users/{member.id}/profile?with_mutual_guilds=false")
+                Route("GET", f"/users/{member.id}")
             )
             bio = result['user']['bio']
             embed.add_field(name="Bio", value=f"{bio}", inline=False)

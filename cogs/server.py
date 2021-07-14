@@ -205,7 +205,7 @@ class ServerCog(commands.Cog, name='server'):
             response = await self.bot.wait_for('message', check=check, timeout=20)
             if response != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
-        except asyncio.TimeoutError:
+        except:
             await ctx.reply(f"Failed to verify.")
         else:
             await ctx.reply(f"Starting to delete {category.mention}")
@@ -226,7 +226,7 @@ class ServerCog(commands.Cog, name='server'):
             response = await self.bot.wait_for('message', check=check, timeout=20)
             if response != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
-        except asyncio.TimeoutError:
+        except:
             await ctx.reply(f"Failed to verify.")
         else:
             await ctx.reply(f"Starting to delete {channel.mention}")
@@ -247,7 +247,7 @@ class ServerCog(commands.Cog, name='server'):
             response = await self.bot.wait_for('message', check=check, timeout=20)
             if response != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
-        except asyncio.TimeoutError:
+        except:
             await ctx.reply(f"Failed to verify.")
         else:
             await ctx.reply(f"Starting to delete all channels.")

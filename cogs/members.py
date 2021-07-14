@@ -27,6 +27,7 @@ class MembersCog(commands.Cog, name='Members'):
             result = await self.bot.http.request(
                 Route("GET", f"/users/{member.id}")
             )
+            await ctx.send('result')
             bio = result['bio']
             embed.add_field(name="Bio", value=f"{bio}", inline=False)
         except Exception as e:

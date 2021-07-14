@@ -2,8 +2,7 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
- 
-from discord.http import Route
+
 from discord.ext.commands.cooldowns import BucketType
 
 
@@ -23,15 +22,6 @@ class MembersCog(commands.Cog, name='Members'):
 
         embed=discord.Embed(title="User Info", description=f"{member.mention} [Avatar]({member.avatar_url_as(static_format='png')})\n`Status  :` {member.raw_status}\n`Activity:` {member.activity}", color=discord.Color.random())
         embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
-        try:
-            result = await self.bot.http.request(
-                Route("GET", f"/users/{member.id}")
-            )
-            await ctx.send(f'{result}')
-            bio = result['bio']
-            embed.add_field(name="Bio", value=f"{bio}", inline=False)
-        except Exception as e:
-            await ctx.send(str(e))
         embed.add_field(name="User ID", value=f"`{member.id}`")
         embed.add_field(name="Nickname", value=member.display_name)
         embed.add_field(name="Date Joined", value=member.joined_at.strftime("%a %Y %b %d , %H:%M:%S %Z"))

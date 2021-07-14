@@ -22,7 +22,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         defs = await self.urban.get_definition(term=phrase)
         embed=discord.Embed(title=phrase, description="**Definition:**", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        for defi in defs and len(embed) < 6000:
+        for defi in defs:
             if defi.example:
                 eg = f"Example: {defi.example}"
             else:eg=None

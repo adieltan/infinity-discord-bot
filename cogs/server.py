@@ -203,7 +203,7 @@ class ServerCog(commands.Cog, name='server'):
             return m.content.lower() == verificationletter and m.author == ctx.author
         try:
             response = await self.bot.wait_for('message', check=check, timeout=20)
-            if response != verificationletter:
+            if response.content.lower() != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
         except:
             await ctx.reply(f"Failed to verify.")
@@ -224,7 +224,7 @@ class ServerCog(commands.Cog, name='server'):
             return m.content.lower() == verificationletter and m.author == ctx.author
         try:
             response = await self.bot.wait_for('message', check=check, timeout=20)
-            if response != verificationletter:
+            if response.content.lower() != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
         except:
             await ctx.reply(f"Failed to verify.")
@@ -245,7 +245,7 @@ class ServerCog(commands.Cog, name='server'):
             return m.content.lower() == verificationletter and m.author == ctx.author
         try:
             response = await self.bot.wait_for('message', check=check, timeout=20)
-            if response != verificationletter:
+            if response.content.lower() != verificationletter:
                 raise discord.InvalidArgument("Verification not successful.")
         except:
             await ctx.reply(f"Failed to verify.")

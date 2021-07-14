@@ -22,11 +22,13 @@ class ConversionCog(commands.Cog, name='Conversion'):
         defs = await self.urban.get_definition(term=phrase)
         embed=discord.Embed(title=phrase, description="**Definition:**", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        for defi in defs:
+        for defi in defs and len(embed) < 6000:
             if defi.example:
                 eg = f"Example: {defi.example}"
             else:eg=None
             embed.add_field(name=defi.word, value=f"{defi.definition}\n{eg}\n`⬆` {defi.upvotes} `⬇` {defi.downvotes}", inline=False)
+            if len(embed) > 6000:
+                embed.remove_field(-1)
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="translate", aliases=['tr'])

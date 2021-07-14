@@ -150,7 +150,7 @@ class utilityCog(commands.Cog, name='utility'):
                 if "10003" in str(e):
                     raise discord.InvalidArgument("Voice Channel ID is invalid.")
                 elif "50013" in str(e):
-                    raise discord.InvalidArgument(["CREATE_LINK"])  
+                    raise discord.InvalidArgument("Bot can't create link to the channel.")  
                 elif "130000" in str(e):
                     raise ConnectionError("API resource is currently overloaded. Try again a little later.")      
                 else:

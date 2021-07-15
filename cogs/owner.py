@@ -30,7 +30,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Blacklist", description=f"{user.mention} for {reason}", color=discord.Color.red())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-        await changes.send(embed)
+        await changes.send(embed=embed)
 
     @commands.command(name='unblacklist', aliases=['ubl'])
     async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
@@ -51,7 +51,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Unlacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-        await changes.send(embed)
+        await changes.send(embed=embed)
 
     @commands.command(name='blacklistcheck', aliases=['blc'])
     async def blacklistcheck(self, ctx, user:discord.User):
@@ -99,7 +99,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Promoted to manager", description=f"{user.mention}", color=discord.Color.blurple())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-        await changes.send(embed)
+        await changes.send(embed=embed)
 
     @commands.command(name="managerremove", aliases=['mr'])
     @commands.is_owner()
@@ -120,7 +120,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Demoted from manager", description=f"{user.mention}", color=discord.Color.dark_orange())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-        await changes.send(embed)
+        await changes.send(embed=embed)
 
     @commands.command(name="update")
     @commands.is_owner()

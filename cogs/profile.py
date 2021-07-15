@@ -18,8 +18,9 @@ class profileCog(commands.Cog, name='profile'):
             pass
 
     @set.command(name="weight", aliases=['w]'])
-    async def setweight(self, ctx, kg:int):
+    async def setweight(self, ctx, kilogram):
         """Sets your own weight."""
+        kg = int(re.sub("[^0-9]", "", kilogram))
         results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
         results['weight'] = kg
         await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
@@ -28,8 +29,9 @@ class profileCog(commands.Cog, name='profile'):
         await ctx.reply(f"Your weight has been set to {weightdb} kg.")
 
     @set.command(name="height", aliases=['h]'])
-    async def setheight(self, ctx, cm:int):
+    async def setheight(self, ctx, centimeters):
         """Sets your own height."""
+        cm = int(re.sub("[^0-9]", "", centimeters))
         results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
         results['height'] = cm
         await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)

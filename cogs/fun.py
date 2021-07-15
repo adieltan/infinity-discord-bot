@@ -103,7 +103,9 @@ class FunCog(commands.Cog, name='Fun'):
                 await mes.edit(embed=embed, components=[Button(label="Accept", id="Accept", style=ButtonStyle.gray, disabled=True)])
                 break
             else:
-                await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey.", components=[[Button(label="Claim", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
+                try:
+                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey.", components=[[Button(label="Claim", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
+                except:pass
 
     @commands.command(name="哥哥", aliases=['geigei'])
     async def gege(self, ctx):

@@ -64,21 +64,36 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(file=discord.File(buffer, filename="qr.png"), embed=embed, mention_author=True)
 
-#    @commands.command(name='qrdecode', aliases=['qrde', 'deqr'])
-    #@commands.cooldown(1,4)
-    #async def decode(self,ctx):
-        #"""Decodes a qr code"""
-        #fim = await file.read()
-        #image = Image.open(io.BytesIO(initial_bytes=im))
-        #byte = pyzbar.decode(image=image)[0].data
-        #text = byte.decode("utf-8")
-        #await ctx.reply(f"Decoded: \n{text}", mention_author=False)
-
-    @commands.command(name='morse')
-    @commands.cooldown(1,2)
+    @commands.group(name='morse', invoke_without_command=True)
     async def morse(self, ctx, *, text:str):
         """Encodes the text to morse code."""
-        global morse 
+        morse = { 'A':'.-', 'B':'-...', 
+                    'C':'-.-.', 'D':'-..', 'E':'.', 
+                    'F':'..-.', 'G':'--.', 'H':'....', 
+                    'I':'..', 'J':'.---', 'K':'-.-', 
+                    'L':'.-..', 'M':'--', 'N':'-.', 
+                    'O':'---', 'P':'.--.', 'Q':'--.-', 
+                    'R':'.-.', 'S':'...', 'T':'-', 
+                    'U':'..-', 'V':'...-', 'W':'.--', 
+                    'X':'-..-', 'Y':'-.--', 'Z':'--..', 
+                    '1':'.----', '2':'..---', '3':'...--', 
+                    '4':'....-', '5':'.....', '6':'-....', 
+                    '7':'--...', '8':'---..', '9':'----.', 
+                    '0':'-----', ', ':'--..--', '.':'.-.-.-', 
+                    '?':'..--..', '/':'-..-.', '-':'-....-', 
+                    '(':'-.--.', ')':'-.--.-', ' ':' '}
+        txt = text.upper()
+        cipher = '' 
+        for letter in txt: 
+            cipher += morse[letter] + ' '
+        embed=discord.Embed(title=text, description=cipher, color=discord.Color.random())
+        embed.set_footer(text="Morse Encoder")
+        embed.timestamp=datetime.datetime.utcnow()
+        await ctx.reply(embed=embed, mention_author=True)
+
+    @morse.command(name='decode', aliases=['de'])
+    async def morse_to_eng(self, ctx, *, morsecode:str): 
+        """Decodes the morse code to text."""
         morse = { 'A':'.-', 'B':'-...', 
                     'C':'-.-.', 'D':'-..', 'E':'.', 
                     'F':'..-.', 'G':'--.', 'H':'....', 
@@ -94,29 +109,6 @@ class ConversionCog(commands.Cog, name='Conversion'):
                     '0':'-----', ', ':'--..--', '.':'.-.-.-', 
                     '?':'..--..', '/':'-..-.', '-':'-....-', 
                     '(':'-.--.', ')':'-.--.-'}
-        txt = text.upper()
-        cipher = '' 
-        for letter in txt: 
-            if letter != ' ': 
-    
-                # Looks up the dictionary and adds the 
-                # correspponding morse code 
-                # along with a space to separate 
-                # morse codes for different characters 
-                cipher += morse[letter] + ' '
-            else: 
-                # 1 space indicates different characters 
-                # and 2 indicates different words 
-                cipher += ' '
-        
-        embed=discord.Embed(name="Morse Encoder", description=cipher, color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        await ctx.reply(embed=embed, mention_author=True)
-
-    @commands.command(name='morsedecode', aliases=['morsede', 'demorse'])
-    @commands.cooldown(1,2)
-    async def morse_to_eng(self, ctx, *, morsecode:str): 
-        """Decodes the morse code to text."""
         morsecode += ' '
         decipher = '' 
         citext = '' 
@@ -139,13 +131,12 @@ class ConversionCog(commands.Cog, name='Conversion'):
                     # accessing the keys using their values (reverse of encryption) 
                     decipher += list(morse.keys())[list(morse.values()).index(citext)] 
                     citext = '' 
-        
-        embed=discord.Embed(name="Morse Decoder", description=decipher, color=discord.Color.random())
+        embed=discord.Embed(title="Morse Decoder", description=decipher, color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=True)
 
 
-    @commands.command(name= 'binary', aliases=['bin'])
+    @commands.group(name= 'binary', aliases=['bin'], invoke_without_command=True)
     @commands.cooldown(1,3)
     async def bin (self, ctx, *, input:str):
         """Find the binary form of a text"""
@@ -159,7 +150,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name= 'binarydecode', aliases=['binde', 'debin'])
+    @bin.command(name= 'decode', aliases=['de'])
     @commands.cooldown(1,3)
     async def binde (self, ctx, *, input:str):
         """Find the binary form of a text reversed"""
@@ -174,7 +165,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name= 'hexadecimal', aliases=['hex'])
+    @commands.group(name= 'hexadecimal', aliases=['hex'], invoke_without_command=True)
     @commands.cooldown(1,3)
     async def hex (self, ctx, *, input:str):
         """Find the hexadecimal form of a text"""
@@ -188,7 +179,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name= 'hexadecimaldecode', aliases=['hexde', 'dehex'])
+    @hex.command(name= 'decode', aliases=['de'])
     @commands.cooldown(1,3)
     async def hexde (self, ctx, *, input:str):
         """Find the hexadecimal form of a text reversed"""
@@ -203,7 +194,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name= 'octadecimal', aliases=['oct'])
+    @commands.group(name= 'octadecimal', aliases=['oct'], invoke_without_command=True)
     @commands.cooldown(1,3)
     async def oct (self, ctx, *, input:str):
         """Find the octadecimal form of a text"""
@@ -217,7 +208,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name= 'octadecimaldecode', aliases=['octde', 'deoct'])
+    @oct.command(name= 'decode', aliases=['de'])
     @commands.cooldown(1,3)
     async def octde (self, ctx, *, input:str):
         """Find the octadecimal form of a text reversed"""

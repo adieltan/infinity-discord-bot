@@ -27,51 +27,74 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="hide")
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
-    async def Hides(self, ctx, *, role:discord.Role=None):
-        """Hides a channel for a certain role."""
+    async def Hides(self, ctx, *, arg:str=None):
+        """Hides a channel for a certain role / channel / user."""
+        try:    argid = int(re.sub("[^0-9]", "", arg))
+        except:   argid=0
+        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
+        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
         if role == None:
             role = ctx.guild.default_role
-        overwrite = ctx.channel.overwrites_for(role)
+        if channel == None:
+            channel = ctx.channel
+        overwrite = channel.overwrites_for(role)
         overwrite.view_channel=False
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** hidden channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+        await ctx.reply(f'**`SUCCESSFULLY`** hidden {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="unhide", aliases=['uh'])
     @commands.cooldown(1,2)
-    @commands.has_permissions(manage_channels=True)
-    async def unHide(self, ctx, *, role:discord.Role=None):
-        """Unhides a channel for a certain role."""
+    @commands.has_permissions(manage_permissions=True)
+    async def unHide(self, ctx, *, arg:str=None):
+        """Unhides a channel for a certain role / channel / user."""
+        try:    argid = int(re.sub("[^0-9]", "", arg))
+        except:   argid=0
+        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
+        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
         if role == None:
             role = ctx.guild.default_role
-        overwrite = ctx.channel.overwrites_for(role)
-        overwrite.send_messages=True
+        if channel == None:
+            channel = ctx.channel
+        overwrite = channel.overwrites_for(role)
         overwrite.view_channel=True
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** unhidden channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+        await ctx.reply(f'**`SUCCESSFULLY`** unhidden {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="lock", aliases=['cock', 'l'])
     @commands.cooldown(1,2)
-    @commands.has_permissions(manage_channels=True)
-    async def lock(self, ctx, *, role:discord.Role=None):
-        """Locks a channel for a certain role."""
+    @commands.has_permissions(manage_permissions=True)
+    async def lock(self, ctx, *, arg:str=None):
+        """Locks a channel for a certain role / channel / user."""
+        try:    argid = int(re.sub("[^0-9]", "", arg))
+        except:   argid=0
+        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
+        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
         if role == None:
             role = ctx.guild.default_role
-        overwrite = ctx.channel.overwrites_for(role)
+        if channel == None:
+            channel = ctx.channel
+        overwrite = channel.overwrites_for(role)
         overwrite.send_messages=False
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** locked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+        await ctx.reply(f'**`SUCCESSFULLY`** locked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="unlock", aliases=['uncock', 'ul'])
     @commands.cooldown(1,2)
-    @commands.has_permissions(manage_channels=True)
-    async def unlock(self, ctx, *, role:discord.Role=None):
-        """Unocks a channel for a certain role."""
+    @commands.has_permissions(manage_permissions=True)
+    async def unlock(self, ctx, *, arg:str=None):
+        """Unhides a channel for a certain role / channel / user."""
+        try:    argid = int(re.sub("[^0-9]", "", arg))
+        except:   argid=0
+        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
+        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
         if role == None:
             role = ctx.guild.default_role
-        overwrite = ctx.channel.overwrites_for(role)
+        if channel == None:
+            channel = ctx.channel
+        overwrite = channel.overwrites_for(role)
         overwrite.send_messages=True
         await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** unlocked channel for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+        await ctx.reply(f'**`SUCCESSFULLY`** unlocked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="export")
     @commands.cooldown(1,100, BucketType.category)
@@ -156,26 +179,15 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.channel.edit(slowmode_delay=seconds)
         await ctx.reply(f"The slowmode delay for this channel is now {seconds} seconds!")
 
-    @commands.command(name="muteoverwrites")
-    @commands.cooldown(1,6)
-    @commands.has_permissions(administrator=True)
-    async def mo(self, ctx, muterole:discord.Role):
-        """Updates mute role's perms for the whole server.."""
-        overwrite = ctx.channel.overwrites_for(muterole)
-        overwrite.send_messages=False
-        channels = ctx.guild.channels
-        categories = ctx.guild.categories
-        for channel in channels:
-            try:
-                await channel.set_permissions(muterole, overwrite=overwrite)
-            except:
-                pass
-        for category in categories:
-            try:
-                await category.set_permissions(muterole, overwrite=overwrite)
-            except:
-                pass
-        await ctx.send("`DONE`")
+    @commands.command(name="raw")
+    async def raw(self, ctx):
+        """Sends the raw message that you refered."""
+        ref = ctx.message.reference
+        if ref == None:
+            await ctx.reply("Eh you gotta reply to the message you wanna see!", mention_author=True)
+        else:
+            message = await ctx.channel.fetch_message(ref.message_id)
+            await ctx.reply(message.clean_content)
 
 def setup(bot):
     bot.add_cog(ChannelCog(bot))

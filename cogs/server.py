@@ -261,5 +261,26 @@ class ServerCog(commands.Cog, name='server'):
                     pass
             await ctx.reply(f"Deleted {c} channels.")
 
+    @commands.command(name="muteoverwrites")
+    @commands.cooldown(1,6)
+    @commands.has_permissions(administrator=True)
+    async def mo(self, ctx, muterole:discord.Role):
+        """Updates mute role's perms for the whole server.."""
+        overwrite = ctx.channel.overwrites_for(muterole)
+        overwrite.send_messages=False
+        channels = ctx.guild.channels
+        categories = ctx.guild.categories
+        for channel in channels:
+            try:
+                await channel.set_permissions(muterole, overwrite=overwrite)
+            except:
+                pass
+        for category in categories:
+            try:
+                await category.set_permissions(muterole, overwrite=overwrite)
+            except:
+                pass
+        await ctx.send("`DONE`")
+        
 def setup(bot):
     bot.add_cog(ServerCog(bot))

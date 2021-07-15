@@ -293,7 +293,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='test')
     @commands.is_owner()
     async def test(self, ctx):
-        await ctx.reply("hi")
+        pass
 
 
 

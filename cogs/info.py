@@ -70,5 +70,44 @@ class InfoCog(commands.Cog, name='Info'):
             embed.add_field(name=f"{newsembed.description} `{message.created_at.strftime('%Y %b %-d')}`", value=f"{field.value}", inline=False)
         await ctx.reply(embed=embed)
 
+    @commands.group(name="suggest", invoke_without_command=True)
+    async def suggest(self, ctx, *, suggestion:str):
+        """Suggests a feature that you want added to the bot."""
+        suggestchannel = self.bot.get_channel(827896302008139806)
+        embed=discord.Embed(title="Suggestion", description=f"{suggestion}", color=discord.Color.blue())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        await suggestchannel.send(embed=embed)
+        await ctx.message.add_reaction("\U00002705")
+
+    @suggest.command(name='accept', aliases=['a'])
+    @commands.is_owner()
+    async def suggestionaccept(self, ctx, *, text:str=None):
+        """Accepts a suggestion."""
+        ref = ctx.message.reference
+        if ref == None:
+            await ctx.reply("Eh you gotta reply to the suggestion you wanna accept!", mention_author=True)
+        else:
+            message = await ctx.channel.fetch_message(ref.message_id)
+            embed=message.embeds[0]
+            embed.color=discord.Color.green()
+            embed.add_field(name="Accepted", value=f"{text}", inline=False)
+            await message.edit(embed=embed)
+            await ctx.message.delete()
+
+    @suggest.command(name='deny', aliases=['d', 'x'])
+    @commands.is_owner()
+    async def suggestiondeny(self, ctx, *, text:str=None):
+        """Denies a suggestion."""
+        ref = ctx.message.reference
+        if ref == None:
+            await ctx.reply("Eh you gotta reply to the suggestion you wanna accept!", mention_author=True)
+        else:
+            message = await ctx.channel.fetch_message(ref.message_id)
+            embed=message.embeds[0]
+            embed.color=discord.Color.red()
+            embed.add_field(name="Denied", value=f"{text}", inline=False)
+            await message.edit(embed=embed)
+            await ctx.message.delete()            
+
 def setup(bot):
     bot.add_cog(InfoCog(bot))

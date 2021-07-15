@@ -20,7 +20,7 @@ class MembersCog(commands.Cog, name='Members'):
             member = ctx.author
         await ctx.trigger_typing()
 
-        embed=discord.Embed(title="User Info", description=f"{member.mention} [Avatar]({member.avatar_url_as(static_format='png')})\n`Status  :` {member.raw_status}\n`Activity:` {member.activity}", color=discord.Color.random())
+        embed=discord.Embed(title="User Info", description=f"{member.mention} [Avatar]({member.avatar_url_as(static_format='png')})\n`Status  :` {member.raw_status}\n`Activity:` {member.activity}", color=member.color)
         embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
         embed.add_field(name="User ID", value=f"`{member.id}`")
         embed.add_field(name="Nickname", value=member.display_name)
@@ -31,6 +31,21 @@ class MembersCog(commands.Cog, name='Members'):
         embed.timestamp = member.created_at
         await ctx.reply(embed=embed, mention_author=False)
     
+    @commands.command(name='setnick', aliases=['nick'])
+    @commands.cooldown(1,5)
+    @commands.guild_only()
+    @commands.has_permissions(manage_nicknames=True)
+    async def setnick(self, ctx, member:discord.Member, *, nickname:str):
+        if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        try:            
+            await member.edit(nick=nickname, reason=f"Edited by {ctx.author.name}")
+        except Exception as e:
+            await ctx.reply(f"Error: {e}")
+        else:
+            await ctx.reply(embed=discord.Embed(title=f"Nickname Changed", description=f"{member.mention}'s nickname set to {nickname}", color=member.color))
+
     @commands.command(name='perms', aliases=['permissions', 'perm'])
     @commands.cooldown(1,5)
     @commands.guild_only()

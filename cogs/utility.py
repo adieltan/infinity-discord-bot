@@ -24,7 +24,6 @@ class utilityCog(commands.Cog, name='utility'):
                 except:pass
 
     @commands.command(name="remark")
-    @commands.dm_only()
     async def remark(self, ctx, *, remark:str):
         """Adds a remark to the referenced bookmark."""
         ref = ctx.message.reference
@@ -33,7 +32,7 @@ class utilityCog(commands.Cog, name='utility'):
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
             embed = message.embeds[0]
-            embed.fields[0].description = remark
+            embed.add_field(name="Remark", value=remark, inline=False)
             await message.edit(embed=embed)
             await ctx.message.add_reaction("\U00002705")
 

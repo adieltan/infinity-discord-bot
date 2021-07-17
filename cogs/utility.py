@@ -12,6 +12,16 @@ class utilityCog(commands.Cog, name='utility'):
         self.bot = bot
         self.togetherControl = DiscordTogether(bot)
         
+    @commands.command(name='cleandm')
+    @commands.dm_only()
+    async def cleandm(self, ctx):
+        """Cleans the messages in your dm with the bot."""
+        history = await ctx.author.dm_channel.history(limit=None).flatten()
+        for message in history:
+            try:
+                await message.delete()
+            except:pass
+    
     @commands.command(name='time')
     @commands.cooldown(1,2)
     async def time(self, ctx, *, expression:str): 

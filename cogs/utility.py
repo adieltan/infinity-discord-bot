@@ -18,9 +18,10 @@ class utilityCog(commands.Cog, name='utility'):
         """Cleans the messages in your dm with the bot."""
         history = await ctx.author.dm_channel.history(limit=None).flatten()
         for message in history:
-            try:
-                await message.delete()
-            except:pass
+            if message.pinned is False:
+                try:
+                    await message.delete()
+                except:pass
 
     @commands.command(name="remark")
     @commands.dm_only()

@@ -47,6 +47,7 @@ class ListenerCog(commands.Cog, name='Listener'):
                 embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on <t:{round(m.created_at.timestamp())}>\nAt {message_channel.mention} in {m.guild.name}", timestamp=datetime.datetime.utcnow(), color=discord.Color.from_rgb(0,255,255))
                 embed.set_author(name=m.author.name, icon_url=m.author.avatar_url)
                 embed.set_footer(text=m.guild.name, icon_url=m.guild.icon_url)
+                embed.add_field(name="Remark", value="Reply to this message with `remark <remark>` to add your remark.", inline=False)
                 message = await payload.member.send(content=content, embed=embed)
                 await message.pin()
                 history = await payload.member.dm_channel.history(limit=1).flatten()

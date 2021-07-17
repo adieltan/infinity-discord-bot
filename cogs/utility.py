@@ -21,7 +21,27 @@ class utilityCog(commands.Cog, name='utility'):
             try:
                 await message.delete()
             except:pass
-    
+
+    @commands.command(name="remark")
+    @commands.dm_only()
+    async def remark(self, ctx, *, remark:str):
+        """Adds a remark to the referenced bookmark."""
+        ref = ctx.message.reference
+        if ref == None:
+            await ctx.reply("Eh you gotta reply to the message you wanna add a remark!", mention_author=True)
+        else:
+            message = await ctx.channel.fetch_message(ref.message_id)
+            embed = message.embeds[0]
+            embed.fields[0].description = remark
+            await ref.edit(embed=embed)
+            await ctx.message.add_reaction("\U00002705")
+
+    @commands.command(name="bookmark")
+    @commands.guild_only()
+    async def bookmarkinfo(self, ctx):
+        """Info about the bookmarking system."""
+        pass
+
     @commands.command(name='time')
     @commands.cooldown(1,2)
     async def time(self, ctx, *, expression:str): 

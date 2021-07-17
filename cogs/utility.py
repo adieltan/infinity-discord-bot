@@ -25,6 +25,7 @@ class utilityCog(commands.Cog, name='utility'):
         await ctx.message.add_reaction("\U00002705")
 
     @commands.command(name="remark")
+    @commands.dm_only()
     async def remark(self, ctx, *, remark:str):
         """Adds a remark to the referenced bookmark."""
         ref = ctx.message.reference
@@ -32,16 +33,19 @@ class utilityCog(commands.Cog, name='utility'):
             await ctx.reply("Eh you gotta reply to the message you wanna add a remark!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
-            embed = message.embeds[0]
-            embed.add_field(name="Remark", value=remark, inline=False)
-            await message.edit(embed=embed)
-            await ctx.message.add_reaction("\U00002705")
+            try:
+                embed = message.embeds[0]
+                embed.add_field(name="Remark", value=remark, inline=False)
+                await message.edit(embed=embed)
+                await ctx.message.add_reaction("\U00002705")
+            except:await ctx.reply("Error")
 
     @commands.command(name="bookmark")
     @commands.guild_only()
     async def bookmarkinfo(self, ctx):
         """Info about the bookmarking system."""
-        pass
+        embed=discord.Embed(title="Bookmark System", description="React to a message with :bookmark: to bookmark the message.\nThe bot will send and pin a message in your dms which contain the content and jump link to the message you bookmarked.\nRefering to the bookmark message with `remark <remark>` can add a field to the embed containing the remark you made.")
+        await ctx.reply(embed=embed)
 
     @commands.command(name='time')
     @commands.cooldown(1,2)

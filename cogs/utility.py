@@ -34,7 +34,7 @@ class utilityCog(commands.Cog, name='utility'):
             message = await ctx.channel.fetch_message(ref.message_id)
             embed = message.embeds[0]
             embed.fields[0].description = remark
-            await ref.edit(embed=embed)
+            await message.edit(embed=embed)
             await ctx.message.add_reaction("\U00002705")
 
     @commands.command(name="bookmark")

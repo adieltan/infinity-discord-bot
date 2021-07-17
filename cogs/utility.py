@@ -22,6 +22,7 @@ class utilityCog(commands.Cog, name='utility'):
                 try:
                     await message.delete()
                 except:pass
+            await ctx.message.add_reaction("\U00002705")
 
     @commands.command(name="remark")
     async def remark(self, ctx, *, remark:str):

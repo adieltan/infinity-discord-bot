@@ -24,9 +24,9 @@ class ConversionCog(commands.Cog, name='Conversion'):
         embed.timestamp=datetime.datetime.utcnow()
         for defi in defs:
             if defi.example:
-                eg = f"Example: {defi.example}"
+                eg = f"Example: {defi.example[:500] + (defi.example[500:] and '..')}"
             else:eg=None
-            embed.add_field(name=defi.word, value=f"{defi.definition}\n{eg}\n`⬆` {defi.upvotes} `⬇` {defi.downvotes}", inline=False)
+            embed.add_field(name=defi.word, value=f"{defi.definition[:500] + (defi.definition[500:] and '..')}\n{eg}\n`⬆` {defi.upvotes} `⬇` {defi.downvotes}", inline=False)
             if len(embed) > 6000:
                 embed.remove_field(-1)
         await ctx.reply(embed=embed, mention_author=False)

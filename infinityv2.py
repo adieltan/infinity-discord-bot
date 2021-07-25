@@ -139,7 +139,7 @@ async def on_error(event, *args, **kwargs):
     embed.set_footer(text=ctx.author.id)
     embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})")
     text = traceback.format_exc()
-    chunks = [text[i:i+1024] for i in range(0, len(text), 1024)]
+    chunks = [text[i:i+1014] for i in range(0, len(text), 1014)]
     for chunk in chunks:
         embed.add_field(name="Error", value=f"```py\n{chunk}\n```", inline=False)
     await errors.send(embed=embed)

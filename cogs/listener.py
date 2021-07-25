@@ -1,4 +1,5 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from discord.ext.commands.errors import PrivateMessageOnly
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
@@ -99,7 +100,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         if cog:
             if cog._get_overridden_method(cog.cog_command_error) is not None:
                 return
-        ignored = (commands.CommandNotFound)
+        ignored = (commands.CommandNotFound, discord.Forbidden)
 
         # Allows us to check for original exceptions raised and sent to CommandInvokeError.
         # If nothing is found. We keep the exception passed to on_command_error.
@@ -111,13 +112,15 @@ class ListenerCog(commands.Cog, name='Listener'):
 
         if isinstance(error, commands.NoPrivateMessage):
             try:
-                await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+                await ctx.author.send(f'`{ctx.command}` can not be used in Private Messages.')
             except discord.HTTPException:
                 pass
+        elif isinstance(error, commands.PrivateMessageOnly):
+            await ctx.reply(f"`{ctx.command}` can only be used in Private Messages.")
         elif isinstance(error, commands.MissingPermissions):
             await ctx.reply(f"You don't have {', '.join(error.missing_perms)} perms")
         elif isinstance(error, commands.CommandOnCooldown):
-            await ctx.reply(embed=discord.Embed(title="Command is on cooldown", description=f"Retry again in {error.retry_after} seconds.", color=discord.Color.dark_gold()))
+            await ctx.reply(embed=discord.Embed(title="Command is on cooldown", description=f"Retry again in {round(error.retry_after)} seconds.", color=discord.Color.dark_gold()))
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}` is a required argument that is missing.", color=discord.Color.dark_teal()))
         elif isinstance(error, commands.NotOwner):
@@ -126,6 +129,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             await ctx.reply(embed=embed)
         elif isinstance(error, commands.CheckFailure):
             pass
+
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
             embed=discord.Embed(title=f"{type(error)}", description=f"{str(error)}", color=discord.Color.red())
@@ -145,7 +149,6 @@ class ListenerCog(commands.Cog, name='Listener'):
             for chunk in chunks:
                 page += 1
                 embed.add_field(name=f"Page {page} ", value=f"```py\n{chunk}\n```", inline=False)
-            
             await reports.send(embed=embed)
 
 def setup(bot):

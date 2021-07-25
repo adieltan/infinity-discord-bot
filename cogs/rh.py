@@ -197,6 +197,15 @@ class rhCog(commands.Cog, name='rh'):
                 else:
                     await message.reply(embed=discord.Embed(title="Roles add", description=f"Removed {role.name} from {message.author.mention}"))
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member:discord.Member):
+        if member.guild.id != 709711335436451901:
+            return
+        else:
+            bamboo_chat = await self.bot.get_channel(717962272093372556)
+            embed=discord.Embed(title=f"Welcome to {member.guild.name}, {member.name}.", description=f"Have fun and enjoy your stay here. This is our general chat and drop your concerns in <#808484444356870194> for assistance.", color=discord.Color.random())
+            await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> Panda welcomes {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[848824685222952980]))
+
     @tasks.loop(hours=24, reconnect=True)
     async def youtubeupdate(self):
         await self.bot.wait_until_ready()

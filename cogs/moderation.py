@@ -87,22 +87,21 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,10)
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
-    async def massban(self, ctx, reason:str, *, ids:str):
+    async def massban(self, ctx, *, ids:str):
         """Massban users."""
         await ctx.trigger_typing()
         ids = ids.split(' ')
-        reason = f"Massbanned by {ctx.author.name} for {reason}"
+        reason = f"Massbanned by {ctx.author.name}"
         banned = []
         error = []
         for id in ids:
             try:
-                await self.bot.http.ban(int(id), ctx.guild.id, delete_message_days=0, reason=reason)
+                await self.bot.http.ban(int(id), ctx.guild.id, delete_message_days=0)
             except:
                 error.append(id)
             else:
                 banned.append(id)
-        await ctx.send(f"""Banned {len(banned)} users: {', '.join([f"<@{id}>" for id in banned])}""")
-        await ctx.send(f"""Failed to ban {len(error)} users:{', '.join([f"<@{id}>" for id in error])}""")
+        await ctx.send(f"""Banned {len(banned)} users: {', '.join([f"<@{id}>" for id in banned])}\nFailed to ban {len(error)} users:{', '.join([f"<@{id}>" for id in error])}""")
 
 
     @commands.command(name='kick')

@@ -199,7 +199,6 @@ class rhCog(commands.Cog, name='rh'):
 
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
-        print(f"{member.name} joined. Guid = {member.guild.id}")
         if member.guild.id != 709711335436451901:
             return
         else:

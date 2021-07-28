@@ -131,23 +131,20 @@ async def on_ready():
 
 @bot.event
 async def on_error(event, *args, **kwargs):
-    try:
-        errors = bot.get_channel(855359960354652160)
-        ctx = args[0] #Gets the message object
-        try: author = ctx.author
-        except: author = bot.user
-        embed=discord.Embed(title="Error", description=f"{author.mention}\n{event}", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(name=author.name, icon_url=author.avatar_url)
-        embed.set_footer(text=author.id)
-        embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})")
-        text = traceback.format_exc()
-        chunks = [text[i:i+1014] for i in range(0, len(text), 1014)]
-        for chunk in chunks:
-            embed.add_field(name="Error", value=f"```py\n{chunk}\n```", inline=False)
-        await errors.send(embed=embed)
-    except:
-        pass
+    errors = bot.get_channel(855359960354652160)
+    ctx = args[0] #Gets the message object
+    try: author = ctx.author
+    except: author = bot.user
+    embed=discord.Embed(title="Error", description=f"{author.mention}\n{event}", color=discord.Color.random())
+    embed.timestamp=datetime.datetime.utcnow()
+    embed.set_author(name=author.name, icon_url=author.avatar_url)
+    embed.set_footer(text=author.id)
+    embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})")
+    text = traceback.format_exc()
+    chunks = [text[i:i+1014] for i in range(0, len(text), 1014)]
+    for chunk in chunks:
+        embed.add_field(name="Error", value=f"```py\n{chunk}\n```", inline=False)
+    await errors.send(embed=embed)
 
 
 @tasks.loop(minutes=100, reconnect=True)

@@ -199,12 +199,14 @@ class rhCog(commands.Cog, name='rh'):
 
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
+        print(f"{member.name} joined. Guid = {member.guild.id}")
         if member.guild.id != 709711335436451901:
             return
         else:
             bamboo_chat = self.bot.get_channel(717962272093372556)
-            embed=discord.Embed(title=f"Welcome to {member.guild.name}, {member.name}.", description=f"Have fun and enjoy your stay here. This is our general chat and drop your concerns in <#808484444356870194> for assistance.", color=discord.Color.random())
-            await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> Panda welcomes {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[848824685222952980]))
+            embed=discord.Embed(title=f"Welcome to {member.guild.name}, {member.name}.", description=f"Have fun and enjoy your stay here. \nMember Name: **{member.name}**\nMember Count: **{len(member.guild.members)} Pandas**", color=discord.Color.random(), timestamp=member.created_at)
+            embed.set_thumbnail(url=member.avatar_url)
+            await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
 
     @tasks.loop(hours=24, reconnect=True)
     async def youtubeupdate(self):

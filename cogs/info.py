@@ -18,7 +18,7 @@ class InfoCog(commands.Cog, name='Info'):
         
         embed=discord.Embed(title = "Infinity" , url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", description="Invite link: [Admin](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)  [~~Admin~~](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=0&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)", color=discord.Color.random())
         embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal :arrow_up: [<a:jump:856511832486969364>](https://discord.gg/dHGqUZNqCu) <#851637967952412723>")
-        embed.add_field(name="Website", value="[Infinity Website](https://tynxen.netlify.app/)")
+        embed.add_field(name="Website", value="[Tynxen](https://tynxen.netlify.app/)")
         embed.timestamp=datetime.datetime.utcnow()
         
         await ctx.reply(embed=embed, mention_author=False)

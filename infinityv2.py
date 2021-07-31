@@ -88,6 +88,7 @@ initial_extensions = ['cogs.channel',
                       'cogs.members',
                       'cogs.minigames',
                       'cogs.moderation',
+                      'cogs.music',
                       'cogs.others', 
                       'cogs.owner',
                       'cogs.profile',
@@ -120,12 +121,6 @@ async def on_ready():
     ti = t.strftime("%H:%M %a %d %b %Y")
     login = f"\n{bot.user}\n{ti}\n"
     print(login)
-    vc = bot.get_channel(736791916397723780)
-    try:await vc.connect()
-    except:pass
-
-    channel = bot.get_channel(813251835371454515)
-    await channel.send("∞")
     global est
     est = datetime.datetime.now()
 

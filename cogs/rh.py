@@ -207,6 +207,15 @@ class rhCog(commands.Cog, name='rh'):
             embed.set_thumbnail(url=member.avatar_url)
             await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        vc = self.bot.get_channel(736791916397723780)
+        try:await vc.connect()
+        except:pass
+
+        channel = self.bot.get_channel(813251835371454515)
+        await channel.send("∞")
+
     @tasks.loop(hours=24, reconnect=True)
     async def youtubeupdate(self):
         await self.bot.wait_until_ready()

@@ -181,7 +181,7 @@ class ChannelCog(commands.Cog, name='Channel'):
 
     @commands.command(name="raw")
     async def raw(self, ctx):
-        """Sends the raw message that you refered."""
+        """Sends the raw message that you referred."""
         ref = ctx.message.reference
         if ref == None:
             await ctx.reply("Eh you gotta reply to the message you wanna see!", mention_author=True)

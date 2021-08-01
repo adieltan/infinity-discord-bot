@@ -10,7 +10,26 @@ class ChannelCog(commands.Cog, name='Channel'):
     """*Channel Commands*"""
     def __init__(self, bot):
         self.bot = bot
-        
+    
+    @commands.command(name="snipe", aliases=["sn"])
+    @commands.cooldown(1,4)
+    async def snipe(self, ctx, channel:discord.TextChannel=None):
+        """Snipes the last deleted message of the channel."""
+        if channel is None:
+            channel = ctx.message.channel
+        deletedmsg = self.bot.snipedb.get(f"{channel.id}")
+        if deletedmsg is None:
+            await ctx.reply(f"No cached deleted message.")
+        else:
+            embed=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
+            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar_url)
+
+            await ctx.reply(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message:discord.Message):
+        self.bot.snipedb[f"{message.channel.id}"]= message
+
     @commands.command(name="first", aliases=["firstmessage", "1"])
     @commands.cooldown(1,8)
     async def first(self, ctx):

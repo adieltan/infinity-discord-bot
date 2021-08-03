@@ -203,7 +203,8 @@ class rhCog(commands.Cog, name='rh'):
             return
         else:
             bamboo_chat = self.bot.get_channel(717962272093372556)
-            embed=discord.Embed(title=f"Welcome to {member.guild.name}, {member.name}.", description=f"Have fun and enjoy your stay here. \nMember Name: **{member.name}**\nMember Count: **{len(member.guild.members)} Pandas**", color=discord.Color.random(), timestamp=member.created_at)
+            bots = sum(m.bot for m in member.guild.members)
+            embed=discord.Embed(title=f"Welcome to {member.guild.name}, {member.name}.", description=f"Have fun and enjoy your stay here. \nMember Name: **{member.name}** {member.mention}\nMember Count: **{member.guild.member_count - bots} Pandas**", color=discord.Color.random(), timestamp=member.created_at)
             embed.set_thumbnail(url=member.avatar_url)
             await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
 

@@ -94,17 +94,17 @@ class FunCog(commands.Cog, name='Fun'):
         text = ''.join([random.choice(letters) for _ in range(16)])
         embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
         embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
-        mes = await ctx.send(f"<https://discord\.gift/{text}>",embed=embed, components=[Button(label="Accept", id="Accept", style=ButtonStyle.green)])
+        mes = await ctx.send(f"<https://dizcord.gift/{text}>",embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.green)])
         while True:
             try:
                 interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 20)
             except asyncio.TimeoutError:
                 embed.description="Looks like someone already redeemed this gift."
-                await mes.edit(embed=embed, components=[Button(label="Accept", id="Accept", style=ButtonStyle.gray, disabled=True)])
+                await mes.edit(embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.gray, disabled=True)])
                 break
             else:
                 try:
-                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey.", components=[[Button(label="Claim", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
+                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey.", components=[[Button(label="\u2800\u2800\u2800\u2800\u2800Claim\u2800\u2800\u2800\u2800\u2800", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
                 except:pass
 
     @commands.command(name="哥哥", aliases=['geigei'])

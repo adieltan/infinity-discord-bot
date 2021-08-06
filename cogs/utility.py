@@ -202,33 +202,6 @@ class utilityCog(commands.Cog, name='utility'):
         except:
             await ctx.reply(f"You have to join a voice channel first.")
 
-    @commands.command(name="poker")
-    async def poker(self, ctx):
-        """Discord Party Games"""
-        try:
-            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'poker')
-            await ctx.send(f"Click the blue link!\n{link}")
-        except:
-            await ctx.reply(f"You have to join a voice channel first.")
-            
-    @commands.command(name="chess")
-    async def chess(self, ctx):
-        """Discord Party Games"""
-        try:
-            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'chess')
-            await ctx.send(f"Click the blue link!\n{link}")
-        except:
-            await ctx.reply(f"You have to join a voice channel first.")
-
-    @commands.command(name="betrayal")
-    async def betrayal(self, ctx):
-        """Discord Party Games"""
-        try:
-            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'betrayal')
-            await ctx.send(f"Click the blue link!\n{link}")
-        except:
-            await ctx.reply(f"You have to join a voice channel first.")
-
     @commands.command(name="fishing")
     async def fishing(self, ctx):
         """Discord Party Games"""
@@ -237,5 +210,23 @@ class utilityCog(commands.Cog, name='utility'):
             await ctx.send(f"Click the blue link!\n{link}")
         except:
             await ctx.reply(f"You have to join a voice channel first.")
+
+    @commands.group(name="poll", invoke_without_command=True)
+    @commands.bot_has_permissions(add_reactions=True)
+    async def poll(self, ctx,*, question):
+        """Creates a simple poll."""
+        embed=discord.Embed(title="Simple Poll", description=f"{ctx.author.mention} asks: **{question}**", color=discord.Color.random())
+        msg = await ctx.reply(embed=embed, mention_author=False)
+        await msg.add_reaction("\U0001f44d")
+        await msg.add_reaction("\U0001f44e")
+
+    @poll.command(name="check")
+    @commands.bot_has_permissions(add_reactions=True)
+    async def checkpoll(self, ctx,*, question):
+        """Poll to see how many people supports it."""
+        embed=discord.Embed(title="Check Poll", description=f"{ctx.author.mention} asks: **{question}**", color=discord.Color.random())
+        msg = await ctx.reply(embed=embed, mention_author=False)
+        await msg.add_reaction("\U00002705")
+
 def setup(bot):
     bot.add_cog(utilityCog(bot))

@@ -62,6 +62,7 @@ bot.infinityemoji = "\U0000267e"
 bot.serverdb = None
 bot._BotBase__cogs = commands.core._CaseInsensitiveDict()
 bot.snipedb = dict({})
+bot.est = datetime.datetime.now()
 
 menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove=bot.infinityemoji, active_time=20)
 # Custom ending note
@@ -122,8 +123,7 @@ async def on_ready():
     ti = t.strftime("%H:%M %a %d %b %Y")
     login = f"\n{bot.user}\n{ti}\n"
     print(login)
-    global est
-    est = datetime.datetime.now()
+    bot.est = datetime.datetime.now()
 
 @bot.event
 async def on_error(event, *args, **kwargs):
@@ -143,20 +143,13 @@ async def on_error(event, *args, **kwargs):
     await errors.send(embed=embed)
 
 
-@tasks.loop(minutes=100, reconnect=True)
+@tasks.loop(minutes=5, reconnect=True)
 async def status():
     await bot.wait_until_ready()
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers"))
-status.start()
-
-@tasks.loop(minutes=100, reconnect=True)
-async def uptime():
-    await bot.wait_until_ready()
-    await asyncio.sleep(100*60)
     timenow = datetime.datetime.now()
-    d = timenow-est
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.playing, name=f"with the infinity for {d.days} Days {round(d.seconds/60/60,2)} Hours "))
-uptime.start()
+    d = timenow-bot.est
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
+status.start()
 
 ping = []
 time = []

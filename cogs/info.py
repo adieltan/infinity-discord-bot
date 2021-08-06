@@ -46,9 +46,12 @@ class InfoCog(commands.Cog, name='Info'):
         embed.add_field(name="Owner", value=f"<@701009836938231849>")
         embed.add_field(name="Ping", value=f'{round (self.bot.latency * 1000)}ms ')
         embed.add_field(name="Connected", value=f"To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
-        embed.add_field(name="CPU", value=f'Count: {psutil.cpu_count()}\nUsage: {psutil.cpu_percent()}%', inline=False)
+        embed.add_field(name="CPU", value=f'Count: {psutil.cpu_count()}\nUsage: {psutil.cpu_percent()}%')
         memory = psutil.virtual_memory()
         embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
+        d = datetime.datetime.now() -self.bot.est
+        embed.add_field(name="Uptime", value=f"{round(d.seconds/60/60,2)} hours")
+        embed.add_field(name="Info", value=f"A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", inline=False)
         await ctx.reply(embed=embed, mention_author=False)
         
     @commands.command(name="managers", aliases=["staff"])
@@ -85,7 +88,7 @@ class InfoCog(commands.Cog, name='Info'):
         """Accepts a suggestion."""
         ref = ctx.message.reference
         if ref == None:
-            await ctx.reply("Eh you gotta reply to the suggestion you wanna accept!", mention_author=True)
+            await ctx.reply("You gotta reply to the suggestion you wanna accept!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
             embed=message.embeds[0]

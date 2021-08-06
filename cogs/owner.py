@@ -11,10 +11,13 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.bot = bot
     
 
-    @commands.command(name='blacklist', aliases=['bl'])
+    @commands.command(name='blacklist', aliases=['bl'],  hidden=True)
     async def blacklist(self, ctx, user:discord.User, *, reason:str=None):
         """Blacklists a member from using the bot."""
-        if ctx.author.id not in self.bot.managers or user.id in self.bot.managers:
+        if ctx.author.id not in self.bot.managers:
+            return
+        elif user.id in self.bot.managers:
+            await ctx.reply("You can't blacklist them.")
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = True
@@ -25,17 +28,20 @@ class OwnerCog(commands.Cog, name='Owner'):
         async for doc in self.bot.dba['profile'].find(blquery):
             bled.append(doc['_id'])
         self.bot.bled = bled
-        await ctx.reply(f"Blacklisted {user.mention}.")
+        await ctx.reply(embed=discord.Embed(title="Blacklist",description=f"Blacklisted {user.mention} `{user.id}`.", color=discord.Color.red()))
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
         changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Blacklist", description=f"{user.mention} for {reason}", color=discord.Color.red())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await changes.send(embed=embed)
 
-    @commands.command(name='unblacklist', aliases=['ubl'])
+    @commands.command(name='unblacklist', aliases=['ubl'], hidden=True)
     async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
         """unBlacklists a member from using the bot."""
-        if ctx.author.id not in self.bot.managers or user.id in self.bot.managers:
+        if ctx.author.id not in self.bot.managers:
+            return
+        elif user.id in self.bot.managers:
+            await ctx.reply("You can't unblacklist them.")
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = False
@@ -46,14 +52,14 @@ class OwnerCog(commands.Cog, name='Owner'):
         async for doc in self.bot.dba['profile'].find(blquery):
             bled.append(doc['_id'])
         self.bot.bled = bled
-        await ctx.reply(f"unBlacklisted {user.mention}.")
+        await ctx.reply(embed=discord.Embed(title="Unblacklist",description=f"Unlacklisted {user.mention} `{user.id}`.", color=discord.Color.green()))
         await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and please do continue to use and support our bot.")
         changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Unlacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await changes.send(embed=embed)
 
-    @commands.command(name='blacklistcheck', aliases=['blc'])
+    @commands.command(name='blacklistcheck', aliases=['blc'], hidden=True)
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
         if ctx.author.id not in self.bot.managers:
@@ -69,7 +75,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             reason = None
         await ctx.reply(f"{user.mention}'s blacklist status: {out}.\nReason: {reason}")
 
-    @commands.command(name='blacklisted')
+    @commands.command(name='blacklisted', hidden=True)
     async def blacklisted(self, ctx):
         if ctx.author.id not in self.bot.managers:
             return

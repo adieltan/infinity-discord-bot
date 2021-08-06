@@ -66,31 +66,8 @@ class MembersCog(commands.Cog, name='Members'):
         embed.timestamp=datetime.datetime.utcnow()
         if who is discord.Member:
             embed.set_author(icon_url=who.avatar_url, name=str(who))
-        embed.add_field(name='\uFEFF', value=f'\uFEFF'+perms)
+        embed.add_field(name='\u200B', value=f'\u200B'+perms)
         embed.set_footer(text=f'Requested by {ctx.author}')
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name='random', aliases=['randommember'])
-    @commands.cooldown(1,2)
-    @commands.guild_only()
-    async def random(self, ctx, howmany:int=1, role:discord.Role=None):
-        """Finds random peoples from the server or from roles."""
-        await ctx.trigger_typing()
-        if role == None:
-            role = ctx.guild.default_role
-        people = role.members
-        winners = []
-        if howmany > len(people):
-            howmany = len(people)
-        while len(winners) < howmany:
-            win = random.choice(people)
-            winners.append(win)
-            people.remove(win)
-        
-        text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
-        embed = discord.Embed(title='Member randomizer', description=f'{text}', color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_footer(text=f'Drawn {len(winners)} winners.')
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="mutual")
@@ -119,12 +96,25 @@ class MembersCog(commands.Cog, name='Members'):
         else:
             await ctx.message.add_reaction("\U00002705")
 
-    @commands.group(aliases=['r'])
+    @commands.group(aliases=['r'], invoke_without_command=True)
     @commands.guild_only()
-    async def role(self, ctx):
-        """Role utilities."""
-        if ctx.invoked_subcommand is None:
-            pass
+    @commands.has_permissions(manage_roles=True)
+    async def role(self,ctx, member:discord.Member, *,  role:discord.Role):
+        """Role Utilities."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        if role in member.roles:
+            await ctx.reply("User already has role.")
+            return
+        try:
+            await member.add_roles(role)
+        except:
+            await ctx.reply("Failed")
+        else:
+            embed = discord.Embed(title='User role add', description=f"Added {role.mention} to {member.mention}", color=role.color)
+            embed.timestamp=datetime.datetime.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
     
     @role.command()
     @commands.cooldown(1,4)
@@ -220,21 +210,8 @@ class MembersCog(commands.Cog, name='Members'):
         people = role.members
         text ="```css\n" + '\n'.join((f'{m.name} ({m.id})')for m in people) + "```"
         await ctx.reply(text)
-    
-    @role.command()
-    @commands.cooldown(1,4)
-    @commands.has_permissions(manage_roles=True)
-    async def clear(self,ctx, *, role:discord.Role):
-        """Clears members from that role."""
-        if ctx.author.top_role < role:
-            await ctx.reply("Failed due to role hierarchy.")
-            return
-        people = role.members
-        for m in people:
-            await m.remove_roles(role, reason="Role member clear command.")
-        await ctx.reply(f"Removed {role.mention} from {len(people)} member(s).")
 
-    @role.command(name="list", aliases=['all', 'l'])
+    @role.command(name="list", aliases=['l'])
     @commands.cooldown(1,7,BucketType.channel)
     @commands.has_permissions(manage_roles=True)
     async def list(self, ctx):
@@ -315,6 +292,158 @@ class MembersCog(commands.Cog, name='Members'):
                                 disabled = True)])
                 break
 
+    @role.command(name='random', aliases=['randommember'])
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    async def random(self, ctx, role:discord.Role=None, howmany:int=1):
+        """Finds random peoples from the whole server or from roles."""
+        await ctx.trigger_typing()
+        if role == None:
+            role = ctx.guild.default_role
+        people = role.members
+        winners = []
+        if howmany > len(people):
+            howmany = len(people)
+        while len(winners) < howmany:
+            win = random.choice(people)
+            winners.append(win)
+            people.remove(win)
+        
+        text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
+        embed = discord.Embed(title='Member randomizer', description=f'{text}', color=discord.Color.random())
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_footer(text=f'Drawn {len(winners)} winners.')
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command(name="clear")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def clear(self,ctx,*, member:discord.Member):
+        """Removes all role from a member."""
+        if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        roles = member.roles
+        roles.pop(0)
+        await member.remove_roles(*tuple(roles), reason=f"`role clear` command by {ctx.author.name} ({ctx.author.id})")
+        embed = discord.Embed(title='User role remove all', description=f"Removed **{len(roles)}** roles\n{' '.join([r.mention for r in roles])}", color=discord.Color.red())
+        embed.timestamp=datetime.datetime.utcnow()
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command(name="all")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def roleall(self, ctx,*, role:discord.Role):
+        """Adds a role to all members in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to add `{role.name}` to {len(members)} members.")
+        success = 0
+        for m in members:
+            if role not in m.roles:
+                try:    await m.add_roles(role, reason=f"`role all` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role all command", description=f"Sucessfully added {role.mention} to **{success}** members out of {len(members)} members.", color=discord.Color.green()))
+
+    @role.command(name="bots")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolebots(self, ctx,*, role:discord.Role):
+        """Adds a role to all bots in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to add `{role.name}` to bots in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is True and role not in m.roles:
+                try:    await m.add_roles(role, reason=f"`role bots` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role bots command", description=f"Sucessfully added {role.mention} to **{success}** bots out of {len(members)} members.", color=discord.Color.green()))
+
+    @role.command(name="humans")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolehumans(self, ctx,*, role:discord.Role):
+        """Adds a role to all humans in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to add `{role.name}` to humans in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is False and role not in m.roles:
+                try:    await m.add_roles(role, reason=f"`role humans` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role humans command", description=f"Sucessfully added {role.mention} to **{success}** humans out of {len(members)} members.", color=discord.Color.green()))
+
+    @role.command(name="rall")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolerall(self, ctx,*, role:discord.Role):
+        """Removes a role from all members in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to remove `{role.name}` from {len(members)} members.")
+        success = 0
+        for m in members:
+            if role in m.roles:
+                try:    await m.remove_roles(role, reason=f"`role rall` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role rall command", description=f"Sucessfully removed {role.mention} from **{success}** members out of {len(members)} members.", color=discord.Color.red()))
+
+    @role.command(name="rbots")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolerbots(self, ctx,*, role:discord.Role):
+        """Removes a role from all bots in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = role.members
+        await ctx.reply(f"Trying to remove `{role.name}` from bots in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is True and role in m.roles:
+                try:    await m.remove_roles(role, reason=f"`role rbots` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role rbots command", description=f"Sucessfully removed {role.mention} from **{success}** bots out of {len(members)} members.", color=discord.Color.red()))
+
+    @role.command(name="rhumans")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolerhumans(self, ctx,*, role:discord.Role):
+        """Removes a role from all humans in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = role.members
+        await ctx.reply(f"Trying to remove `{role.name}` from humans in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is False and role in m.roles:
+                try:    await m.remove_roles(role, reason=f"`role rhumans` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role rhumans command", description=f"Sucessfully removed {role.mention} from **{success}** humans out of {len(members)} members.", color=discord.Color.green()))
 
 def setup(bot):
     bot.add_cog(MembersCog(bot))

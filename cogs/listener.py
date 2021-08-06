@@ -119,6 +119,8 @@ class ListenerCog(commands.Cog, name='Listener'):
             await ctx.reply(f"`{ctx.command}` can only be used in Private Messages.")
         elif isinstance(error, commands.MissingPermissions):
             await ctx.reply(f"You don't have {', '.join(error.missing_perms)} perms")
+        elif isinstance(error, commands.BotMissingPermissions):
+            await ctx.reply(f"The bot dosen't have {', '.join(error.missing_perms)} perms")
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.reply(embed=discord.Embed(title="Command is on cooldown", description=f"Retry again in {round(error.retry_after)} seconds.", color=discord.Color.dark_gold()))
         elif isinstance(error, commands.MissingRequiredArgument):

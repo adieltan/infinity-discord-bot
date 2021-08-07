@@ -58,7 +58,7 @@ class InfoCog(commands.Cog, name='Info'):
     async def managers(self, ctx):
         """Shows the managers of the bot."""
         managers = self.bot.managers
-        embed=discord.Embed(title="Infinity Managers", description=f"{' '.join([f'<@{manag}>' for manag in managers])}", color=discord.Color.random())
+        embed=discord.Embed(title="Infinity Managers", description='\n'.join([f'<@{manag}>' for manag in managers]), color=discord.Color.random())
         await ctx.reply(embed=embed)
 
     @commands.command(name="newsupdate", aliases=['latestnews', 'news'])

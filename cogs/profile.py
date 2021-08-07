@@ -4,7 +4,7 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 import matplotlib.pyplot as plt
  
 
-import dateparser
+import dateparser, pycountry
 
 class profileCog(commands.Cog, name='profile'):
     """*User based commands.*"""
@@ -15,30 +15,32 @@ class profileCog(commands.Cog, name='profile'):
     async def set(self,ctx):
         """Sets up your own profile."""
         if ctx.invoked_subcommand is None:
-            pass
+            await ctx.reply("Available subcommands are `weight` , `height` , `country` & `birthday` .")
 
-    @set.command(name="weight", aliases=['w]'])
+    @set.command(name="weight", aliases=['w'])
     async def setweight(self, ctx, kilogram):
         """Sets your own weight."""
         kg = int(re.sub("[^0-9]", "", kilogram))
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
-        results['weight'] = kg
-        await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
-        weightdb = results['weight']
-        await ctx.reply(f"Your weight has been set to {weightdb} kg.")
+        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'weight':kg}}, True)
+        profile = await self.bot.dba['profile'].find_one({'_id':ctx.author.id}) or {}
+        await ctx.reply(f"Your weight has been set to {profile.get('weight')} kg.")
 
-    @set.command(name="height", aliases=['h]'])
+    @set.command(name="height", aliases=['h'])
     async def setheight(self, ctx, centimeters):
         """Sets your own height."""
         cm = int(re.sub("[^0-9]", "", centimeters))
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
-        results['height'] = cm
-        await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) 
-        heightdb = results['height']
-        await ctx.reply(f"Your height has been set to {heightdb} cm.")
+        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'height':cm}}, True)
+        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        await ctx.reply(f"Your height has been set to {profile.get('height')} cm.")
     
+    @set.command(name="country", aliases=['c'])
+    async def setcountry(self, ctx, *, country:str):
+        """Sets your country."""
+        fuzzy = pycountry.countries.search_fuzzy(country)
+        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'country':fuzzy[0].name}}, True)
+        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        await ctx.reply(f"Your country has been set to {profile.get('country')}")
+
     @set.command(name="birthday", aliases=['b', 'bd', 'bday'])
     async def setbd(self, ctx, *, birthday:str):
         """Sets your own birthday."""
@@ -47,7 +49,7 @@ class profileCog(commands.Cog, name='profile'):
             'TIMEZONE': 'UTC',
             'RETURN_AS_TIMEZONE_AWARE': True,
             'TO_TIMEZONE': 'UTC',
-            'PREFER_DATES_FROM': 'future'
+            'PREFER_DATES_FROM': 'past'
         }
         to_be_passed = f"in {user_input}"
         split = to_be_passed.split(" ")
@@ -64,11 +66,9 @@ class profileCog(commands.Cog, name='profile'):
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
         timestamp=time[0].timestamp()
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
-        results['bd'] = timestamp
-        await self.bot.dba['profile'].replace_one({"_id":ctx.author.id}, results, True)
-        results = await self.bot.dba['profile'].find_one({"_id":ctx.author.id})
-        bd = datetime.datetime.fromtimestamp(results['bd'])
+        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bd':timestamp}}, True)
+        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        bd = datetime.datetime.fromtimestamp(profile.get('bd'))
         await ctx.reply(f"Your birthday has been set to {bd}.")
 
     @commands.command(name="profile", aliases=['bmi'])
@@ -76,35 +76,24 @@ class profileCog(commands.Cog, name='profile'):
         """Gets the profile of a member."""
         if member is None:
             member = ctx.author
-        if await self.bot.dba['profile'].count_documents({"_id":member.id}) > 0:
-            results= await self.bot.dba['profile'].find_one({"_id":member.id})
-            try:
-                weight = results["weight"]
-            except:
-                await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"weight":0}}, True)
-                weight = 0
-            try:
-                height = results['height']
-            except:
-                await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"height":0}}, True)
-                height = 0
-            try:
-                bd = results['bd']
-            except:
-                bd = member.joined_at.timestamp()
-                await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"bd":bd}}, True)
-                bd = 0
-        else:
-            bd = member.joined_at.timestamp()
-            await self.bot.dba['profile'].update_one({"_id":member.id}, {"$inc":{"weight":0, "height":0, 'bd':bd}}, True)
+        results= await self.bot.dba['profile'].find_one({"_id":member.id})
+        weight = results.get('weight')
+        height = results.get('height') 
+        bd = results.get('bd')
+        if weight is None:
             weight = 0
+        if height is None:
             height = 0
+        if bd is None:
             bd = 0
+
         try:
             bmi = weight / (height/100)**2
         except:
             bmi = 0
-        if bmi <= 18.4:
+        if bmi == 0:
+            status = "None"
+        elif bmi <= 18.4:
             status="underweight"
         elif bmi <= 24.9:
             status="healthy"
@@ -118,12 +107,25 @@ class profileCog(commands.Cog, name='profile'):
             status="severely obese"
 
         birthday = datetime.datetime.fromtimestamp(bd)
+
+        desc = "\u200B"
+        loca = "\u200B"
+        if results.get('bl'):
+            desc += '\U0000274c **Blacklisted**' + '\n'
+        if results.get('manager'):
+            desc += '<a:Infinity:848819608189403156> **Infinity Managers**' + '\n'
+        if results.get('country'):
+            fuzzy = pycountry.countries.search_fuzzy(results.get('country'))
+            loca += f":flag_{fuzzy[0].alpha_2.lower()}: {fuzzy[0].name}" + '\n'
         
-        embed=discord.Embed(title="Profile", color=discord.Color.random())
+        embed=discord.Embed(title="Profile", description=desc, color=discord.Color.random())
         embed.set_author(icon_url=member.avatar_url, name=member.display_name)
-        embed.add_field(name="BMI", value=f"Height : {height} cm\nWeight : {weight} kg\nBMI : {bmi} ({status})")
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.add_field(name="BMI", value=f"Height: {height} cm\nWeight: {weight} kg\n**BMI: {round(bmi, 2)} ({status})**")
+        embed.add_field(name="Location", value=loca)
         embed.set_footer(text="Birthday: ")
         embed.timestamp=birthday
+
         await ctx.reply(embed=embed, mention_author=True)
 
     

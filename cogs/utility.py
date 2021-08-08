@@ -85,7 +85,7 @@ class utilityCog(commands.Cog, name='utility'):
             embed.set_footer(text=ts)
         except:
             pass
-        await ctx.reply(time[0],embed=embed)
+        await ctx.reply(f"{time[0]}",embed=embed)
 
     @commands.command(name='creationdate', aliases=['createdate', 'created'])
     @commands.cooldown(1,2)

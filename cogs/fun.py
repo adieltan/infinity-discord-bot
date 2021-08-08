@@ -104,7 +104,7 @@ class FunCog(commands.Cog, name='Fun'):
                 break
             else:
                 try:
-                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey.", components=[[Button(label="\u2800\u2800\u2800\u2800\u2800Claim\u2800\u2800\u2800\u2800\u2800", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
+                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey. ||(rickroll)||", components=[[Button(label="\u2800\u2800\u2800\u2800\u2800Claim\u2800\u2800\u2800\u2800\u2800", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
                 except:pass
 
     @commands.command(name="哥哥", aliases=['geigei'])

@@ -38,22 +38,22 @@ class FunCog(commands.Cog, name='Fun'):
     @commands.command(name="draw", aliases=["rollreaction", "roll reactions"])
     @commands.cooldown(1,3)
     async def draw(self, ctx, numbers:int):
-        """Reply to the message you wanna draw from."""
+        """Draws random people that reacted to a message."""
         await ctx.trigger_typing()
         
         me = ctx.message.reference
         users = []
         winners = []
         if me == None:
-            await ctx.reply("Eh you gotta reply to the message you wanna draw from!", mention_author=True)
+            await ctx.reply("You have to reply to the message you wanna draw from!", mention_author=True)
         elif numbers > 80:
             await ctx.reply("Thats a little too much.")
         else:
             meh = me.message_id           
             message = await ctx.channel.fetch_message(meh)
             reactions = message.reactions
-            if reactions == None:
-                await ctx.reply("Urm no one reacted to that message.")
+            if len(reactions) < 1:
+                await ctx.reply("No one reacted to that message.")
             else:
                 users = [await reaction.users().flatten() for reaction in reactions][0]
                 if numbers > len(users):

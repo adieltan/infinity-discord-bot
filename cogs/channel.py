@@ -46,6 +46,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="hide")
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
     async def Hides(self, ctx, *, arg:str=None):
         """Hides a channel for a certain role / channel / user."""
         try:    argid = int(re.sub("[^0-9]", "", arg))
@@ -64,6 +65,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="unhide", aliases=['uh'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
+    @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
     async def unHide(self, ctx, *, arg:str=None):
         """Unhides a channel for a certain role / channel / user."""
         try:    argid = int(re.sub("[^0-9]", "", arg))
@@ -82,6 +84,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="lock", aliases=['cock', 'l'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
+    @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
     async def lock(self, ctx, *, arg:str=None):
         """Locks a channel for a certain role / channel / user."""
         try:    argid = int(re.sub("[^0-9]", "", arg))
@@ -100,6 +103,7 @@ class ChannelCog(commands.Cog, name='Channel'):
     @commands.command(name="unlock", aliases=['uncock', 'ul'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
+    @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
     async def unlock(self, ctx, *, arg:str=None):
         """Unhides a channel for a certain role / channel / user."""
         try:    argid = int(re.sub("[^0-9]", "", arg))
@@ -116,7 +120,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="export")
-    @commands.cooldown(1,100, BucketType.category)
+    @commands.cooldown(1,40, BucketType.category)
     @commands.has_permissions(administrator=True)
     async def export(self, ctx, destination, limit:int=None):
         """Exports chat messages to another channel."""
@@ -145,6 +149,7 @@ class ChannelCog(commands.Cog, name='Channel'):
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(manage_messages=True)
     async def purge(self,ctx, no:int=100):
         """Purges a number of messages."""
         def pinc(msg):

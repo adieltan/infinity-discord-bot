@@ -51,6 +51,7 @@ class InfoCog(commands.Cog, name='Info'):
         embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
         d = datetime.datetime.now() -self.bot.est
         embed.add_field(name="Uptime", value=f"{round(d.seconds/60/60,2)} hours")
+        embed.add_field(name="Bot Lists", value=f"[BladeBotList](https://bladebotlist.xyz/bot/732917262297595925)\n[VoidBots](https://voidbots.net/bot/732917262297595925/)\n[DBL](https://discordbotlist.com/bots/infinity-5345)\n[ListCord](https://listcord.gg/bot/732917262297595925)\n[BotLists](https://botlists.com/bot/732917262297595925)\n[Fateslist](https://fateslist.xyz/bot/732917262297595925)\n[Blist](https://blist.xyz/bot/732917262297595925)")
         embed.add_field(name="Info", value=f"A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", inline=False)
         await ctx.reply(embed=embed, mention_author=False)
         

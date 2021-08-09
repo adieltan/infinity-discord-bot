@@ -15,7 +15,6 @@ except:pass
 
 clustera = motor.motor_tornado.MotorClient(str(os.getenv("mongo_server")))
 dba = clustera["infinity"]
-server=dba["server"]
 
 owners = set({701009836938231849,703135131459911740})
 managers = set({})
@@ -45,12 +44,12 @@ class Hierarchy(commands.Converter):
 async def get_prefix(bot, message):
     if not message.guild:
         return ('')
-    if await server.count_documents({"_id":message.guild.id}) > 0:
-        results= await server.find_one({"_id":message.guild.id})
-        pref = results["prefix"]
+    results= await dba['server'].find_one({"_id":message.guild.id})
+    if results is not None:
+        pref = results.get("prefix")
         return commands.when_mentioned_or(pref)(bot, message)
     else:
-        await server.insert_one({"_id":message.guild.id, "prefix": "="})
+        await dba['server'].update_one({"_id":message.guild.id}, {"$set": {'prefix':'='}}, True)
         return commands.when_mentioned_or("=")(bot, message)
 
 bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), owner_ids=owners)

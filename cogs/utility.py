@@ -103,7 +103,7 @@ class utilityCog(commands.Cog, name='utility'):
             embed.set_footer(text=ts)
         except:
             pass
-        await ctx.reply(time,embed=embed)
+        await ctx.reply(f"{time} <t:{round(time.timestamp())}>",embed=embed)
 
     @commands.command(name="weather", aliases=['w', 'temperature', 'climate', 'windspeed', 'rain', 'snow', 'humidity'])
     @commands.cooldown(1,5)
@@ -154,8 +154,9 @@ class utilityCog(commands.Cog, name='utility'):
             'fishing': '814288819477020702',
             'chess': '832012586023256104'
             }
-        if activity is None:
-            await ctx.reply(f"Avalible activities: {' '.join([defaultApplications.keys()])}")
+        if activity not in defaultApplications.keys():
+            avi = '\n'.join(defaultApplications.keys())
+            await ctx.reply(f"**Avalible activities:**\n{avi}")
             return
         if voicechannel is None:
             try:

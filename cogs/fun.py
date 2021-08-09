@@ -86,27 +86,6 @@ class FunCog(commands.Cog, name='Fun'):
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
 
-
-    @commands.command(name="nitro")
-    async def nitro(self, ctx):
-        """Generates nitro codes."""
-        letters = string.ascii_lowercase + string.ascii_lowercase + string.digits
-        text = ''.join([random.choice(letters) for _ in range(16)])
-        embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
-        embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
-        mes = await ctx.send(f"<https://dizcord.gift/{text}>",embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.green)])
-        while True:
-            try:
-                interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 20)
-            except asyncio.TimeoutError:
-                embed.description="Looks like someone already redeemed this gift."
-                await mes.edit(embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.gray, disabled=True)])
-                break
-            else:
-                try:
-                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey. ||(rickroll)||", components=[[Button(label="\u2800\u2800\u2800\u2800\u2800Claim\u2800\u2800\u2800\u2800\u2800", style=ButtonStyle.URL, url="https://bit.ly/3h5kbvl")]])
-                except:pass
-
     @commands.command(name="哥哥", aliases=['geigei'])
     async def gege(self, ctx):
         await ctx.reply("我只会心疼哥哥\nhttps://cdn.discordapp.com/attachments/717962272093372556/861518164160151582/video-1625470606.mp4")

@@ -25,3 +25,4 @@ udpy
 translate
 pycountry
 blistpy
+motionbotlist

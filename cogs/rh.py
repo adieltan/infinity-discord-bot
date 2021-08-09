@@ -26,24 +26,26 @@ class rhCog(commands.Cog, name='rh'):
             return ctx.guild.id==703135571710705815 or 709711335436451901
         return commands.check(predicate)
 
-    @commands.command(name="banappealable", aliases=['ba'])
-    @commands.has_permissions(ban_members=True)
-    @typicals()
-    @commands.cooldown(1,5)
-    async def ba(self, ctx, member:discord.Member, *, reason:str=None):
-        """Bans a member and send them a link to our appeal server."""
-        if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
-            await ctx.reply("Failed due to role hierarchy.")
-            return
-        message = f"You have been banned from {ctx.guild.name} by {ctx.author.mention} for {reason}.\nAppeal at https://discord.gg/3TnPvzdtdU ."
-        try:
-            await member.send(message)
-        except:
-            await ctx.reply(f"{member.mention}'s dms are not open.")
-        reason = f"Banned by {ctx.author.name} for {reason}. Appealable."
-        await ctx.guild.ban(member, reason=reason)
-        await ctx.reply(f'**{member}** was ***BANNED***\nReason: __{reason}__', mention_author=False)
-
+    @commands.command(name="nitro")
+    @rhserver()
+    async def nitro(self, ctx):
+        """Generates nitro codes."""
+        letters = string.ascii_lowercase + string.ascii_lowercase + string.digits
+        text = ''.join([random.choice(letters) for _ in range(16)])
+        embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
+        embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
+        mes = await ctx.send(f"<https://dizcord.gift/{text}>",embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.green)])
+        while True:
+            try:
+                interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 20)
+            except asyncio.TimeoutError:
+                embed.description="Looks like someone already redeemed this gift."
+                await mes.edit(embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.gray, disabled=True)])
+                break
+            else:
+                try:
+                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, content="Claim your gift after completing this survey. ||(rickroll)||", components=[[Button(label="\u2800\u2800\u2800\u2800\u2800Claim\u2800\u2800\u2800\u2800\u2800", style=ButtonStyle.URL, url="https://youtu.be/dQw4w9WgXcQ")]])
+                except:pass
 
     @commands.command(name="heist")
     @commands.has_any_role(783134076772941876)

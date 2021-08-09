@@ -1,4 +1,5 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from numpy import byte
 from discord.ext.commands.core import check
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
@@ -6,13 +7,61 @@ import matplotlib.pyplot as plt
  
 
 from collections import Counter
-
+from PIL import Image
 
 class ServerCog(commands.Cog, name='server'):
     """*Server Commands*"""
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command(name='prefix')
+    @commands.cooldown(1,8)
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def prefix(self, ctx, prefix:str=None):
+        """Changes the prefix for the bot in the server."""
+        if prefix is None:
+            results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
+            pref = results.get('prefix')
+            await ctx.reply(f"The prefix for {ctx.guild.name} is `{pref}`", mention_author=False)
+        elif len(prefix) > 5:
+            await ctx.reply("You can't have such a long prefix.", mention_author=False)
+        else:
+            await self.bot.dba['server'].update_one({"_id":ctx.guild.id}, {"$set": {'prefix':prefix}}, True)
+            await ctx.reply(f'Prefix changed to: `{prefix}`', mention_author=False)
+            name=f'[{prefix}] Infinity'
+            bot=ctx.guild.get_member(self.bot.user.id)
+            await bot.edit(nick=name)
+
+    @commands.group(name='emoji', invoke_without_command=True)
+    async def emoji(self, ctx, emoji:discord.PartialEmoji):
+        """Shows info about an emoji."""
+        await ctx.reply(f"```Name:{emoji.name}\nId: {emoji.id}\n{emoji}```", mention_author=False)
+
+    @emoji.command(name="add")
+    @commands.has_permissions(manage_emojis=True)
+    async def emoji_add(self, ctx, name, *, url:str=None):
+        """Adds an emoji to the server."""
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get(url=f"{url}") as data:
+                byteIO = io.BytesIO()
+                
+                img = Image.open(io.BytesIO(await data.read()))
+                img.save(byteIO, format=img.format)
+                byteArr = byteIO.getvalue()
+        await cs.close()
+        emoji = await ctx.guild.create_custom_emoji(name=f"{name}", image=byteArr)
+        await ctx.reply(f"{emoji}")
+
+    @emoji.command(name="list")
+    async def list_emojies(self, ctx):
+        """Lists the emojies of the server."""
+        emojies = await ctx.guild.fetch_emojis()
+        emlist = [f'{str(emoji)} {discord.utils.escape_markdown(emoji.name)} `{str(emoji)}`' for emoji in emojies]
+        pages = [emlist[i:i + 12] for i in range(0, len(emlist), 12)]
+        for page in pages:
+            text = '\n'.join([emoji for emoji in page])
+            await ctx.send(f"\u200B{text}")
 
     @commands.command(name='serverinfo', aliases=['guildinfo', 'si'])
     @commands.guild_only()

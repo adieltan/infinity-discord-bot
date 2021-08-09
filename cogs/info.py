@@ -29,12 +29,6 @@ class InfoCog(commands.Cog, name='Info'):
         """Shows the number of servers that the bot is in."""
         await ctx.reply(f"I am connected to {len(self.bot.guilds)} server(s).", mention_author=False)
 
-    @commands.command(name='emoji')
-    @commands.cooldown(1,1)
-    async def emoji(self, ctx, emoji:discord.PartialEmoji):
-        """Shows info about an emoji."""
-        await ctx.reply(f"```Name:{emoji.name}\nId: {emoji.id}\n{emoji}```", mention_author=False)
-
     @commands.command(name='info', aliases=['botinfo', 'ping'])
     @commands.cooldown(1,4)
     async def info(self, ctx):
@@ -51,7 +45,7 @@ class InfoCog(commands.Cog, name='Info'):
         embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
         d = datetime.datetime.now() -self.bot.est
         embed.add_field(name="Uptime", value=f"{round(d.seconds/60/60,2)} hours")
-        embed.add_field(name="Bot Lists", value=f"[BladeBotList](https://bladebotlist.xyz/bot/732917262297595925)\n[VoidBots](https://voidbots.net/bot/732917262297595925/)\n[DBL](https://discordbotlist.com/bots/infinity-5345)\n[ListCord](https://listcord.gg/bot/732917262297595925)\n[BotLists](https://botlists.com/bot/732917262297595925)\n[Fateslist](https://fateslist.xyz/bot/732917262297595925)\n[Blist](https://blist.xyz/bot/732917262297595925)")
+        embed.add_field(name="Bot Lists", value=f"[BladeBotList](https://bladebotlist.xyz/bot/732917262297595925)\n[VoidBots](https://voidbots.net/bot/732917262297595925/)\n[DBL](https://discordbotlist.com/bots/infinity-5345)\n[ListCord](https://listcord.gg/bot/732917262297595925)\n[BotLists](https://botlists.com/bot/732917262297595925)\n[Fateslist](https://fateslist.xyz/bot/732917262297595925)\n[Blist](https://blist.xyz/bot/732917262297595925)\n[MotionList](https://www.motiondevelopment.top/bots/732917262297595925)\n[DiscordServices](https://discordservices.net/bot/732917262297595925)\n[BotList](https://botlist.me/bots/732917262297595925)")
         embed.add_field(name="Info", value=f"A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", inline=False)
         await ctx.reply(embed=embed, mention_author=False)
         
@@ -111,7 +105,12 @@ class InfoCog(commands.Cog, name='Info'):
             embed.color=discord.Color.red()
             embed.add_field(name="Denied", value=f"{text}", inline=False)
             await message.edit(embed=embed)
-            await ctx.message.delete()            
+            await ctx.message.delete()
+
+    @commands.command(name="emojiservers")
+    async def emojiservers(self, ctx):
+        """Gets the invite links to the bot's emoji servers."""
+        await ctx.reply(embed=discord.Embed(title="Infinity Emoji Servers", description=f"[1](https://discord.gg/hM67fpgM3y) [2](https://discord.gg/T6dJHppueq)", color=discord.Color.random()))
 
 def setup(bot):
     bot.add_cog(InfoCog(bot))

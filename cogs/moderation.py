@@ -9,31 +9,6 @@ class ModerationCog(commands.Cog, name='Moderation'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='prefix')
-    @commands.cooldown(1,8)
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    async def prefix(self, ctx, apref:str=None):
-        """Changes the prefix for the bot in the server."""
-        if apref is None:
-            results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
-            pref = results["prefix"]
-            await ctx.reply(f"The prefix for {ctx.guild.name} is `{pref}`", mention_author=False)
-            pass
-        elif len(apref) > 5:
-            await ctx.reply("You can't have such a long prefix.", mention_author=False)
-            pass
-        else:
-            #col.replace_one({"_id":ctx.guild.id}, {"$set":{"prefix":f"{apref}"}})
-            results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
-            results['prefix'] = apref
-            await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
-            await ctx.reply(f'Prefix changed to: {apref}', mention_author=False)
-            name=f'[{apref}] Infinity'
-            member=ctx.guild.get_member(732917262297595925)
-            await member.edit(nick=name)
-        
-
     @commands.command(name='ban')
     @commands.cooldown(1,5)
     @commands.guild_only()

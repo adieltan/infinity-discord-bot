@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
  
 
 import lxml.html as lh
-import blist
+import blist, MotionBotList
 
 class DataCog(commands.Cog, name='Data'):
     """*Data from websites or api*"""
@@ -13,6 +13,7 @@ class DataCog(commands.Cog, name='Data'):
         self.bot = bot
         self.autostatsposting.start()
         self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))
+        self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
         
     @commands.command(name="amari", aliases=['amarigraph'])
     async def amari(self, ctx, serverid:int=None):
@@ -61,20 +62,25 @@ class DataCog(commands.Cog, name='Data'):
             async with aiohttp.ClientSession() as cs:
                 async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channelid}&key={os.getenv('googleapi')}") as data:
                     json = await data.json()
-                    items = json['items']
-            id=items[0]['id']
-            stats= items[0]['statistics']
-            embed=discord.Embed(title="Youtube Statistics", url=f"https://youtube.com/channel/{channelid}", description=f"{id}")
-            embed.add_field(name="Subscribers", value=f"{format(int(stats['subscriberCount']), ',')}")
-            embed.add_field(name="View Count", value=f"{format(int(stats['viewCount']), ',')}")
-            embed.add_field(name="Video Count", value=f"{format(int(stats['videoCount']), ',')}")
-            embed.set_footer(text="Google API")
-            await ctx.reply(embed=embed)
+                    items = json.get('items')
             await cs.close()
+            try:
+                id=items[0]['id']
+                stats= items[0]['statistics']
+                embed=discord.Embed(title="Youtube Statistics", url=f"https://youtube.com/channel/{channelid}", description=f"{id}")
+                embed.add_field(name="Subscribers", value=f"{format(int(stats['subscriberCount']), ',')}")
+                embed.add_field(name="View Count", value=f"{format(int(stats['viewCount']), ',')}")
+                embed.add_field(name="Video Count", value=f"{format(int(stats['videoCount']), ',')}")
+                embed.set_footer(text="Google API")
+                await ctx.reply(embed=embed)
+            except:
+                await ctx.reply(f"Error.\nCommon causes: Invalid channel id")
+            
 
     @commands.command('statsposting')
     @commands.is_owner()
     async def statsposting(self, ctx):
+        """Bots stats posting to various bot lists."""
         async with aiohttp.ClientSession() as cs:
             header={'Authorization':os.getenv('dbl_token')}
             data = {'users':len(self.bot.users), 'guilds':len(self.bot.guilds)}
@@ -101,8 +107,15 @@ class DataCog(commands.Cog, name='Data'):
             async with cs.post(url=f"https://bladebotlist.xyz/api/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 await ctx.reply(f"BladeBot\n{json}")
+            header={'Authorization':os.getenv('discordservices_token')}
+            data = {'servers':len(self.bot.guilds), 'shards':0}
+            async with cs.post(url=f"https://api.discordservices.net/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
+                json = await data.json()
+                await ctx.reply(f"DiscordServices\n{json}")
         await cs.close()
+
         await blist.Blist.post_bot_stats(self.blist)
+        self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
 
     @tasks.loop(hours=4, reconnect=True)
     async def autostatsposting(self):
@@ -143,8 +156,23 @@ class DataCog(commands.Cog, name='Data'):
                 if json.get('errcode') != 200:
                     reports = self.bot.get_channel(825900714013360199)
                     await reports.send(f"BladeBot\n{json}")
+            header={'Authorization':os.getenv('discordservices_token')}
+            data = {'servers':len(self.bot.guilds), 'shards':0}
+            async with cs.post(url=f"https://api.discordservices.net/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
+                json = await data.json()
+                if json.get('code') != 200:
+                    reports = self.bot.get_channel(825900714013360199)
+                    await reports.send(f"DiscordServices\n{json}")
+            header={'Authorization':os.getenv('botlist_token')}
+            data = {'server_count':len(self.bot.guilds)}
+            async with cs.post(url=f"https://api.botlist.me/api/v1/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
+                json = await data.json()
+                if json.get('error') != False:
+                    reports = self.bot.get_channel(825900714013360199)
+                    await reports.send(f"Botlist\n{json}")
         await cs.close()
         await blist.Blist.post_bot_stats(self.blist)
+        self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
 
 def setup(bot):
     bot.add_cog(DataCog(bot))

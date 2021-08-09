@@ -37,6 +37,10 @@ class ListenerCog(commands.Cog, name='Listener'):
             except:pass
 
     @commands.Cog.listener()
+    async def on_message_edit(self, before, after):
+        await self.bot.process_commands(after)
+
+    @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
         if payload.event_type == "REACTION_ADD" and payload.emoji.name == "🔖" and payload.member is not None:
             try:
@@ -120,7 +124,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.MissingPermissions):
             await ctx.reply(f"You don't have {', '.join(error.missing_perms)} perms")
         elif isinstance(error, commands.BotMissingPermissions):
-            await ctx.reply(f"The bot dosen't have {', '.join(error.missing_perms)} perms")
+            await ctx.send(f"The bot dosen't have {', '.join(error.missing_perms)} perms", mention_author=True)
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.reply(embed=discord.Embed(title="Command is on cooldown", description=f"Retry again in {round(error.retry_after)} seconds.", color=discord.Color.dark_gold()))
         elif isinstance(error, commands.MissingRequiredArgument):

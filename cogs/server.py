@@ -36,7 +36,7 @@ class ServerCog(commands.Cog, name='server'):
     @commands.group(name='emoji', invoke_without_command=True)
     async def emoji(self, ctx, emoji:discord.PartialEmoji):
         """Shows info about an emoji."""
-        await ctx.reply(f"```Name:{emoji.name}\nId: {emoji.id}\n{emoji}```", mention_author=False)
+        await ctx.reply(f"```Name:{emoji.name}\nId: {emoji.id}\n{emoji}\n{emoji.url}```", mention_author=False)
 
     @emoji.command(name="add")
     @commands.has_permissions(manage_emojis=True)

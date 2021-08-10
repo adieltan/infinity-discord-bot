@@ -8,6 +8,51 @@ class EconomyCog(commands.Cog, name='Economy'):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.group(name="shop", invoke_without_command=True)
+    async def shop(self, ctx, item=None):
+        """Finds the information about the item in Infinity shop."""
+        if item is None:
+            cursor = self.bot.dba['items'].find().sort('_id')
+            items = []
+            async for document in cursor:
+                items.append(document)
+            pages = [items[i:i + 12] for i in range(0, len(items), 12)]
+            embeds = []
+            for page in pages:
+                text = '\n'.join([f"{item.get('emoji')} [**{item.get('name')}**]({item.get('image')} \"{item.get('_id')}\") " for item in page])
+                embed=discord.Embed(title=f"Infinity Shop", description=f"\u200B {text}", color=discord.Color.random())
+                embeds.append(embed)
+                await ctx.reply(embed=embed)
+        else:
+            item = await self.bot.dba['items'].find_one({"name":item})
+            embed=discord.Embed(title=f"Infinity Shop", description=f"{item.get('emoji')} **{item.get('name')}**\n```\n{item.get('description')}\n```", color=discord.Color.random())
+            embed.set_thumbnail(url=f"{item.get('image')}")
+            embed.set_footer(text=f"{item.get('_id')}")
+            await ctx.reply(embed=embed) 
+
+
+    @shop.command(name="additem")
+    @commands.is_owner()
+    async def additem(self, ctx, item_id:str, item_emoji:discord.PartialEmoji, item_name:str, item_description:str=None):
+        """Adds an item to the bot's economy system."""
+        await self.bot.dba['items'].update_one({"_id":item_id}, {"$set": {'name':item_name, 'emoji':f"{item_emoji}", 'image':f"{item_emoji.url}", 'description':f"{item_description}"}}, True)
+        item = await self.bot.dba['items'].find_one({"_id":item_id})
+        embed=discord.Embed(title=f"Infinity Shop", description=f"{item.get('emoji')} **{item.get('name')}**\n```\n{item.get('description')}\n```", color=discord.Color.random())
+        embed.set_thumbnail(url=f"{item.get('image')}")
+        embed.set_footer(text=f"{item.get('_id')}")
+        await ctx.reply(embed=embed)
+
+    @shop.command(name="edititem")
+    @commands.is_owner()
+    async def edititem(self, ctx, item_id:str=None, key=None, *, content=None):
+        """Edits an item from the bot's economy system."""
+        if key is None or content is None or item_id is None:
+            await ctx.reply(f"Available keys: `name` `description`")
+        await self.bot.dba['items'].update_one({"_id":item_id}, {"$set": {key:content}}, True)
+        item = await self.bot.dba['item'].find_one({"_id":item_id})
+        embed=discord.Embed(title=f"Infinity Shop", description=f"`{item.get('_id')}`{item.get('emoji')} **{item.get('name')}**\n```\n{item.get('description')}\n```", color=discord.Color.random())
+        embed.set_thumbnail(url=f"{item.get('image')}")
+        await ctx.reply(embed=embed)
 
 def setup(bot):
     bot.add_cog(EconomyCog(bot))

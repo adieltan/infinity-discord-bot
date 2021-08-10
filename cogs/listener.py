@@ -138,7 +138,7 @@ class ListenerCog(commands.Cog, name='Listener'):
 
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
-            embed=discord.Embed(title=f"{type(error)}", description=f"{str(error)}", color=discord.Color.red())
+            embed=discord.Embed(title=f"{type(error).__name__}", description=f"{str(error)}", color=discord.Color.red())
             embed.timestamp = datetime.datetime.utcnow()
             await ctx.reply(embed=embed)
             #reporting

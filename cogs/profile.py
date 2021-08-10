@@ -116,7 +116,7 @@ class profileCog(commands.Cog, name='profile'):
             if results.get('bl'):
                 desc += '\U0000274c **Blacklisted**' + '\n'
             if results.get('manager'):
-                desc += '<a:Infinity:848819608189403156> **Infinity Managers**' + '\n'
+                desc += '<a:infinity:874548940610097163> **Infinity Managers**' + '\n'
             if results.get('country'):
                 fuzzy = pycountry.countries.search_fuzzy(results.get('country'))
                 loca += f":flag_{fuzzy[0].alpha_2.lower()}: {fuzzy[0].name}" + '\n'

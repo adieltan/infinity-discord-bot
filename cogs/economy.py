@@ -2,12 +2,12 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
- 
 
-class CurrencyCog(commands.Cog, name='Currency'):
-    """*Currency Commands*"""
+class EconomyCog(commands.Cog, name='Economy'):
+    """*Economy Commands*"""
     def __init__(self, bot):
         self.bot = bot
 
+
 def setup(bot):
-    bot.add_cog(CurrencyCog(bot))
+    bot.add_cog(EconomyCog(bot))

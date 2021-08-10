@@ -25,7 +25,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 tself.emoji = self.bot.get_emoji(emoji)
                 tself.status = status
                 tself.members = []
-                self.teamsteams.append(tself)
+                self.teams.append(tself)
             def add(tself, person: discord.User):
                 tself.members.append(person)
                 return tself.members

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from discord.ext.commands import BucketType
 from numpy import append
+from fuzzywuzzy import process
 
 
 class rhCog(commands.Cog, name='rh'):
@@ -138,49 +139,53 @@ class rhCog(commands.Cog, name='rh'):
     async def on_message(self, message: discord.Message):
         if message.channel.id != 848892659828916274:
             return
+        elif len(message.content) < 1:
+            return
         elif message.author.bot == True:
             return
         roles = {
-            'mal' :854353177804931083,
-            'fem' :854353177377898509,
-            "ari" :736915483651080202,
-            'tau' :807926824952266782,
-            "gem" :807925920404471808,
-            'can' :736915593235529808,
-            'leo' :736915617755561995,
-            'vir' :736915640039768064,
-            'lib' :736915677079928915,
-            'sco' :736915700014120960,
-            'sag' :736915732121649252,
-            'cap' :736915778036695139,
-            'aqu' :807973226533224478,
-            'pis' :807926062855618600,
-            'new' :731723678164713554,
-            'giv' :807926618223018015,
-            'gam' :759685837088227328,
-            'eve' :759685837088227328,
-            'inf' :848814884330537020,
-            'bum' :782937437206609941,
-            'cha' :848826846669439026,
-            'pol' :848807930085900320,
-            'you' :848814523552366652,
-            'sel' :848814467412131850,
-            'wel' :848824685222952980,
-            'par' :848784334747598908,
-            'nop' :848784758661185596,
-            'dsh' :783133558172286977,
-            'dgi' :783133954047213609,
-            'dfl' :848807540476870666,
-            'dlo' :794183280508796939,
-            'dhe' :807925829009932330,
-            'dev' :807926892723437588,
-            'dpa' :848808489278898217,
-            'cod' :791132663011606540
+            'Any Pronouns': 854353176169283644,
+            'Pronouns: Ask Me': 854353176697503785,
+            'They/Them': 854353177184698418,
+            'She/Her': 854353177377898509,
+            'He/Him': 854353177804931083,
+            'Aries': 736915483651080202,
+            'Taurus': 807926824952266782,
+            'Gemini': 807925920404471808,
+            'Cancer': 736915593235529808,
+            'Leo': 736915617755561995,
+            'Virgo': 736915640039768064,
+            'Libra': 736915677079928915,
+            'Scorpio': 736915700014120960,
+            'Sagittarius': 736915732121649252,
+            'Capricorn': 736915778036695139,
+            'Aquarius': 807973226533224478,
+            'Pisces': 807926062855618600,
+            'News': 731723678164713554,
+            'Giveaway': 807926618223018015,
+            'Game/Event Time': 759685837088227328,
+            'Infinity Updates': 848814884330537020,
+            'Bump Ping': 782937437206609941,
+            'Chat Revival': 848826846669439026,
+            'Poll Ping': 848807930085900320,
+            'Youtube Upload Pings': 848814523552366652,
+            'New Self Roles': 848814467412131850,
+            'Welcomer': 848824685222952980,
+            'Partnership Ping': 848784334747598908,
+            'No Partnership Ping': 848784758661185596,
+            'D Shop': 783133558172286977,
+            'D Giveaway': 783133954047213609,
+            'D Flash Giveaway': 848807540476870666,
+            'D Event': 807926892723437588,
+            'D Lottery': 794183280508796939,
+            'D Heist': 807925829009932330,
+            'D Partnered Heist': 848808489278898217,
+            'Coder 💻': 791132663011606540,
+            'YouTuber': 814657209593364500
         }
         try:
-            raw = message.content.lower()
-            key = raw.replace(' ','')[0:3]
-            id = roles[key]
+            fuzzy = process.extractOne(message.content, roles.keys())
+            id = roles.get(fuzzy[0])
             role = message.guild.get_role(id)
         except:
             await message.reply(f"The code `{message.content}` is invalid.\nBe sure to check out <#723892038587646002> to see what roles you can get.")
@@ -188,16 +193,16 @@ class rhCog(commands.Cog, name='rh'):
             if role not in message.author.roles:
                 try:
                     await message.author.add_roles(role, reason="Self role.")
-                    await message.reply(embed=discord.Embed(title="Roles add", description=f"Added {role.name} to {message.author.mention}"))
+                    await message.reply(embed=discord.Embed(title="Roles add", description=f"Added {role.mention} to {message.author.mention}", color=discord.Color.green()))
                 except:
                     await message.reply("Failed")
             else:
                 try:
                     await message.author.remove_roles(role, reason="Self roles.")
                 except:
-                    await message.replay(f"The code `{message.content}` is invalid.")
+                    await message.reply(f"The code `{message.content}` is invalid.")
                 else:
-                    await message.reply(embed=discord.Embed(title="Roles add", description=f"Removed {role.name} from {message.author.mention}"))
+                    await message.reply(embed=discord.Embed(title="Roles add", description=f"Removed {role.mention} from {message.author.mention}", color=discord.Color.red()))
 
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):

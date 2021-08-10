@@ -1,4 +1,4 @@
-discord.py
+discord.py[voice]
 asyncio
 requests
 datetime
@@ -26,3 +26,5 @@ translate
 pycountry
 blistpy
 motionbotlist
+topggpy
+fuzzywuzzy[speedup]

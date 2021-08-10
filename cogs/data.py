@@ -2,10 +2,9 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
- 
 
 import lxml.html as lh
-import blist, MotionBotList
+import blist, MotionBotList, topgg
 
 class DataCog(commands.Cog, name='Data'):
     """*Data from websites or api*"""
@@ -14,6 +13,8 @@ class DataCog(commands.Cog, name='Data'):
         self.autostatsposting.start()
         self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))
         self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
+        self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)
+        self.voterchannel = self.bot.get_channel(874461656938340402)
         
     @commands.command(name="amari", aliases=['amarigraph'])
     async def amari(self, ctx, serverid:int=None):
@@ -173,6 +174,11 @@ class DataCog(commands.Cog, name='Data'):
         await cs.close()
         await blist.Blist.post_bot_stats(self.blist)
         self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
+        await self.topgg.post_guild_count(len(self.bot.guilds))
+
+    @commands.Cog.listener()
+    async def on_dbl_vote(self, data):
+        await self.voterchannel.send(f"{data}")
 
 def setup(bot):
     bot.add_cog(DataCog(bot))

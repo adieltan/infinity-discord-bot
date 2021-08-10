@@ -104,8 +104,8 @@ class ServerCog(commands.Cog, name='server'):
 
         channel_info = []
         key_to_emoji = {
-            discord.TextChannel: '<:text_channel:863265248585056316>',
-            discord.VoiceChannel: '<:voice_channel:863265294240055316>',
+            discord.TextChannel: '<:text_channel:874547994584829982>',
+            discord.VoiceChannel: '<:voice_channel:874548222708826153>',
         }
         for key, total in totals.items():
             secrets = secret[key]

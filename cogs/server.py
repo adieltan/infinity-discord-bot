@@ -40,17 +40,11 @@ class ServerCog(commands.Cog, name='server'):
 
     @emoji.command(name="add")
     @commands.has_permissions(manage_emojis=True)
-    async def emoji_add(self, ctx, name, *, url:str=None):
+    async def emoji_add(self, ctx, name, *, emoji:discord.PartialEmoji):
         """Adds an emoji to the server."""
-        async with aiohttp.ClientSession() as cs:
-            async with cs.get(url=f"{url}") as data:
-                byteIO = io.BytesIO()
-                
-                img = Image.open(io.BytesIO(await data.read()))
-                img.save(byteIO, format=img.format)
-                byteArr = byteIO.getvalue()
-        await cs.close()
-        emoji = await ctx.guild.create_custom_emoji(name=f"{name}", image=byteArr)
+        img = emoji.url
+        data = await img.read()
+        emoji = await ctx.guild.create_custom_emoji(name=f"{name}", image=data)
         await ctx.reply(f"{emoji}")
 
     @emoji.command(name="list")

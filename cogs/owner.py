@@ -5,18 +5,23 @@ import matplotlib.pyplot as plt
 
 from PIL import Image, ImageDraw, ImageFont
 
+
+def is_manager():
+    def predicate(ctx):
+        return ctx.message.author.id in ctx.bot.managers
+    return commands.check(predicate)
+
 class OwnerCog(commands.Cog, name='Owner'):
     """*Only owner/managers can use this.*"""
     def __init__(self, bot):
         self.bot = bot
-    
 
-    @commands.command(name='blacklist', aliases=['bl'],  hidden=True)
+
+    @commands.command(name='blacklist', aliases=['bl'])
+    @is_manager()
     async def blacklist(self, ctx, user:discord.User, *, reason:str=None):
         """Blacklists a member from using the bot."""
-        if ctx.author.id not in self.bot.managers:
-            return
-        elif user.id in self.bot.managers:
+        if user.id in self.bot.managers:
             await ctx.reply("You can't blacklist them.")
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
@@ -35,12 +40,11 @@ class OwnerCog(commands.Cog, name='Owner'):
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await changes.send(embed=embed)
 
-    @commands.command(name='unblacklist', aliases=['ubl'], hidden=True)
+    @commands.command(name='unblacklist', aliases=['ubl'])
+    @is_manager()
     async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
         """unBlacklists a member from using the bot."""
-        if ctx.author.id not in self.bot.managers:
-            return
-        elif user.id in self.bot.managers:
+        if user.id in self.bot.managers:
             await ctx.reply("You can't unblacklist them.")
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
@@ -59,11 +63,10 @@ class OwnerCog(commands.Cog, name='Owner'):
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await changes.send(embed=embed)
 
-    @commands.command(name='blacklistcheck', aliases=['blc'], hidden=True)
+    @commands.command(name='blacklistcheck', aliases=['blc'])
+    @is_manager()
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
-        if ctx.author.id not in self.bot.managers:
-            return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         try:
             out = results['bl']
@@ -75,13 +78,11 @@ class OwnerCog(commands.Cog, name='Owner'):
             reason = None
         await ctx.reply(f"{user.mention}'s blacklist status: {out}.\nReason: {reason}")
 
-    @commands.command(name='blacklisted', hidden=True)
+    @commands.command(name='blacklisted')
+    @is_manager()
     async def blacklisted(self, ctx):
-        if ctx.author.id not in self.bot.managers:
-            return
-        blquery = {'bl':True}
         bled = set({})
-        async for doc in self.bot.dba['profile'].find(blquery):
+        async for doc in self.bot.dba['profile'].find({'bl':True}):
             bled.add(doc['_id'])
         self.bot.bled = bled
         await ctx.send(f"{' '.join([f'<@{bl}>' for bl in bled])}")

@@ -15,7 +15,7 @@ os.environ['JISHAKU_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_RETAIN'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
 os.environ['JISHAKU_NO_DM_TRACEBACK'] = 'True'
-os.environ['JISHAKU_NO_UNDERSCORE']='True'
+os.environ['JISHAKU_NO_UNDERSCORE']= 'True'
 
 async def get_prefix(bot, message):
     if not message.guild:
@@ -55,7 +55,6 @@ for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+'\cogs'):
 @bot.check
 def blacklisted(ctx) -> bool:
     return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
-
 
 menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove=bot.infinityemoji, active_time=20)
 ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"

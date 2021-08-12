@@ -3,20 +3,37 @@ from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
 
+
+from fuzzywuzzy import process
 class EconomyCog(commands.Cog, name='Economy'):
     """*Economy Commands*"""
     def __init__(self, bot):
         self.bot = bot
+        self.items = None
+    
+    async def update_items(self):
+        cursor = self.bot.dba['items'].find().sort('_id')
+        items = []
+        async for document in cursor:
+            items.append(document)
+        self.items = items
+        return self.items
+
+    def find_item(self, item_name:str):
+        item_names = [item.get('name') for item in self.items]
+        fuzzy = process.extractOne(item_name, item_names)
+        for item in self.items:
+            if item.get('name') == fuzzy[0]:
+                return item
+        
 
     @commands.group(name="shop", invoke_without_command=True)
-    async def shop(self, ctx, item=None):
+    async def shop(self, ctx, item_name:str=None):
         """Finds the information about the item in Infinity shop."""
-        if item is None:
-            cursor = self.bot.dba['items'].find().sort('_id')
-            items = []
-            async for document in cursor:
-                items.append(document)
-            pages = [items[i:i + 12] for i in range(0, len(items), 12)]
+        if self.items is None:
+            await self.update_items()
+        if item_name is None:
+            pages = [self.items[i:i + 12] for i in range(0, len(self.items), 12)]
             embeds = []
             for page in pages:
                 text = '\n'.join([f"{item.get('emoji')} [**{item.get('name')}**]({item.get('image')} \"{item.get('_id')}\") " for item in page])
@@ -24,7 +41,7 @@ class EconomyCog(commands.Cog, name='Economy'):
                 embeds.append(embed)
                 await ctx.reply(embed=embed)
         else:
-            item = await self.bot.dba['items'].find_one({"name":item})
+            item = self.find_item(item_name)
             embed=discord.Embed(title=f"Infinity Shop", description=f"{item.get('emoji')} [**{item.get('name')}**]({item.get('image')} \"{item.get('_id')}\")\n```\n{item.get('description')}\n```", color=discord.Color.random())
             embed.set_thumbnail(url=f"{item.get('image')}")
             await ctx.reply(embed=embed) 
@@ -38,7 +55,9 @@ class EconomyCog(commands.Cog, name='Economy'):
         item = await self.bot.dba['items'].find_one({"_id":item_id})
         embed=discord.Embed(title=f"Infinity Shop", description=f"{item.get('emoji')} [**{item.get('name')}**]({item.get('image')} \"{item.get('_id')}\")\n```\n{item.get('description')}\n```", color=discord.Color.random())
         embed.set_thumbnail(url=f"{item.get('image')}")
-        await ctx.reply(embed=embed) 
+        await ctx.reply(embed=embed)
+        await self.update_items()
+        
 
     @shop.command(name="edititem", aliases=['ei', 'edit'])
     @commands.is_owner()
@@ -50,7 +69,8 @@ class EconomyCog(commands.Cog, name='Economy'):
         item = await self.bot.dba['items'].find_one({"_id":item_id})
         embed=discord.Embed(title=f"Infinity Shop", description=f"{item.get('emoji')} [**{item.get('name')}**]({item.get('image')} \"{item.get('_id')}\")\n```\n{item.get('description')}\n```", color=discord.Color.random())
         embed.set_thumbnail(url=f"{item.get('image')}")
-        await ctx.reply(embed=embed) 
+        await ctx.reply(embed=embed)
+        await self.update_items()
 
 def setup(bot):
     bot.add_cog(EconomyCog(bot))

@@ -5,20 +5,11 @@ import matplotlib.pyplot as plt
 try:from dotenv import load_dotenv
 except:pass
 
-import motor.motor_asyncio, motor.motor_tornado, traceback
+import motor.motor_asyncio, motor.motor_tornado, traceback, pytz
 from pretty_help import PrettyHelp, DefaultMenu
 
-try:load_dotenv()  # take environment variables from .env.
+try:load_dotenv()
 except:pass
-# Code of your application, which uses environment variables (e.g. from `os.environ` or
-# `os.getenv`) as if they came from the actual environment.
-
-clustera = motor.motor_tornado.MotorClient(str(os.getenv("mongo_server")))
-dba = clustera["infinity"]
-
-owners = set({701009836938231849,703135131459911740})
-managers = set({})
-bled = set({})
 
 os.environ['JISHAKU_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_RETAIN'] = 'True'
@@ -26,92 +17,87 @@ os.environ['JISHAKU_HIDE'] = 'True'
 os.environ['JISHAKU_NO_DM_TRACEBACK'] = 'True'
 os.environ['JISHAKU_NO_UNDERSCORE']='True'
 
-class MyBot(commands.Bot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 async def get_prefix(bot, message):
     if not message.guild:
         return ('')
-    results= await dba['server'].find_one({"_id":message.guild.id})
+    results= await bot.dba['server'].find_one({"_id":message.guild.id})
     if results is not None:
         pref = results.get("prefix")
         return commands.when_mentioned_or(pref)(bot, message)
     else:
-        await dba['server'].update_one({"_id":message.guild.id}, {"$set": {'prefix':'='}}, True)
+        await bot.dba['server'].update_one({"_id":message.guild.id}, {"$set": {'prefix':'='}}, True)
         return commands.when_mentioned_or("=")(bot, message)
 
-bot = MyBot(command_prefix=get_prefix, description='**__Infinity Help__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), owner_ids=owners)
-bot.dba = dba
-bot.bled = bled
-bot.owners = owners
-bot.managers = managers
-bot.infinityemoji = "\U0000267e"
-bot.serverdb = None
-bot._BotBase__cogs = commands.core._CaseInsensitiveDict()
-bot.snipedb = dict({})
-bot.est = datetime.datetime.now()
+class Infinity(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove=bot.infinityemoji, active_time=20)
-# Custom ending note
-ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
-bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
+bot = Infinity(
+command_prefix=get_prefix, description='**__Infinity__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
+
+bot.owner_ids = set({701009836938231849,703135131459911740})
+bot.dba = motor.motor_tornado.MotorClient(str(os.getenv("mongo_server")))['infinity']
+bot.bled = set({})
+bot.owners = bot.owner_ids
+bot.managers = set({})
+bot.infinityemoji = "\U0000267e"
+bot._BotBase__cogs = commands.core._CaseInsensitiveDict()
+bot.serverdb = None
+bot.snipedb = dict({})
+bot.startuptime = datetime.datetime.utcnow()
 
 bot.load_extension('jishaku')
+print(f"{os.path.dirname(os.path.abspath(__file__))}")
+for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+'\cogs'):
+    if filename.endswith(".py"):
+        bot.load_extension(f"cogs.{filename[:-3]}")
 
 @bot.check
 def blacklisted(ctx) -> bool:
-    bls = bot.bled
-    return (ctx.author.id not in bls or ctx.author.id in owners or ctx.author.id in bot.managers)
+    return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
 
-cogs = ['channel', 'cogcontroller', 'conversion', 'custom', 'data', 'economy', 'fun', 'image', 'info', 'listener', 'maths', 'members', 'minigames', 'moderation', 'music','others', 'owner', 'profile', 'rh', 'server', 'slash', 'utility']
-for cog in cogs:
-    bot.load_extension("cogs."+cog)
+
+menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove=bot.infinityemoji, active_time=20)
+ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
+bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
 
 @bot.event
 async def on_ready():
-    #chaching
+    await bot.wait_until_ready()
     bls = set({})
-    blquery = {'bl':True}
-    async for doc in dba['profile'].find(blquery):
+    async for doc in bot.dba['profile'].find({'bl':True}):
         bls.add(doc['_id'])
     bot.bled = bls
     manag = set({})
-    managquery = {'manager':True}
-    async for doc in dba['profile'].find(managquery):
+    async for doc in bot.dba['profile'].find({'manager':True}):
         manag.add(doc['_id'])
     bot.managers = manag
     DiscordComponents(bot)
 
-    t = datetime.datetime.now()
-    ti = t.strftime("%H:%M %a %d %b %Y")
-    login = f"\n{bot.user}\n{ti}\n"
+    t = datetime.datetime.utcnow()
+    ti = t.strftime("%H:%M %d %b %Y")
+    tgmt8 = datetime.datetime.now(pytz.timezone("Asia/Kuala_Lumpur"))
+    tigmt8 = tgmt8.strftime("%H:%M %d %b %Y")
+    login = f"\n{bot.user}\u2800\u2800UTC: {ti}\u2800\u2800GMT +8: {tigmt8}"
     print(login)
-    bot.est = datetime.datetime.now()
+    bot.startuptime = datetime.datetime.utcnow()
 
 @bot.event
 async def on_error(event, *args, **kwargs):
     errors = bot.get_channel(855359960354652160)
-    ctx = args[0] #Gets the message object
-    try: author = ctx.author
-    except: author = bot.user
-    embed=discord.Embed(title="Error", description=f"{author.mention}\n{event}", color=discord.Color.random())
-    embed.timestamp=datetime.datetime.utcnow()
-    embed.set_author(name=author.name, icon_url=author.avatar_url)
-    embed.set_footer(text=author.id)
-    embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})")
-    text = traceback.format_exc()
-    chunks = [text[i:i+1014] for i in range(0, len(text), 1014)]
-    for chunk in chunks:
-        embed.add_field(name="Error", value=f"```py\n{chunk}\n```", inline=False)
+    print('Ignoring exception in {}'.format(event), file=sys.stderr)
+    embed=discord.Embed(title='Ignoring exception in {}'.format(event))
+    embed.description = traceback.format_exc()
+    #chunks = [text[i:i+1014] for i in range(0, len(text), 1014)]
+    #for chunk in chunks:
+        #embed.add_field(name="Error", value=f"```py\n{chunk}\n```", inline=False)
     await errors.send(embed=embed)
-
 
 @tasks.loop(minutes=5, reconnect=True)
 async def status():
     await bot.wait_until_ready()
-    timenow = datetime.datetime.now()
-    d = timenow-bot.est
+    timenow = datetime.datetime.utcnow()
+    d = timenow-bot.startuptime
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
 status.start()
 

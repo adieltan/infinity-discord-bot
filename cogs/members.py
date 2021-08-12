@@ -30,21 +30,6 @@ class MembersCog(commands.Cog, name='Members'):
         embed.set_footer(text="User creation date")
         embed.timestamp = member.created_at
         await ctx.reply(embed=embed, mention_author=False)
-    
-    @commands.command(name='setnick', aliases=['nick'])
-    @commands.cooldown(1,5)
-    @commands.guild_only()
-    @commands.has_permissions(manage_nicknames=True)
-    async def setnick(self, ctx, member:discord.Member, *, nickname:str):
-        if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
-            await ctx.reply("Failed due to role hierarchy.")
-            return
-        try:            
-            await member.edit(nick=nickname, reason=f"Edited by {ctx.author.name}")
-        except Exception as e:
-            await ctx.reply(f"Error: {e}")
-        else:
-            await ctx.reply(embed=discord.Embed(title=f"Nickname Changed", description=f"{member.mention}'s nickname set to {nickname}", color=member.color))
 
     @commands.command(name='perms', aliases=['permissions', 'perm'])
     @commands.cooldown(1,5)

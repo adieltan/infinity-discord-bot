@@ -99,5 +99,20 @@ class ModerationCog(commands.Cog, name='Moderation'):
         await ctx.guild.kick(member, reason=reason)
         await ctx.reply(f'**{member}** was ***KICKED***\nReason: __{reason}__', mention_author=False)
 
+    @commands.command(name='setnick', aliases=['nick'])
+    @commands.cooldown(1,5)
+    @commands.guild_only()
+    @commands.has_permissions(manage_nicknames=True)
+    async def setnick(self, ctx, member:discord.Member, *, nickname:str):
+        if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        try:            
+            await member.edit(nick=nickname, reason=f"Edited by {ctx.author.name}")
+        except Exception as e:
+            await ctx.reply(f"Error: {e}")
+        else:
+            await ctx.reply(embed=discord.Embed(title=f"Nickname Changed", description=f"{member.mention}'s nickname set to {nickname}", color=member.color))
+            
 def setup(bot):
     bot.add_cog(ModerationCog(bot))

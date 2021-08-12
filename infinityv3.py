@@ -48,7 +48,11 @@ bot.startuptime = datetime.datetime.utcnow()
 
 bot.load_extension('jishaku')
 print(f"{os.path.dirname(os.path.abspath(__file__))}")
-for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+'\cogs'):
+if '\\' in os.path.dirname(os.path.abspath(__file__)):
+    slash = '\\'
+elif '/' in os.path.dirname(os.path.abspath(__file__)):
+    slash = '/'
+for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cogs'):
     if filename.endswith(".py"):
         bot.load_extension(f"cogs.{filename[:-3]}")
 

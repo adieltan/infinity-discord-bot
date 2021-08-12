@@ -35,8 +35,8 @@ class Paginator:
         self.color = color
         self.char_limit = 6000
         self.field_limit = 25
-        self.prefix = "```"
-        self.suffix = "```"
+        self.prefix = ""
+        self.suffix = ""
         self.show_index = show_index
         self.clear()
 

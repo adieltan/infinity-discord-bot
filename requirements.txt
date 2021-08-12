@@ -9,14 +9,13 @@ pyzbar
 PyDictionary
 wordfreq
 py_expression_eval
-discord-pretty-help
+#discord-pretty-help
 pymongo[tls,srv]
 jishaku
 dateparser
 pillow
 numpy
 tornado
-discord_components
 matplotlib
 discord_components[button,interaction]
 lxml

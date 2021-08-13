@@ -16,6 +16,7 @@ class rhCog(commands.Cog, name='rh'):
         self.rh = bot.get_guild(709711335436451901)
         self.ba = bot.get_guild(703135571710705815)
         self.youtubeupdate.start()
+        self.supporter.start()
 
     def rhserver():
         def predicate(ctx):
@@ -88,52 +89,58 @@ class rhCog(commands.Cog, name='rh'):
         await member.add_roles(panda, reason="Verification")
         await ctx.reply(f"Verified {member.mention}")
 
-    @commands.command(name="statuscheck", aliases=["sc"])
-    @commands.has_permissions(manage_roles=True)
-    @rhserver()
-    @commands.cooldown(1,40, type=BucketType.guild)
-    async def statuscheck(self, ctx):
-        """Checks online member's status."""
-        members = ctx.guild.members
-        advertiser = ctx.guild.get_role(848463384185536552)
-        onlines = []
-        removed = []
-        added = []
-        for m in members:
-            if m.status is not (discord.Status.offline or discord.Status.invisible):
-                onlines.append(m)
-                print(onlines)
-                content = str(m.activity)
-                print(content)
-                invite = re.findall("?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", content)
-                if len(invite) < 0:
-                    pass
-                else:
-                    for inv in invite:
-                        invinfo = await self.bot.fetch_invite(inv)
-                        if invinfo.name == ctx.guild.name:
-                            m.add_roles(advertiser, reason="Advertising is present in status.")
-                            added.append(m)
-                            pass
-                        else:
-                            continue
-                
-                pass
+    async def supporter_autorole(self, member:discord.Member):
+        await self.bot.wait_until_ready()
+        if member.guild.id != 709711335436451901 or member.bot is True:
+            return
+        advertiser = member.guild.get_role(848463384185536552)
+        channel = member.guild.get_channel(813251835371454515)
+        if member.raw_status == 'offline' and advertiser in member.roles:
+            await member.remove_roles(advertiser, reason="Not advertising for us.")
+            await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
+            return
+        activity = [activity for activity in member.activities if type(activity) is discord.activity.CustomActivity]
+        try:
+            if len(activity) < 1 and advertiser in member.roles:
+                await member.remove_roles(advertiser, reason="Not advertising for us.")
+                await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
+                return
+            elif activity[0].name is None:
+                activity[0].name = ""
             else:
-                if advertiser in m.roles:
-                    m.remove_roles(advertiser, reason="Advertising not present in status.")
-                    removed.append(m)                    
-                else:
-                    pass
-                pass
+                invites = re.findall("(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", str(activity[0].name))
+                invited = False
+                for link in invites:
+                    try:
+                        invite = await self.bot.fetch_invite(url=f"{link}")
+                        if invite.guild.id == 709711335436451901:
+                            invited = True
+                            if advertiser not in member.roles:
+                                await member.add_roles(advertiser, reason="Supporter")
+                                await channel.send(embed=discord.Embed(description=f"Added {advertiser.mention} to {member.mention}", color=discord.Color.green()))
+                            break
+                    except:
+                        continue
+                if invited is False and advertiser in member.roles:
+                    await member.remove_roles(advertiser, reason="Not advertising for us.")
+                    await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
+        except:
+            pass            
+            
+            
 
-        
-        embed=discord.Embed(title="Status Check", description=f"Checking for guys that advertised our server in their status.", color=discord.Color.random())
-        embed.set_author(name=f"{ctx.author.name}", icon_url=f'{ctx.author.avatar_url}')
-        embed.add_field(name="Added", value=f"`{len(added)}`\n{[m.mention for m in added]}")
-        embed.add_field(name="Removed", value=f"`{len(removed)}`\n{[m.mention for m in removed]}")
-        embed.timestamp = datetime.datetime.now()
-        await ctx.reply(embed=embed, mention_author=False)
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        """Checks online member's status."""
+        await self.supporter_autorole(after)
+
+    @tasks.loop(hours=1, reconnect=True)
+    async def supporter(self):
+        await self.bot.wait_until_ready()
+        guild = self.bot.get_guild(709711335436451901)
+        for member in guild.members:
+            await self.supporter_autorole(member)
+
     
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):

@@ -104,6 +104,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.guild_only()
     @commands.has_permissions(manage_nicknames=True)
     async def setnick(self, ctx, member:discord.Member, *, nickname:str):
+        """Sets the nickname for someone."""
         if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
             return
@@ -113,6 +114,18 @@ class ModerationCog(commands.Cog, name='Moderation'):
             await ctx.reply(f"Error: {e}")
         else:
             await ctx.reply(embed=discord.Embed(title=f"Nickname Changed", description=f"{member.mention}'s nickname set to {nickname}", color=member.color))
+
+    @commands.command(name='mynick')
+    @commands.guild_only()
+    @commands.has_permissions(change_nickname=True)
+    async def mynick(self, ctx, *, nickname:str):
+        """Sets your own nickname."""
+        try:
+            await ctx.author.edit(nick=nickname, reason=f"Edited by {ctx.author.name}")
+        except:
+            await ctx.message.add_reaction("\U0000274c")
+        else:
+            await ctx.message.add_reaction("\U00002705")
             
 def setup(bot):
     bot.add_cog(ModerationCog(bot))

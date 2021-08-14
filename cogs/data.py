@@ -76,100 +76,53 @@ class DataCog(commands.Cog, name='Data'):
                 await ctx.reply(embed=embed)
             except:
                 await ctx.reply(f"Error.\nCommon causes: Invalid channel id")
-            
 
-    @commands.command('statsposting')
-    @commands.is_owner()
-    async def statsposting(self, ctx):
-        """Bots stats posting to various bot lists."""
-        async with aiohttp.ClientSession() as cs:
-            header={'Authorization':os.getenv('dbl_token')}
-            data = {'users':len(self.bot.users), 'guilds':len(self.bot.guilds)}
-            async with cs.post(url=f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats", data=data, headers=header) as data:
-                json = await data.json()
-                await ctx.reply(f"DiscordBotList\n{json}")
-            header={'Authorization':os.getenv('voidbots_token')}
-            data = {'server_count':len(self.bot.guilds)}
-            async with cs.post(url=f"https://api.voidbots.net/bot/stats/{self.bot.user.id}", json=data, headers=header) as data:
-                json = await data.json()
-                await ctx.reply(f"VoidBots\n{json}")
-            header={'Authorization':os.getenv('botlists_api')}
-            data = {'status':'idle', 'guilds':len(self.bot.guilds), 'shards':1}
-            async with cs.patch(url=f"https://api.botlists.com/bot/{self.bot.user.id}", json=data, headers=header) as data:
-                json = await data.json()
-                await ctx.reply(f"BotLists\n{json}")
-            header={'Authorization':os.getenv('listcord_token')}
-            data = {'server_count':len(self.bot.guilds)}
-            async with cs.post(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
-                json = await data.json()
-                await ctx.reply(f"Listcord\n{json}")
-            header={'Authorization':os.getenv('bladebot_token')}
-            data = {'servercount':len(self.bot.guilds)}
-            async with cs.post(url=f"https://bladebotlist.xyz/api/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
-                json = await data.json()
-                await ctx.reply(f"BladeBot\n{json}")
-            header={'Authorization':os.getenv('discordservices_token')}
-            data = {'servers':len(self.bot.guilds), 'shards':0}
-            async with cs.post(url=f"https://api.discordservices.net/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
-                json = await data.json()
-                await ctx.reply(f"DiscordServices\n{json}")
-        await cs.close()
-
-        await blist.Blist.post_bot_stats(self.blist)
-        self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
-
-    @tasks.loop(hours=4, reconnect=True)
+    @tasks.loop(hours=12, reconnect=True)
     async def autostatsposting(self):
         await self.bot.wait_until_ready()
+        reports = self.bot.get_channel(825900714013360199)
         async with aiohttp.ClientSession() as cs:
             header={'Authorization':os.getenv('dbl_token')}
             data = {'users':len(self.bot.users), 'guilds':len(self.bot.guilds)}
             async with cs.post(url=f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats", data=data, headers=header) as data:
                 json = await data.json()
                 if json.get('success') != True:
-                    reports = self.bot.get_channel(825900714013360199)
                     await reports.send(f"DiscordBotList\n{json}")
             header={'Authorization':os.getenv('voidbots_token')}
             data = {'server_count':len(self.bot.guilds)}
-            async with cs.post(url=f"https://api.voidbots.net/bot/stats/{self.bot.user.id}", json=data, headers=header) as data:
-                json = await data.json()
-                if json.get('message') != "Servercount updated!":
-                    reports = self.bot.get_channel(825900714013360199)
-                    await reports.send(f"VoidBots\n{json}")
+            #async with cs.post(url=f"https://api.voidbots.net/bot/stats/{self.bot.user.id}", json=data, headers=header) as data:
+                #json = await data.json()
+                #if json.get('message') != "Servercount updated!":
+                    #await reports.send(f"VoidBots\n{json}")
             header={'Authorization':os.getenv('botlists_api')}
             data = {'status':'idle', 'guilds':len(self.bot.guilds), 'shards':1}
             async with cs.patch(url=f"https://api.botlists.com/bot/{self.bot.user.id}", json=data, headers=header) as data:
                 json = await data.json()
                 if json.get('status') != 200:
-                    reports = self.bot.get_channel(825900714013360199)
                     await reports.send(f"BotLists\n{json}")
             header={'Authorization':os.getenv('listcord_token')}
             data = {'server_count':len(self.bot.guilds)}
             async with cs.post(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 if json.get('success') != True:
-                    reports = self.bot.get_channel(825900714013360199)
                     await reports.send(f"Listcord\n{json}")
             header={'Authorization':os.getenv('bladebot_token')}
             data = {'servercount':len(self.bot.guilds)}
             async with cs.post(url=f"https://bladebotlist.xyz/api/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 if json.get('errcode') != 200:
-                    reports = self.bot.get_channel(825900714013360199)
                     await reports.send(f"BladeBot\n{json}")
             header={'Authorization':os.getenv('discordservices_token')}
             data = {'servers':len(self.bot.guilds), 'shards':0}
             async with cs.post(url=f"https://api.discordservices.net/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 if json.get('code') != 200:
-                    reports = self.bot.get_channel(825900714013360199)
                     await reports.send(f"DiscordServices\n{json}")
             header={'Authorization':os.getenv('botlist_token')}
             data = {'server_count':len(self.bot.guilds)}
             async with cs.post(url=f"https://api.botlist.me/api/v1/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 if json.get('error') != False:
-                    reports = self.bot.get_channel(825900714013360199)
                     await reports.send(f"Botlist\n{json}")
         await cs.close()
         await blist.Blist.post_bot_stats(self.blist)

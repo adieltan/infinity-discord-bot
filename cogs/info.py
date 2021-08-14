@@ -34,19 +34,33 @@ class InfoCog(commands.Cog, name='Info'):
     async def info(self, ctx):
         """Info about the bot."""
         app = await self.bot.application_info()
-        embed=discord.Embed(title="Bot Info", description=app.description, color=discord.Color.random())
+        embed=discord.Embed(title="Bot Info", description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.set_author(name=self.bot.user, url=self.bot.user.avatar_url)
-        embed.add_field(name="Owner", value=f"<@701009836938231849>")
+        embed.add_field(name="Owner", value=f"""{' '.join([f"<@{owner}>" for owner in self.bot.owners])}""")
         embed.add_field(name="Ping", value=f'{round (self.bot.latency * 1000)}ms ')
-        embed.add_field(name="Connected", value=f"To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
         embed.add_field(name="CPU", value=f'Count: {psutil.cpu_count()}\nUsage: {psutil.cpu_percent()}%')
         memory = psutil.virtual_memory()
         embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
-        d = datetime.datetime.now() -self.bot.startuptime
+        d = datetime.datetime.utcnow() -self.bot.startuptime
         embed.add_field(name="Uptime", value=f"{round(d.seconds/60/60,2)} hours")
-        embed.add_field(name="Bot Lists", value=f"[Top.gg](https://top.gg/bot/732917262297595925)\n[DBL](https://discordbotlist.com/bots/infinity-5345)\n[BladeBotList](https://bladebotlist.xyz/bot/732917262297595925)\n[VoidBots](https://voidbots.net/bot/732917262297595925/)\n[ListCord](https://listcord.gg/bot/732917262297595925)\n[BotLists](https://botlists.com/bot/732917262297595925)\n[Fateslist](https://fateslist.xyz/bot/732917262297595925)\n[Blist](https://blist.xyz/bot/732917262297595925)\n[MotionList](https://www.motiondevelopment.top/bots/732917262297595925)\n[DiscordServices](https://discordservices.net/bot/732917262297595925)\n[BotList](https://botlist.me/bots/732917262297595925)\n[StellarBotList](https://stellarbotlist.com/bot/732917262297595925)\n[InfinityBotList](https://infinitybotlist.com/bots/732917262297595925)")
-        embed.add_field(name="Info", value=f"A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", inline=False)
+        embed.add_field(name="Connected", value=f"To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
+        bot_lists = {
+            'Top.gg':'https://top.gg/bot/732917262297595925',
+            'DBL':'https://discordbotlist.com/bots/infinity-5345',
+            'BladeBotList':'https://bladebotlist.xyz/bot/732917262297595925',
+            'VoidBots':'https://voidbots.net/bot/732917262297595925/',
+            'ListCord':'https://listcord.gg/bot/732917262297595925',
+            'BotLists':'https://botlists.com/bot/732917262297595925',
+            'Fateslist':'https://fateslist.xyz/bot/732917262297595925',
+            'Blist':'https://blist.xyz/bot/732917262297595925',
+            'MotionList':'https://www.motiondevelopment.top/bots/732917262297595925',
+            'DiscordServices':'https://discordservices.net/bot/732917262297595925',
+            'BotList':'https://botlist.me/bots/732917262297595925',
+            'StellarBotList':'https://stellarbotlist.com/bot/732917262297595925',
+            'InfinityBotList':'https://infinitybotlist.com/bots/732917262297595925'
+        }
+        embed.add_field(name="Bot Lists", value=f"""{' | '.join([f"[{item}]({bot_lists[item]})" for item in bot_lists])}""", inline=False)
         await ctx.reply(embed=embed, mention_author=False)
         
     @commands.command(name="managers", aliases=["staff"])
@@ -63,6 +77,8 @@ class InfoCog(commands.Cog, name='Info'):
         messagestop = await updatechannel.history(limit=5).flatten()
         embed=discord.Embed(title="News Update", description="<#813251614449074206>", colour=discord.Color.random())
         for message in messagestop:
+            if message.author.id != self.bot.user.id:
+                return
             newsembed = message.embeds[0]
             field = newsembed.fields[0]
             embed.add_field(name=f"{newsembed.description} <t:{round(message.created_at.timestamp())}>", value=f"{field.value}", inline=False)

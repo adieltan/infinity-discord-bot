@@ -22,7 +22,7 @@ class utilityCog(commands.Cog, name='utility'):
                 try:
                     await message.delete()
                 except:pass
-        await ctx.message.add_reaction("\U00002705")
+        await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.command(name="remark")
     @commands.dm_only()
@@ -37,7 +37,7 @@ class utilityCog(commands.Cog, name='utility'):
                 embed = message.embeds[0]
                 embed.add_field(name="Remark", value=remark, inline=False)
                 await message.edit(embed=embed)
-                await ctx.message.add_reaction("\U00002705")
+                await ctx.message.add_reaction("<a:verified:876075132114829342>")
             except:await ctx.reply("Error")
 
     @commands.command(name="bookmark")
@@ -136,7 +136,7 @@ class utilityCog(commands.Cog, name='utility'):
             except:windheading = None
             try:windgust = x['wind']['gust']
             except: windgust= None
-            embed.add_field(name="Wind", value=f"Speed: {windspeed} m/s\nHeading: {windheading} m/s\nGust: {windgust} m/s", inline=False)
+            embed.add_field(name="Wind", value=f"Speed: {windspeed} m/s\nHeading: {windheading}°\nGust: {windgust} m/s", inline=False)
             embed.set_thumbnail(url=f"http://openweathermap.org/img/wn/{z[0]['icon']}@2x.png")
             {"coord":{"lon":101.9381,"lat":2.7297},"weather":[{"id":501,"main":"Rain","description":"moderate rain","icon":"10d"}],"base":"stations","main":{"temp":303.66,"feels_like":310.66,"temp_min":302.81,"temp_max":304.9,"pressure":1007,"humidity":78,"sea_level":1007,"grnd_level":1001},"visibility":10000,"wind":{"speed":1.52,"deg":229,"gust":2.94},"rain":{"1h":2.37},"clouds":{"all":94},"dt":1624614690,"sys":{"type":2,"id":131486,"country":"MY","sunrise":1624575985,"sunset":1624620187},"timezone":28800,"id":1734810,"name":"Seremban","cod":200}
         else:
@@ -227,7 +227,7 @@ class utilityCog(commands.Cog, name='utility'):
         """Poll to see how many people supports it."""
         embed=discord.Embed(title="Check Poll", description=f"{ctx.author.mention} asks: **{question}**", color=discord.Color.random())
         msg = await ctx.reply(embed=embed, mention_author=False)
-        await msg.add_reaction("\U00002705")
+        await msg.add_reaction("<a:verified:876075132114829342>")
 
 def setup(bot):
     bot.add_cog(utilityCog(bot))

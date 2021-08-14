@@ -60,7 +60,7 @@ for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cog
 def blacklisted(ctx) -> bool:
     return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
 
-menu = DefaultMenu(page_left="\U00002196", page_right="\U00002197", remove=bot.infinityemoji, active_time=20)
+menu = DefaultMenu(page_left="<:left:876079229769482300>", page_right="<:right:876079229710762005>", remove=bot.infinityemoji, active_time=20)
 ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
 bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
 

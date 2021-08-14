@@ -114,7 +114,7 @@ class profileCog(commands.Cog, name='profile'):
             desc = "\u200B"
             loca = "\u200B"
             if results.get('bl'):
-                desc += '\U0000274c **Blacklisted**' + '\n'
+                desc += '<:exclamation:876077084986966016> **Blacklisted**' + '\n'
             if results.get('manager'):
                 desc += '<a:infinity:874548940610097163> **Infinity Managers**' + '\n'
             if results.get('country'):

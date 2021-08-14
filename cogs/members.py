@@ -70,7 +70,7 @@ class MembersCog(commands.Cog, name='Members'):
         except:
             await ctx.reply(f"Error sending message to {victim.mention}")
         else:
-            await ctx.message.add_reaction("\U00002705")
+            await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.group(aliases=['r'], invoke_without_command=True)
     @commands.guild_only()

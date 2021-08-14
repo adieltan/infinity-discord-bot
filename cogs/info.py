@@ -17,7 +17,7 @@ class InfoCog(commands.Cog, name='Info'):
         """Gets the links related to the bot."""
         
         embed=discord.Embed(title = "Infinity" , url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", description="Invite link: [Admin](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)  [~~Admin~~](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=0&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)", color=discord.Color.random())
-        embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal :arrow_up: [<a:jump:856511832486969364>](https://discord.gg/dHGqUZNqCu) <#851637967952412723>")
+        embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal <:up:876079229748539393> [<a:infinity:874548940610097163>](https://discord.gg/dHGqUZNqCu) <#851637967952412723>")
         embed.add_field(name="Website", value="[Tynxen](https://tynxen.netlify.app/)")
         embed.timestamp=datetime.datetime.utcnow()
         
@@ -91,7 +91,7 @@ class InfoCog(commands.Cog, name='Info'):
         embed=discord.Embed(title="Suggestion", description=f"{suggestion}", color=discord.Color.blue())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await suggestchannel.send(embed=embed)
-        await ctx.message.add_reaction("\U00002705")
+        await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @suggest.command(name='accept', aliases=['a'])
     @commands.is_owner()

@@ -1,4 +1,5 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+from discord.ext.commands.cooldowns import BucketType
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
@@ -6,31 +7,52 @@ import matplotlib.pyplot as plt
 
 import qrcode
 from translate import Translator
-from udpy import AsyncUrbanClient
 
 class ConversionCog(commands.Cog, name='Conversion'):
     """*Conversion commands.*"""
     def __init__(self, bot):
         self.bot = bot
-        self.urban = AsyncUrbanClient()
 
     @commands.command(name="define", aliases=["meaning"])
-    @commands.cooldown(1,3)
+    @commands.cooldown(1,3, BucketType.guild)
     async def define(self, ctx, *, phrase:str):
         """Defines a word."""
         await ctx.trigger_typing()
-        defss = await self.urban.get_definition(term=phrase)
-        defs = defss[:3]
-        embed=discord.Embed(title=phrase, description="**Definition:**", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        for defi in defs:
-            if defi.example:
-                eg = f"Example: {defi.example[:400] + (defi.example[400:] and '..')}"
-            else:eg=None
-            embed.add_field(name=defi.word, value=f"{defi.definition[:400] + (defi.definition[400:] and '..')}\n{eg}\n`⬆` {defi.upvotes} `⬇` {defi.downvotes}", inline=False)
-            if len(embed) > 6000:
-                embed.remove_field(-1)
-        await ctx.reply(embed=embed, mention_author=False)
+        async with aiohttp.ClientSession() as cs:
+            header={'Authorization':f"Token {os.getenv('owlbot')}"}
+            async with cs.get(url=f"https://owlbot.info/api/v4/dictionary/{phrase}", headers=header) as data:
+                json = await data.json()
+        await cs.close()
+        if type(json) is list:
+            json = json[0]
+        if json.get('detail') is not None:
+            await ctx.reply(f"{json.get('detail')}")
+        elif json.get('message') is not None:
+            await ctx.reply(f"{json.get('message')}")
+        else:
+            embed=discord.Embed(title=json.get('word'), description=f"*Pronounciation:* {json.get('pronounciation')}", color=discord.Color.random())
+            for defi in json.get('definitions'):
+                if defi.get('image_url') is not None:
+                    embed.set_thumbnail(url=defi.get('image_url'))
+                if defi.get('emoji') is None:
+                    defi['emoji'] = ''
+                text = ""
+                if defi.get('definition') is not None:
+                    definition = str(defi.get('definition'))
+                    definition = definition.replace('<b>', '**')
+                    definition = definition.replace('</b>', '**')
+                    definition = definition.replace('<i>', '*')
+                    definition = definition.replace('</i>', '*')
+                    text += f"\nDefinition: \u2800{definition}"
+                if defi.get('example') is not None:
+                    example = str(defi.get('example'))
+                    example = example.replace('<b>', '**')
+                    example = example.replace('</b>', '**')
+                    example = example.replace('<i>', '*')
+                    example = example.replace('</i>', '*')
+                    text += f"\nEg: \u2800\u2800\u2800\u2800\u2800{example}"
+                embed.add_field(name=f"{defi.get('emoji')} {defi.get('type')}", value=text, inline=False)
+            await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="translate", aliases=['tr'])
     @commands.cooldown(1,6)

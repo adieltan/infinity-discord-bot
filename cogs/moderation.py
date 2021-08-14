@@ -33,7 +33,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
                     try:
                         await member.send(message)
                     except:
-                        await ctx.message.add_reaction("\U0000274c")
+                        await ctx.message.add_reaction("<:exclamation:876077084986966016>")
                 except:
                     await ctx.reply("Missing permissions.")
         elif type(member) is discord.User:
@@ -95,7 +95,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
         try:
             await member.send(message)
         except:
-            await ctx.message.add_reaction("\U0000274c")
+            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
         await ctx.guild.kick(member, reason=reason)
         await ctx.reply(f'**{member}** was ***KICKED***\nReason: __{reason}__', mention_author=False)
 
@@ -123,9 +123,9 @@ class ModerationCog(commands.Cog, name='Moderation'):
         try:
             await ctx.author.edit(nick=nickname, reason=f"Edited by {ctx.author.name}")
         except:
-            await ctx.message.add_reaction("\U0000274c")
+            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
         else:
-            await ctx.message.add_reaction("\U00002705")
+            await ctx.message.add_reaction("<a:verified:876075132114829342>")
             
 def setup(bot):
     bot.add_cog(ModerationCog(bot))

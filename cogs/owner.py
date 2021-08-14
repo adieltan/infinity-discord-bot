@@ -144,9 +144,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         try:
             await channel.send(ping.mention, embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
         except:
-            await ctx.message.add_reaction("\U0000274c")
+            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
         else:
-            await ctx.message.add_reaction("\U00002705") 
+            await ctx.message.add_reaction("<a:verified:876075132114829342>") 
 
     @commands.command(name="timer", aliases=['countdown', 'cd'])
     @commands.is_owner()
@@ -230,9 +230,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         try:
             await member.send(embed=embed)
         except:
-            await ctx.message.add_reaction("\U0000274c")
+            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
         else:
-            await ctx.message.add_reaction("\U00002705")
+            await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.command(name="chat", aliases=['broadcast'])
     @commands.is_owner()
@@ -252,9 +252,9 @@ class OwnerCog(commands.Cog, name='Owner'):
                     try:
                         await channel.send(message.content, allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False))
                     except:
-                        await message.add_reaction("\U0000274c")
+                        await message.add_reaction("<:exclamation:876077084986966016>")
                     else:
-                        await message.add_reaction("\U00002705")
+                        await message.add_reaction("<a:verified:876075132114829342>")
             except asyncio.TimeoutError:
                 quit = True
                 return await ctx.reply(f'Session timeout. The broadcast session has ended.', mention_author=False)

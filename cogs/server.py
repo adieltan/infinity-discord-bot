@@ -134,7 +134,7 @@ class ServerCog(commands.Cog, name='server'):
 
         for feature, label in all_features.items():
             if feature in features:
-                info.append(f'\U00002705 {label}')
+                info.append(f'<a:verified:876075132114829342> {label}')
 
         if info:
             e.add_field(name='Features', value='\n'.join(info))

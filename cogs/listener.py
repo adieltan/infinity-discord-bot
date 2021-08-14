@@ -147,7 +147,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             embed.timestamp=datetime.datetime.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             embed.set_footer(text=ctx.author.id)
-            embed.add_field(name="Info", value=f"{ctx.channel.mention} [{ctx.message.content}]({ctx.message.jump_url})\n`⬇` **Traceback**")
+            embed.add_field(name="Info", value=f"[{ctx.message.content}]({ctx.message.jump_url})\n`⬇` **Traceback**")
             tb_str = traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__)
             text = ''.join(tb_str)
             chunks = [text[i:i+1000] for i in range(0, len(text), 1000)]

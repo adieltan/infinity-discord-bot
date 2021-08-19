@@ -29,7 +29,7 @@ class MathsCog(commands.Cog, name='Maths'):
             out = parser.parse(inp).evaluate({})
             formatted = format(out, ',')
             floated = "{:e}".format(out)
-            frac = Fraction(out)
+            frac = Fraction(out).limit_denominator()
             await ctx.reply(f'```json\n{input} = \n{out}\n```Formatted : **{formatted}**\nSci               : **{floated}**\nFraction     : **{frac}**', mention_author=False)
         except:
             embed=discord.Embed(title="Calc Help", description="Usable expressions\n `+` `-` `*` `/` `%` `^` `PI` `E` `sin(x)` `cos(x)` `tan(x)` `asin(x)` `acos(x)` `atan(x)` `log(x)` `log(x, base)` `abs(x)` `ceil(x)` `floor(x)` `round(x)` `exp(x)` `and` `or` `xor` `not` `in`") 

@@ -50,8 +50,8 @@ class rhCog(commands.Cog, name='rh'):
     @commands.cooldown(1,5, type=BucketType.guild)
     async def heist(self, ctx, amount:float, donator:discord.User, *, msg:str=None):
         """Gets people ready for a heist."""
-        heistping = self.rh.get_role(807925829009932330)
-        heistchannel = ctx.guild.get_channel(783135856017145886)
+        heistping = self.bot.get_guild(709711335436451901).get_role(807925829009932330)
+        heistchannel = self.bot.get_guild(709711335436451901).guild.get_channel(783135856017145886)
 
         into = format(amount, ',')
         embed = discord.Embed(title='Dank Memer Heist', description=f"Amount: {into}", color=discord.Color.random())
@@ -67,8 +67,8 @@ class rhCog(commands.Cog, name='rh'):
     @commands.cooldown(1,5, type=BucketType.user)
     async def pheist(self, ctx, amount: float, invite:str,*, msg:str=None):
         """Sends your partnered heist ad."""
-        heistping = self.rh.get_role(807925829009932330)
-        pheistchannel = self.rh.get_channel(848429520263839784)
+        heistping = self.bot.get_guild(709711335436451901).get_role(807925829009932330)
+        pheistchannel = self.bot.get_guild(709711335436451901).get_channel(848429520263839784)
         inviteinfo = await self.bot.fetch_invite(invite)
 
         into = format(amount, ',')

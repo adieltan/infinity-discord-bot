@@ -307,6 +307,29 @@ class OwnerCog(commands.Cog, name='Owner'):
         embed.set_footer(text=f"{len(user.mutual_guilds)} servers")
         await ctx.reply(embed=embed)
 
+    @commands.command(name="allcommands")
+    @commands.is_owner()
+    async def all_commands(self, ctx):
+        """Dumps all the commands into your terminal."""
+        for cog in self.bot.cogs:
+            cogobj = self.bot.get_cog(cog)
+
+            try:
+                print('+' + '-' * 105 + '+')
+                print('| ' + cogobj.qualified_name.upper())
+                if cogobj.description:
+                    print('| ' + cogobj.description)
+                print('+' + '-' * 105 + '+')
+            except AttributeError:
+                pass # Idk how to make a no category category
+
+            for c in cogobj.get_commands():
+                print(f"• {c.name} {c.signature.replace('_', '')}".ljust(35, ' ') + f' {c.help}')
+                if isinstance(c, commands.Group):
+                    for sc in c.commands:
+                        print(''.ljust(5, ' ') + f"▪ {sc.name} {sc.signature.replace('_', '')}".ljust(35, ' ') + f' {sc.help}')
+            print('\n')
+
     @commands.command(name='test')
     @commands.is_owner()
     async def test(self, ctx):

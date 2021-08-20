@@ -5,6 +5,7 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 import matplotlib.pyplot as plt
 
 import traceback
+from fuzzywuzzy import process
 class ListenerCog(commands.Cog, name='Listener'):
     """*Listening Commands.*"""
     def __init__(self, bot):
@@ -104,7 +105,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         if cog:
             if cog._get_overridden_method(cog.cog_command_error) is not None:
                 return
-        ignored = (commands.CommandNotFound, discord.Forbidden)
+        ignored = (discord.Forbidden,commands.CheckFailure)
 
         # Allows us to check for original exceptions raised and sent to CommandInvokeError.
         # If nothing is found. We keep the exception passed to on_command_error.
@@ -133,11 +134,13 @@ class ListenerCog(commands.Cog, name='Listener'):
             embed=discord.Embed(title="Owner only command", description=f"Imagine using this.")
             embed.set_image(url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652")
             await ctx.reply(embed=embed)
-        elif isinstance(error, commands.CheckFailure):
-            pass
+        elif isinstance(error, commands.CommandNotFound):
+            fuzzy = process.extract(ctx.invoked_with, list(ctx.bot.all_commands), limit=5)
+            suggested = "\n".join([f'`{c[0]}`' for c in fuzzy])
+            await ctx.reply(f"{error}\n"+f"""__Suggested commands:__\n{suggested}""")
+            
 
-        else:
-            # All other Errors not returned come here. And we can just print the default TraceBack.
+        else:            # All other Errors not returned come here. And we can just print the default TraceBack.
             embed=discord.Embed(title=f"{type(error).__name__}", description=f"{str(error)}", color=discord.Color.red())
             embed.timestamp = datetime.datetime.utcnow()
             await ctx.reply(embed=embed)

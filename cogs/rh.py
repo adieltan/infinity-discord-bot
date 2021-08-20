@@ -20,12 +20,7 @@ class rhCog(commands.Cog, name='rh'):
 
     def rhserver():
         def predicate(ctx):
-            return ctx.guild.id==709711335436451901
-        return commands.check(predicate)
-
-    def typicals():
-        def predicate(ctx):
-            return ctx.guild.id==703135571710705815 or 709711335436451901
+            return ctx.guild.id in [709711335436451901,703135571710705815]
         return commands.check(predicate)
 
     @commands.command(name="nitro")
@@ -53,32 +48,35 @@ class rhCog(commands.Cog, name='rh'):
     @commands.has_any_role(783134076772941876)
     @rhserver()
     @commands.cooldown(1,5, type=BucketType.guild)
-    async def heist(self, ctx, msg:str=None):
+    async def heist(self, ctx, amount:float, donator:discord.User, *, msg:str=None):
         """Gets people ready for a heist."""
-        heistping = ctx.guild.get_role(807925829009932330)
+        heistping = self.rh.get_role(807925829009932330)
         heistchannel = ctx.guild.get_channel(783135856017145886)
-        
-        embed = discord.Embed(title='Dank Memer Heist', color=discord.Color.random())
+
+        into = format(amount, ',')
+        embed = discord.Embed(title='Dank Memer Heist', description=f"Amount: {into}", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        embed.add_field(name='Info', value=f"{msg} ", inline=False)
-        embed.set_footer(text='Remember to thank them !')
+        embed.add_field(name='Info', value=f"Donator: {donator.mention}\n{msg} ", inline=False)
+        embed.set_thumbnail(url=f"{donator.avatar_url}")
+        embed.set_footer(text=f'Remember to thank {donator.name} !')
         await heistchannel.send(content=f"{heistping.mention} ", embed=embed, allowed_mentions=discord.AllowedMentions.all(),  mention_author=False)
 
-    @commands.command(name="partneredheist")
+    @commands.command(name="postheist", aliases=['ph'])
     @commands.has_any_role(847626436622024704)
     @rhserver()
-    @commands.cooldown(1,5, type=BucketType.guild)
-    async def pheist(self, ctx, amount: float, *, msg:str=None):
+    @commands.cooldown(1,5, type=BucketType.user)
+    async def pheist(self, ctx, amount: float, invite:str,*, msg:str=None):
         """Sends your partnered heist ad."""
-        heistping = ctx.guild.get_role(807925829009932330)
-        pheistchannel = ctx.guild.get_channel(848429520263839784)
-        
+        heistping = self.rh.get_role(807925829009932330)
+        pheistchannel = self.rh.get_channel(848429520263839784)
+        inviteinfo = await self.bot.fetch_invite(invite)
+
         into = format(amount, ',')
         embed = discord.Embed(title='Heist', description=f'Amount: {into}', color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.add_field(name='Info', value=f"{msg} ", inline=False)
-        embed.set_footer(text='Remember to thank them !')
-        await pheistchannel.send(content=f"{heistping.mention} ", embed=embed, allowed_mentions=discord.AllowedMentions.all(),  mention_author=False)
+        embed.add_field(name='Server', value=f"[**{inviteinfo.guild.name}**]({inviteinfo.url})\nMembers: {inviteinfo.approximate_member_count}")
+        await pheistchannel.send(f"{heistping.mention} {invite}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[heistping]),  mention_author=False)
 
     @commands.command(name="verify")
     @commands.has_permissions(manage_roles=True)
@@ -125,9 +123,7 @@ class rhCog(commands.Cog, name='rh'):
                     await member.remove_roles(advertiser, reason="Not advertising for us.")
                     await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
         except:
-            pass            
-            
-            
+            pass
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
@@ -141,7 +137,6 @@ class rhCog(commands.Cog, name='rh'):
         for member in guild.members:
             await self.supporter_autorole(member)
 
-    
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.channel.id != 848892659828916274:

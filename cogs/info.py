@@ -58,7 +58,8 @@ class InfoCog(commands.Cog, name='Info'):
             'DiscordServices':'https://discordservices.net/bot/732917262297595925',
             'BotList':'https://botlist.me/bots/732917262297595925',
             'StellarBotList':'https://stellarbotlist.com/bot/732917262297595925',
-            'InfinityBotList':'https://infinitybotlist.com/bots/732917262297595925'
+            'InfinityBotList':'https://infinitybotlist.com/bots/732917262297595925',
+            'Astralist':'https://astralist.tk/bot/732917262297595925/vote'
         }
         embed.add_field(name="Bot Lists", value=f"""{' | '.join([f"[{item}]({bot_lists[item]})" for item in bot_lists])}""", inline=False)
         await ctx.reply(embed=embed, mention_author=False)

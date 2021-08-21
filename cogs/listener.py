@@ -12,7 +12,12 @@ class ListenerCog(commands.Cog, name='Listener'):
         self.bot = bot
 
     @commands.Cog.listener()
+    async def on_command_completion(self, ctx):
+        self.bot.commands_invoked += 1
+
+    @commands.Cog.listener()
     async def on_message (self, message: discord.Message):
+        self.bot.processed_messages += 1
         if ('732917262297595925') in message.clean_content.lower():
             await message.add_reaction("\U0000267e")
         elif message.author.bot is True:
@@ -69,23 +74,21 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
         embed.set_author(name=guild.name, icon_url=guild.icon_url)
         embed.set_thumbnail(url=f"{guild.icon_url}")
         if guild.banner_url is not None:
             embed.set_image(url=f"{guild.banner_url}")
-        await changes.send(embed=embed)
+        await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        changes = self.bot.get_channel(859779506038505532)
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
         embed.set_author(name=guild.name, icon_url=guild.icon_url)
         embed.set_thumbnail(url=f"{guild.icon_url}")
         if guild.banner_url is not None:
             embed.set_image(url=f"{guild.banner_url}")
-        await changes.send(embed=embed)
+        await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_command_error (self, ctx, error):
@@ -105,7 +108,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         if cog:
             if cog._get_overridden_method(cog.cog_command_error) is not None:
                 return
-        ignored = (discord.Forbidden,commands.CheckFailure)
+        ignored = (discord.Forbidden)
 
         # Allows us to check for original exceptions raised and sent to CommandInvokeError.
         # If nothing is found. We keep the exception passed to on_command_error.
@@ -124,6 +127,8 @@ class ListenerCog(commands.Cog, name='Listener'):
             await ctx.reply(f"`{ctx.command}` can only be used in Private Messages.")
         elif isinstance(error, commands.MissingPermissions):
             await ctx.reply(f"You don't have {', '.join(error.missing_perms)} perms")
+        elif isinstance(error, commands.CheckFailure):
+            pass
         elif isinstance(error, commands.BotMissingPermissions):
             await ctx.send(f"The bot dosen't have {', '.join(error.missing_perms)} perms", mention_author=True)
         elif isinstance(error, commands.CommandOnCooldown):
@@ -144,8 +149,6 @@ class ListenerCog(commands.Cog, name='Listener'):
             embed=discord.Embed(title=f"{type(error).__name__}", description=f"{str(error)}", color=discord.Color.red())
             embed.timestamp = datetime.datetime.utcnow()
             await ctx.reply(embed=embed)
-            #reporting
-            reports = self.bot.get_channel(825900714013360199)
             embed=discord.Embed(title="Error", description=f"{ctx.author.mention}\nIgnoring exception in command {ctx.command}", color=discord.Color.random())
             embed.timestamp=datetime.datetime.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -158,7 +161,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             for chunk in chunks:
                 page += 1
                 embed.add_field(name=f"Page {page} ", value=f"```py\n{chunk}\n```", inline=False)
-            await reports.send(embed=embed)
+            await self.bot.errors.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(ListenerCog(bot))

@@ -11,6 +11,7 @@ class InfoCog(commands.Cog, name='Info'):
     """*Info about bot and related servers.*"""
     def __init__(self, bot):
         self.bot = bot
+        self.bot_info.start()
 
     @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite', 'appeal'])
     async def links(self, ctx):
@@ -128,6 +129,40 @@ class InfoCog(commands.Cog, name='Info'):
     async def emojiservers(self, ctx):
         """Gets the invite links to the bot's emoji servers."""
         await ctx.reply(embed=discord.Embed(title="Infinity Emoji Servers", description=f"[1](https://discord.gg/hM67fpgM3y) [2](https://discord.gg/T6dJHppueq)", color=discord.Color.random()))
+
+    @tasks.loop(minutes=10, reconnect=True)
+    async def bot_info(self):
+        await self.bot.wait_until_ready()
+        try:
+            message = await self.bot.get_channel(878527673343815700).fetch_message(878542454717022238)
+            if len(message.embeds) < 1:
+                embed = discord.Embed(title="Bot Info", color=discord.Color.gold())
+                embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar_url)
+                embed.set_footer(text="Last updated on")
+                embed.timestamp = datetime.datetime.utcnow()
+                embed.add_field(name="System", value=f"Ping: {round (self.bot.latency * 1000)}ms\nCPU: {psutil.cpu_count()} core {psutil.cpu_percent()}%\nMemory: {psutil.virtual_memory().percent}%", inline=False)
+                embed.add_field(name="Connection", value=f"Uptime: {round((datetime.datetime.utcnow()-self.bot.startuptime).seconds/60/60,2)} hours\nMembers: {format(len(self.bot.users),',')}\nServers: {len(self.bot.guilds)}", inline=False)
+                embed.add_field(name="Processed Messages", value=f"{self.bot.processed_messages}")
+                embed.add_field(name="Invoked Commands", value=f"{self.bot.commands_invoked}")
+            else:
+                oldembed = message.embeds[0]
+                embed = discord.Embed(title="Bot Info", color=discord.Color.gold())
+                embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar_url)
+                embed.set_footer(text="Last updated on")
+                embed.timestamp = datetime.datetime.utcnow()
+                embed.add_field(name="System", value=f"Ping: {round (self.bot.latency * 1000)}ms\nCPU: {psutil.cpu_count()} core {psutil.cpu_percent()}%\nMemory: {psutil.virtual_memory().percent}%", inline=False)
+                embed.add_field(name="Connection", value=f"Uptime: {round((datetime.datetime.utcnow()-self.bot.startuptime).seconds/60/60,2)} hours\nMembers: {format(len(self.bot.users),',')}\nServers: {len(self.bot.guilds)}", inline=False)
+                try: proc = int(oldembed.fields[2].value)
+                except: proc = 0
+                try: invo = int(oldembed.fields[3].value)
+                except: invo = 0
+                embed.add_field(name="Processed Messages", value=f"{proc + self.bot.processed_messages}")
+                embed.add_field(name="Invoked Commands", value=f"{invo + self.bot.commands_invoked}")
+                self.bot.processed_messages = 0
+                self.bot.commands_invoked = 0
+            await message.edit('\u200b', embed=embed)
+        except:
+            pass
 
 def setup(bot):
     bot.add_cog(InfoCog(bot))

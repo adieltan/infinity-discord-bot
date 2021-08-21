@@ -14,7 +14,6 @@ class DataCog(commands.Cog, name='Data'):
         self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))
         self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
         self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)
-        self.voterchannel = self.bot.get_channel(874461656938340402)
         
     @commands.command(name="amari", aliases=['amarigraph'])
     async def amari(self, ctx, serverid:int=None):
@@ -80,7 +79,7 @@ class DataCog(commands.Cog, name='Data'):
     @tasks.loop(hours=12, reconnect=True)
     async def autostatsposting(self):
         await self.bot.wait_until_ready()
-        reports = self.bot.get_channel(825900714013360199)
+        reports = self.bot.errors
         async with aiohttp.ClientSession() as cs:
             header={'Authorization':os.getenv('dbl_token')}
             data = {'users':len(self.bot.users), 'guilds':len(self.bot.guilds)}

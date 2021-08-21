@@ -92,7 +92,7 @@ class rhCog(commands.Cog, name='rh'):
         if member.guild.id != 709711335436451901 or member.bot is True:
             return
         advertiser = member.guild.get_role(848463384185536552)
-        channel = member.guild.get_channel(813251835371454515)
+        channel = member.guild.get_channel(751683666710626324)
         if member.raw_status == 'offline' and advertiser in member.roles:
             await member.remove_roles(advertiser, reason="Not advertising for us.")
             await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))

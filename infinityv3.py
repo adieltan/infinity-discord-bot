@@ -46,6 +46,13 @@ bot.serverdb = None
 bot.snipedb = dict({})
 bot.startuptime = datetime.datetime.utcnow()
 
+bot.errors = bot.get_channel(825900714013360199)
+bot.logs = bot.get_channel(874461656938340402)
+bot.changes = bot.get_channel(859779506038505532)
+
+bot.processed_messages = 0
+bot.commands_invoked = 0
+
 bot.load_extension('jishaku')
 print(f"{os.path.dirname(os.path.abspath(__file__))}")
 if '\\' in os.path.dirname(os.path.abspath(__file__)):
@@ -85,16 +92,19 @@ async def on_ready():
     print(login)
     bot.startuptime = datetime.datetime.utcnow()
 
+    bot.errors = bot.get_channel(825900714013360199)
+    bot.logs = bot.get_channel(874461656938340402)
+    bot.changes = bot.get_channel(859779506038505532)
+    status.start()
+    performanceupdate.start()
+    performance.start()
+
 @bot.event
 async def on_error(event, *args, **kwargs):
-    errors = bot.get_channel(855359960354652160)
     print('Ignoring exception in {}'.format(event), file=sys.stderr)
-    embed=discord.Embed(title='Ignoring exception in {}'.format(event))
-    embed.description = traceback.format_exc()
-    #chunks = [text[i:i+1014] for i in range(0, len(text), 1014)]
-    #for chunk in chunks:
-        #embed.add_field(name="Error", value=f"```py\n{chunk}\n```", inline=False)
-    await errors.send(embed=embed)
+    embed=discord.Embed(title='Ignoring exception in {}'.format(event), timestamp=datetime.datetime.utcnow(), color=discord.Color.dark_gold())
+    embed.description = discord.utils.escape_markdown(traceback.format_exc())
+    await bot.errors.send(embed=embed)
 
 @tasks.loop(minutes=5, reconnect=True)
 async def status():
@@ -102,7 +112,6 @@ async def status():
     timenow = datetime.datetime.utcnow()
     d = timenow-bot.startuptime
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
-status.start()
 
 ping = []
 time = []
@@ -129,13 +138,11 @@ async def performanceupdate():
     cpu.append(cpuvalue)
     memory.append(memoryvalue)
     time.append(timenow)
-performanceupdate.start()
 
 @tasks.loop(minutes=30, reconnect=True)
 async def performance():
     #Report on performance every 30 mins.
     await bot.wait_until_ready()
-    performance = bot.get_channel(847011689882189824)
     rawping = bot.latency
     if rawping != float('inf'): 
         pingvalue = round(rawping *1000 )
@@ -163,10 +170,9 @@ async def performance():
     f = discord.File(fp=buf, filename="image.png")
     embed.set_image(url="attachment://image.png")
     embed.timestamp=datetime.datetime.utcnow()
-    await performance.send(file=f, embed=embed)
+    await bot.logs.send(file=f, embed=embed)
     plt.close()
     buf.close()
-performance.start()
 
 
 token = str(os.getenv("DISCORD_TOKEN"))

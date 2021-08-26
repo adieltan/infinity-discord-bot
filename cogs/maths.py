@@ -3,7 +3,6 @@ from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
  
-
 from py_expression_eval import Parser
 from fractions import Fraction
 parser = Parser()
@@ -31,6 +30,7 @@ class MathsCog(commands.Cog, name='Maths'):
             floated = "{:e}".format(out)
             frac = Fraction(out).limit_denominator()
             await ctx.reply(f'```json\n{input} = \n{out}\n```Formatted : **{formatted}**\nSci               : **{floated}**\nFraction     : **{frac}**', mention_author=False)
+            
         except:
             embed=discord.Embed(title="Calc Help", description="Usable expressions\n `+` `-` `*` `/` `%` `^` `PI` `E` `sin(x)` `cos(x)` `tan(x)` `asin(x)` `acos(x)` `atan(x)` `log(x)` `log(x, base)` `abs(x)` `ceil(x)` `floor(x)` `round(x)` `exp(x)` `and` `or` `xor` `not` `in`") 
             embed.set_footer(text=f'Requested by {ctx.author}')

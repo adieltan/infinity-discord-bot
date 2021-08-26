@@ -325,11 +325,11 @@ class OwnerCog(commands.Cog, name='Owner'):
                         print(''.ljust(5, ' ') + f"▪ {sc.name} {sc.signature.replace('_', '')}".ljust(35, ' ') + f' {sc.help}')
             print('\n')
 
+
     @commands.command(name='test')
     @commands.is_owner()
-    async def test(self, ctx):
+    async def test(self, ctx, *, input):
         pass
-
 
 
 def setup(bot):

@@ -1,10 +1,11 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re
+from discord.ext.commands.core import bot_has_permissions
 from discord.ext.commands.cooldowns import BucketType
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
  
-
+import typing
 
 class ChannelCog(commands.Cog, name='Channel'):
     """*Channel Commands*"""
@@ -241,6 +242,58 @@ class ChannelCog(commands.Cog, name='Channel'):
                 text += str(attachment)  + '\n'
             await ctx.reply(text)
 
+    @commands.command(name='rename', aliases=['channelrename'])
+    @commands.has_permissions(manage_guild=True)
+    @bot_has_permissions(manage_channels=True)
+    async def channel_rename(self, ctx, channel:typing.Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.CategoryChannel]=None, *, name=None):
+        """Renames a channel or channels."""
+        if channel is not None:
+            await channel.edit(name=name)
+            await ctx.reply(channel.mention)
+        else:
+            msg = await ctx.reply(embed=discord.Embed(title="Channel Rename", description=f"Starting interactive session to rename all channels.", color=discord.Color.blue()))
+            edited = []
+            await msg.add_reaction("<:right:876079229710762005>")
+            def msg_check(m):
+                return m.author == ctx.author and m.channel == ctx.channel
+            def reaction_check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) == "<:right:876079229710762005>" and reaction.message == msg
+            for channel in ctx.guild.channels:
+                embed = msg.embeds[0]
+                embed.description = f"Target: {channel.mention}\nSend the channel name in chat to edit. (Timeout: 180 seconds)\nTo skip: React with <:right:876079229710762005>\n\nIf the bot reacts with <a:loading:880695857048072213> for a prolonged period of time, the bot is ratelimited from editing to that channel."
+                await msg.edit(embed=embed)
+                try: 
+                    done, pending = await asyncio.wait([
+                    self.bot.wait_for('message', check=msg_check, timeout=180),
+                    self.bot.wait_for('reaction_add', check=reaction_check, timeout=180)
+                ], return_when=asyncio.FIRST_COMPLETED)
+
+                    stuff = done.pop().result()
+                    if type(stuff) == tuple:
+                        await msg.remove_reaction(str(stuff[0].emoji), ctx.author)
+                        #its an emoji
+                        pass
+                    else:
+                        edited.append(tuple((channel.mention, channel.name, stuff.content,)))
+                        await stuff.add_reaction(f"<a:loading:880695857048072213>")
+                        await channel.edit(name=stuff.content)
+                        await stuff.add_reaction(f"<a:verified:876075132114829342>")
+                        await stuff.delete()
+                except ...:
+                    pass
+                for future in done:
+                    # If any exception happened in any other done tasks
+                    # we don't care about the exception, but don't want the noise of
+                    # non-retrieved exceptions
+                    future.exception()
+                for future in pending:
+                    future.cancel()  # we don't need these anymore
+            text = '\n'.join([f"{edits[0]}: {edits[1]} -> {edits[2]}" for edits in edited])
+            result = await ctx.reply(embed=discord.Embed(title="Channel Rename", description=text, color=discord.Color.green()))
+            embed = msg.embeds[0]
+            embed.description=f"Session Ended\nResult: {result.jump_url}"
+            await msg.edit(embed=embed)
+            await msg.clear_reactions()
 
 def setup(bot):
     bot.add_cog(ChannelCog(bot))

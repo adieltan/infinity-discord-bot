@@ -185,8 +185,8 @@ class ServerCog(commands.Cog, name='server'):
         results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
         try:results['autoresponse']
         except:results['autoresponse'] = {}
-        if len(list(results['autoresponse'].keys())) >= 5:
-            await ctx.reply("This guild has reached the maximum number of autoresponse which is 5.")
+        if len(list(results['autoresponse'].keys())) >= 10:
+            await ctx.reply("This guild has reached the maximum number of autoresponse which is 10.")
             return
         def check(m):
             return m.author == ctx.author

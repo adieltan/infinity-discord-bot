@@ -62,7 +62,7 @@ class rhCog(commands.Cog, name='rh'):
         await heistchannel.send(content=f"{heistping.mention} ", embed=embed, allowed_mentions=discord.AllowedMentions.all(),  mention_author=False)
 
     @commands.command(name="postheist", aliases=['ph'])
-    @commands.has_any_role(847626436622024704)
+    @commands.has_any_role(880822281394356244)
     @rhserver()
     @commands.cooldown(1,5, type=BucketType.user)
     async def pheist(self, ctx, amount: float, invite:str,*, msg:str=None):
@@ -177,13 +177,7 @@ class rhCog(commands.Cog, name='rh'):
             'No Partnership Ping': 848784758661185596,
             'D Shop': 783133558172286977,
             'D Giveaway': 783133954047213609,
-            'D Flash Giveaway': 848807540476870666,
             'D Event': 807926892723437588,
-            'D Lottery': 794183280508796939,
-            'D Heist': 807925829009932330,
-            'D Partnered Heist': 848808489278898217,
-            'Coder 💻': 791132663011606540,
-            'YouTuber': 814657209593364500
         }
         try:
             fuzzy = process.extractOne(message.content, roles.keys())

@@ -202,7 +202,7 @@ class rhCog(commands.Cog, name='rh'):
 
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
-        if member.guild.id != 709711335436451901:
+        if member.guild.id != 709711335436451901 or member.bot is True:
             return
         else:
             bamboo_chat = self.bot.get_channel(717962272093372556)

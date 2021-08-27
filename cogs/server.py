@@ -1,4 +1,4 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from numpy import byte
 from discord.ext.commands.core import check
 from discord.ext import commands, tasks

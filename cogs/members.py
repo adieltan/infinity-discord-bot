@@ -1,4 +1,4 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp
+import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
@@ -34,25 +34,39 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.command(name='perms', aliases=['permissions', 'perm'])
     @commands.cooldown(1,5)
     @commands.guild_only()
-    async def check_permissions(self, ctx, *, who=None):
+    async def check_permissions(self, ctx, object:typing.Union[discord.Member, discord.Role]=None):
         """Checks member's or role's permissions."""
         await ctx.trigger_typing()
-        if who == None:
-            who = f"{ctx.author.id}"
-        id = int(re.sub("[^\\d.]", "", who))
-        who = ctx.guild.get_member(id)
-        if who:
-            perms = '\n'.join(perm for perm, value in who.guild_permissions if value)
-        if who == None:
-            who = ctx.guild.get_role(id)
-            perms = '\n'.join(perm for perm, value in who.permissions if value)
+        if object is None:
+            object = ctx.author
+        if type(object) == discord.Role:
+            perms = "```"
+            for perm, value in object.permissions:
+                if value == True:
+                    emoji = '✅'
+                else:
+                    emoji = '❌'
+                perms += f" {emoji} - {perm.replace('_',' ').title()}\n"
+            perms += '```'
+        elif type(object) == discord.Member:
+            perms = f"```\nServer - 🛑 \nCurrent Channel - 💬 \n"
+            perms += f" 🛑 | 💬 \n"
+            channel_perms = dict(iter(ctx.channel.permissions_for(ctx.author)))
+            for perm, value in object.guild_permissions:
+                if value == True:
+                    emoji = '✅'
+                else:
+                    emoji = '❌'
+                if channel_perms[perm] is True:
+                    cemoji = '✅'
+                else:
+                    cemoji = '❌'
+                perms += f" {emoji} | {cemoji} - {perm.replace('_',' ').title()}\n"
+            perms += '```'
         
-        embed = discord.Embed(title='Permissions for:', description=who.mention, color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        if who is discord.Member:
-            embed.set_author(icon_url=who.avatar_url, name=str(who))
-        embed.add_field(name='\u200B', value=f'\u200B'+perms)
-        embed.set_footer(text=f'Requested by {ctx.author}')
+        embed = discord.Embed(title='Permissions for:', description=object.mention+'\n'+perms, color=discord.Color.random())
+        if object is discord.Member:
+            embed.set_author(icon_url=object.avatar_url, name=str(object))
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="selfharm", aliases=["suicide", 'die'])

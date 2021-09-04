@@ -76,7 +76,7 @@ class rhCog(commands.Cog, name='rh'):
         embed.timestamp=datetime.datetime.utcnow()
         embed.add_field(name='Info', value=f"{msg} ", inline=False)
         embed.add_field(name='Server', value=f"[**{inviteinfo.guild.name}**]({inviteinfo.url})\nMembers: {inviteinfo.approximate_member_count}")
-        await eventchannel.send(f"{eventping.mention} {invite}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[heistping]),  mention_author=False)
+        await eventchannel.send(f"{eventping.mention} {invite}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[eventping]),  mention_author=False)
 
     @commands.command(name="verify")
     @commands.has_permissions(manage_roles=True)

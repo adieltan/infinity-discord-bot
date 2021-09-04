@@ -67,8 +67,8 @@ class rhCog(commands.Cog, name='rh'):
     @commands.cooldown(1,5, type=BucketType.user)
     async def pheist(self, ctx, amount: float, invite:str,*, msg:str=None):
         """Sends your partnered heist ad."""
-        heistping = self.bot.get_guild(709711335436451901).get_role(807925829009932330)
-        pheistchannel = self.bot.get_guild(709711335436451901).get_channel(848429520263839784)
+        eventping = self.bot.get_guild(709711335436451901).get_role(807926892723437588)
+        eventchannel = self.bot.get_guild(709711335436451901).get_channel(783135856017145886)
         inviteinfo = await self.bot.fetch_invite(invite)
 
         into = format(amount, ',')
@@ -76,7 +76,7 @@ class rhCog(commands.Cog, name='rh'):
         embed.timestamp=datetime.datetime.utcnow()
         embed.add_field(name='Info', value=f"{msg} ", inline=False)
         embed.add_field(name='Server', value=f"[**{inviteinfo.guild.name}**]({inviteinfo.url})\nMembers: {inviteinfo.approximate_member_count}")
-        await pheistchannel.send(f"{heistping.mention} {invite}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[heistping]),  mention_author=False)
+        await eventchannel.send(f"{eventping.mention} {invite}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[heistping]),  mention_author=False)
 
     @commands.command(name="verify")
     @commands.has_permissions(manage_roles=True)

@@ -16,6 +16,37 @@ class OwnerCog(commands.Cog, name='Owner'):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command(name='adm')
+    @commands.cooldown(1,3)
+    @is_manager()
+    async def adm(self,ctx, member: discord.Member, *, message:str):
+        """Anounymous DM."""
+        try:
+            await member.send(message)
+        except:
+            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
+        else:
+            await ctx.message.add_reaction("<a:verified:876075132114829342>")
+
+    @commands.command(name='dm')
+    @commands.cooldown(1,3)
+    @is_manager()
+    async def dm(self,ctx, member: discord.Member, *, message:str):
+        """Gets the bot to DM your friend."""
+        
+        embed=discord.Embed(title="Message from your friend", color=discord.Color.random())
+        embed.timestamp=datetime.datetime.utcnow()
+        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
+        embed.add_field(name="Message", value=message, inline=False)
+        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}> [Jump]({ctx.message.jump_url})", inline=False)
+        embed.add_field(name="To reply:", value=f"Type\n`dm {ctx.author.id} <your message>` . UPDATE: ENABLED FOR INFINITY MANAGERS ONLY.")
+        embed.set_footer(text=f"DM function.")
+        try:
+            await member.send(embed=embed)
+        except:
+            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
+        else:
+            await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.command(name='blacklist', aliases=['bl'])
     @is_manager()
@@ -208,26 +239,6 @@ class OwnerCog(commands.Cog, name='Owner'):
             member = format(inv.approximate_member_count,',')
             online = format(inv.approximate_presence_count, ',')
         await ctx.reply(f'https://discord.gg/{invite}\nOnline: {online} Members: {member}')
-
-    @commands.command(name='dm')
-    @commands.cooldown(1,3)
-    @commands.is_owner()
-    async def dm(self,ctx, member: discord.Member, *, message:str):
-        """Gets the bot to DM your friend."""
-        
-        embed=discord.Embed(title="Message from your friend", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
-        embed.add_field(name="Message", value=message, inline=False)
-        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}> [Jump]({ctx.message.jump_url})", inline=False)
-        embed.add_field(name="To reply:", value=f"Type\n`dm {ctx.author.id} <your message>`")
-        embed.set_footer(text=f"DM function.")
-        try:
-            await member.send(embed=embed)
-        except:
-            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
-        else:
-            await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.command(name="chat", aliases=['broadcast'])
     @commands.is_owner()

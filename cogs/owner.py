@@ -19,10 +19,10 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name='adm')
     @commands.cooldown(1,3)
     @is_manager()
-    async def adm(self,ctx, member: discord.Member, *, message:str):
+    async def adm(self,ctx, user: discord.User, *, message:str):
         """Anounymous DM."""
         try:
-            await member.send(message)
+            await user.send(message)
         except:
             await ctx.message.add_reaction("<:exclamation:876077084986966016>")
         else:

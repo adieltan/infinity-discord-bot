@@ -17,6 +17,12 @@ class profileCog(commands.Cog, name='profile'):
         if ctx.invoked_subcommand is None:
             await ctx.reply("Available subcommands are `weight` , `height` , `country` & `birthday` .")
 
+    @set.command(name='delete')
+    async def setdelete(self, ctx):
+        """Deletes your profile data."""
+        await self.bot.dba['profile'].delete_one({'_id':ctx.author.id})
+        await ctx.reply(f"Profile deleted.")
+
     @set.command(name="weight", aliases=['w'])
     async def setweight(self, ctx, kilogram):
         """Sets your own weight."""

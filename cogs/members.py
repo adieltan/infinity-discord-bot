@@ -34,6 +34,7 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.command(name='perms', aliases=['permissions', 'perm'])
     @commands.cooldown(1,5)
     @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
     async def check_permissions(self, ctx, object:typing.Union[discord.Member, discord.Role]=None):
         """Checks member's or role's permissions."""
         await ctx.trigger_typing()
@@ -42,7 +43,7 @@ class MembersCog(commands.Cog, name='Members'):
         if type(object) == discord.Role:
             perms = "```"
             for perm, value in object.permissions:
-                if value == True:
+                if value is True:
                     emoji = '✅'
                 else:
                     emoji = '❌'
@@ -51,17 +52,23 @@ class MembersCog(commands.Cog, name='Members'):
         elif type(object) == discord.Member:
             perms = f"```\nServer - 🛑 \nCurrent Channel - 💬 \n"
             perms += f" 🛑 | 💬 \n"
-            channel_perms = dict(iter(ctx.channel.permissions_for(ctx.author)))
+            channel_perms = dict(iter(ctx.channel.permissions_for(object)))
             for perm, value in object.guild_permissions:
-                if value == True:
-                    emoji = '✅'
+                if value is False and channel_perms[perm] is False:
+                    pass
                 else:
-                    emoji = '❌'
-                if channel_perms[perm] is True:
-                    cemoji = '✅'
-                else:
-                    cemoji = '❌'
-                perms += f" {emoji} | {cemoji} - {perm.replace('_',' ').title()}\n"
+                    if value is True:
+                        emoji = '✅'
+                    else:
+                        emoji = '❌'
+                    if channel_perms[perm] is True:
+                        cemoji = '✅'
+                    else:
+                        cemoji = '❌'
+                    perms += f" {emoji} | {cemoji} - {perm.replace('_',' ').title()}\n"
+            for perm, value in ctx.channel.permissions_for(object):
+                if value is True and perm not in dict(iter(object.guild_permissions)):
+                    perms += f" ❌ | ✅ - {perm.replace('_',' ').title()}\n"
             perms += '```'
         
         embed = discord.Embed(title='Permissions for:', description=object.mention+'\n'+perms, color=discord.Color.random())

@@ -79,7 +79,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         if len(players) <= 1:
             await ctx.reply("Sadly, no enough players joined.")
             return
-        while len(players) > 10:
+        while len(players) > math.floor(len(players)/3):
             chosen = []
             afk = []
             for team in self.teams:team.resetmembers()

@@ -127,6 +127,9 @@ class ChannelCog(commands.Cog, name='Channel'):
         """Exports chat messages to another channel."""
         channelid = int(re.sub("[^0-9]", "", destination))
         destination_channel = self.bot.get_channel(channelid)
+        channel_perms = dict(iter(destination_channel.permissions_for(ctx.author)))
+        if channel_perms.get('administrator') is not True:
+            raise commands.MissingPermissions(missing_perms=['administrator'])
         presentwebhooks = await destination_channel.webhooks() or []
         if len(presentwebhooks) > 0:
             webhook = presentwebhooks[0]

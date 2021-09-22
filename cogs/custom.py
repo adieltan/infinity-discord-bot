@@ -262,6 +262,14 @@ class customCog(commands.Cog, name='custom'):
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 
+    @commands.Cog.listener()
+    @server([888337006042689536, 888337125433569290])
+    async def on_message(self, message:discord.Message):
+        """Treasure Mystery"""
+        if "732917262297595925" in message.content and message.guild.id == 888337006042689536:
+            await message.author.send("https://discord.gg/6N2raPTSYw")
+        elif "HELP" in message.content and message.guild.id == 888337125433569290:
+            await message.author.send("https://discord.gg/8NEHG4HM")
 
 def setup(bot):
     bot.add_cog(customCog(bot))

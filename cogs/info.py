@@ -100,30 +100,40 @@ class InfoCog(commands.Cog, name='Info'):
     async def suggestionaccept(self, ctx, *, text:str=None):
         """Accepts a suggestion."""
         ref = ctx.message.reference
+        if ctx.channel.id != 827896302008139806:
+            return
+        await ctx.message.delete()
         if ref == None:
-            await ctx.reply("You gotta reply to the suggestion you wanna accept!", mention_author=True)
+            await ctx.send(f"{ctx.author.mention} Eh you gotta reply to the suggestion you wanna accept!", delete_after=5)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
+            if message.author.id != self.bot.user.id:
+                await ctx.message.delete()
+                return
             embed=message.embeds[0]
             embed.color=discord.Color.green()
             embed.add_field(name="Accepted", value=f"{text}", inline=False)
             await message.edit(embed=embed)
-            await ctx.message.delete()
 
     @suggest.command(name='deny', aliases=['d', 'x'])
     @commands.is_owner()
     async def suggestiondeny(self, ctx, *, text:str=None):
         """Denies a suggestion."""
         ref = ctx.message.reference
+        if ctx.channel.id != 827896302008139806:
+            return
+        await ctx.message.delete()
         if ref == None:
-            await ctx.reply("Eh you gotta reply to the suggestion you wanna accept!", mention_author=True)
+            await ctx.send(f"{ctx.author.mention} Eh you gotta reply to the suggestion you wanna accept!", delete_after=5)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
+            if message.author.id != self.bot.user.id:
+                await ctx.message.delete()
+                return
             embed=message.embeds[0]
             embed.color=discord.Color.red()
             embed.add_field(name="Denied", value=f"{text}", inline=False)
             await message.edit(embed=embed)
-            await ctx.message.delete()
 
     @commands.command(name="emojiservers")
     async def emojiservers(self, ctx):

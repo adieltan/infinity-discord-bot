@@ -261,7 +261,7 @@ class MembersCog(commands.Cog, name='Members'):
                     pageno = len( pages) - 1
 
                 #Edit to new page + the center counter changes
-                await interaction.respond(type = .UpdateMessage,embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=discord.Color.random(), timestamp=datetime.datetime.utcnow()),
+                await interaction.respond(embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=discord.Color.random(), timestamp=datetime.datetime.utcnow()),
                     components = [
                         [   Button(
                                 label = "Prev",

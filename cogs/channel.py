@@ -44,7 +44,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         embed.set_author(icon_url=message.author.avatar_url, name=message.author)
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name="hide")
+    @commands.command(name="hide", aliases=['h'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
@@ -82,7 +82,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.channel.set_permissions(role, overwrite=overwrite)
         await ctx.reply(f'**`SUCCESSFULLY`** unhidden {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(name="lock", aliases=['cock', 'l'])
+    @commands.command(name="lock", aliases=['l'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
     @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
@@ -101,7 +101,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.channel.set_permissions(role, overwrite=overwrite)
         await ctx.reply(f'**`SUCCESSFULLY`** locked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(name="unlock", aliases=['uncock', 'ul'])
+    @commands.command(name="unlock", aliases=['ul'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
     @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)

@@ -26,5 +26,6 @@ pycountry
 blistpy
 motionbotlist
 topggpy
-fuzzywuzzy[speedup]
+thefuzz[speedup]
+
 pytz

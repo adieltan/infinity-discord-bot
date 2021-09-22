@@ -5,7 +5,7 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 import matplotlib.pyplot as plt
 
 import traceback
-from fuzzywuzzy import process
+from thefuzz import process
 class ListenerCog(commands.Cog, name='Listener'):
     """*Listening Commands.*"""
     def __init__(self, bot):
@@ -140,9 +140,10 @@ class ListenerCog(commands.Cog, name='Listener'):
             embed.set_image(url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652")
             await ctx.reply(embed=embed)
         elif isinstance(error, commands.CommandNotFound):
-            fuzzy = process.extract(ctx.invoked_with, list(ctx.bot.all_commands), limit=5)
-            suggested = "\n".join([f'`{c[0]}`' for c in fuzzy])
-            await ctx.reply(f"{error}\n"+f"""__Suggested commands:__\n{suggested}""")
+            try:
+                await ctx.message.add_reaction("<:exclamation:876077084986966016>")
+            except:
+                pass
             
 
         else:            # All other Errors not returned come here. And we can just print the default TraceBack.

@@ -4,7 +4,7 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 import matplotlib.pyplot as plt
 
 
-from fuzzywuzzy import process
+from thefuzz import process
 class EconomyCog(commands.Cog, name='Economy'):
     """*Economy Commands*"""
     def __init__(self, bot):

@@ -1,7 +1,7 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext.commands.core import group
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle, , Select, SelectOption
+from discord_components import DiscordComponents, Button, ButtonStyle, Select, SelectOption
 import matplotlib.pyplot as plt
  
 from PIL import Image

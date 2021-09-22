@@ -1,5 +1,5 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
-from discord.ext.commands.cooldowns import BucketType
+ 
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ class ConversionCog(commands.Cog, name='Conversion'):
         self.bot = bot
 
     @commands.command(name="define", aliases=["meaning"])
-    @commands.cooldown(1,3, BucketType.guild)
+    @commands.cooldown(1,3, commands.BucketType.guild)
     async def define(self, ctx, *, phrase:str):
         """Defines a word."""
         await ctx.trigger_typing()

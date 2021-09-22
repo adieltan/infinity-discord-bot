@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
 
-from discord.ext.commands.cooldowns import BucketType
+ 
 
 
 class MembersCog(commands.Cog, name='Members'):
@@ -209,7 +209,7 @@ class MembersCog(commands.Cog, name='Members'):
         await ctx.reply(text)
 
     @role.command(name="list", aliases=['l'])
-    @commands.cooldown(1,7,BucketType.channel)
+    @commands.cooldown(1,7,commands.BucketType.channel)
     @commands.has_permissions(manage_roles=True)
     async def list(self, ctx):
         """Lists all the roles of the guild in a paginated way."""

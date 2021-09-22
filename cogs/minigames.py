@@ -13,7 +13,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
         self.bot = bot
 
     @commands.command(name="8corners", aliases=['8c', 'corner', 'corners'])
-    @commands.cooldown(1, 10, commands.BucketType.category)
+    @commands.cooldown(1, 100, commands.BucketType.category)
     async def corners(self, ctx):
         """8 corners Game."""
         await ctx.trigger_typing()

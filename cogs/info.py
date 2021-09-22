@@ -4,7 +4,7 @@ from discord_components import DiscordComponents, Button, ButtonStyle, Interacti
 import matplotlib.pyplot as plt
  
 
-from discord.ext.commands.cooldowns import BucketType
+ 
 from psutil._common import bytes2human
 
 class InfoCog(commands.Cog, name='Info'):

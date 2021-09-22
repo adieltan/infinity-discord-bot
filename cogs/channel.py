@@ -1,6 +1,6 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re
 from discord.ext.commands.core import bot_has_permissions
-from discord.ext.commands.cooldowns import BucketType
+ 
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
@@ -121,7 +121,7 @@ class ChannelCog(commands.Cog, name='Channel'):
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="export")
-    @commands.cooldown(1,40, BucketType.category)
+    @commands.cooldown(1,40, commands.BucketType.category)
     @commands.has_permissions(administrator=True)
     async def export(self, ctx, destination, limit:int=None):
         """Exports chat messages to another channel."""

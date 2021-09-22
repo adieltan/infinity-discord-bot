@@ -1,9 +1,10 @@
+from operator import matmul
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 import matplotlib.pyplot as plt
 
-from discord.ext.commands import BucketType
+
 from numpy import append
 from thefuzz import process
 
@@ -41,7 +42,7 @@ class customCog(commands.Cog, name='custom'):
     @commands.command(name="heist")
     @commands.has_any_role(783134076772941876)
     @server([709711335436451901])
-    @commands.cooldown(1,5, type=BucketType.guild)
+    @commands.cooldown(1,5, type=commands.BucketType.guild)
     async def heist(self, ctx, amount:float, donator:discord.User, *, msg:str=None):
         """Gets people ready for a heist."""
         heistping = self.bot.get_guild(709711335436451901).get_role(807925829009932330)
@@ -57,7 +58,7 @@ class customCog(commands.Cog, name='custom'):
 
     @commands.command(name="postheist", aliases=['ph'], hidden=True)
     @server([709711335436451901])
-    @commands.cooldown(1,5, type=BucketType.user)
+    @commands.cooldown(1,5, type=commands.BucketType.user)
     async def pheist(self, ctx, amount: float, invite:str,*, msg:str=None):
         """Sends your partnered heist ad."""
         partnered = self.bot.get_guild(709711335436451901).get_role(880822281394356244).members
@@ -267,9 +268,58 @@ class customCog(commands.Cog, name='custom'):
     async def on_message(self, message:discord.Message):
         """Treasure Mystery"""
         if "732917262297595925" in message.content and message.guild.id == 888337006042689536:
-            await message.author.send("https://discord.gg/6N2raPTSYw")
+            channel = self.bot.get_channel(888337930379223060)
+            invite = await channel.create_invite(max_age=300, max_uses=1)
+            await message.author.send(f"You advanced to the next level! {str(invite)}")
         elif "HELP" in message.content and message.guild.id == 888337125433569290:
-            await message.author.send("https://discord.gg/8NEHG4HM")
+            channel = self.bot.get_channel(888344586680934430)
+            invite = await channel.create_invite(max_age=300, max_uses=1)
+            await message.author.send(f"You advanced to the next level! {str(invite)}")
+
+    @commands.command(name='messagemania', aliases=['mm'])
+    @commands.has_any_role(841655266743418892)
+    @commands.cooldown(1,390, commands.BucketType.category)
+    @server([841654825456107530])
+    async def messagemania(self, ctx):
+        """Message Mania Minigame."""
+        startingtime = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+        mmp = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+        mmu = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+        mmm = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+        timer = '<a:timer:890234490100793404>'
+        if ctx.channel.id != 888384450285678602:
+            await ctx.reply(f"Restricted to <#888384450285678602> only.")
+            #return
+
+        await ctx.reply(f"Testing Mode: {startingtime}")
+        #Unlock channel
+        overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
+        overwrite.send_messages=True
+        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+        await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Unlocked\nChannel will be locked in 6.5 minutes.", colour=discord.Color.green()))
+        def check(m):
+            return m.channel == ctx.channel
+        while math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds()) < startingtime + 390:
+            try:
+                msg = await self.bot.wait_for('message', check=check, timeout=10)
+
+            except:
+                pass
+        overwrite.send_messages=False
+        await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+        await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Locked", colour=discord.Color.red()))
+
+#Message Mania
+#When channel message-mania unlocks, if user runs "=mmp" the bot purges the last 20 messages sent. Cooldown is 60 seconds. If user runs "=mmu" it removes all the message sent from a random player in the channel. Cooldown is 180 Seconds. If user runs "=mmm" it mutes a user from talking in that channel for 30 seconds. Cooldown is 120s.
+
+
+        def pinc(msg):
+            if msg.pinned:
+                return False
+            else:
+                return True
+        #deleted = await ctx.channel.purge(limit=20, check=pinc)
+        #await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
 def setup(bot):
     bot.add_cog(customCog(bot))

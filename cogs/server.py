@@ -2,7 +2,7 @@ import discord, random, string, os, asyncio, sys, math, requests, json, pymongo,
 from numpy import byte
 from discord.ext.commands.core import check
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+from discord_components import DiscordComponents, Button, ButtonStyle, 
 import matplotlib.pyplot as plt
  
 

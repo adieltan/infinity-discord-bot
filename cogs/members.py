@@ -1,6 +1,6 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
+from discord_components import DiscordComponents, Button, ButtonStyle, 
 import matplotlib.pyplot as plt
 
  
@@ -261,7 +261,7 @@ class MembersCog(commands.Cog, name='Members'):
                     pageno = len( pages) - 1
 
                 #Edit to new page + the center counter changes
-                await interaction.respond(type = InteractionType.UpdateMessage,embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=discord.Color.random(), timestamp=datetime.datetime.utcnow()),
+                await interaction.respond(type = .UpdateMessage,embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=discord.Color.random(), timestamp=datetime.datetime.utcnow()),
                     components = [
                         [   Button(
                                 label = "Prev",

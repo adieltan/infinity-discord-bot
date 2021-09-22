@@ -1,7 +1,7 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext.commands.core import group
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType, Select, SelectOption
+from discord_components import DiscordComponents, Button, ButtonStyle, , Select, SelectOption
 import matplotlib.pyplot as plt
  
 from PIL import Image
@@ -67,7 +67,7 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
                 interaction = await self.bot.wait_for("button_click", check=lambda i:i.component.id in ['join', 'skip'], timeout=5)
                 if interaction.component.id == 'join' and interaction.user not in players:
                     players.append(interaction.user)
-                    await interaction.respond(type=InteractionType.ChannelMessageWithSource, ephemeral=True, embed=discord.Embed(title="Game join confirmation",description=f"You have joined the game. [Message]({info.jump_url})",color=discord.Color.random()))
+                    await interaction.respond(ephemeral=True, embed=discord.Embed(title="Game join confirmation",description=f"You have joined the game. [Message]({info.jump_url})",color=discord.Color.random()))
                 elif interaction.component.id == 'skip' and interaction.user == ctx.author:break
             except:
                 timeleft = (timeout_start + timeout) - time.time()

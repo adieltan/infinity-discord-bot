@@ -25,9 +25,8 @@ class ModerationCog(commands.Cog, name='Moderation'):
                 await ctx.reply("Failed due to role hierarchy.")
                 return
             else:
-                reason1 = f"Banned by {ctx.author.name} for {reason}"
                 try:
-                    await ctx.guild.ban(member, reason=reason1)
+                    await ctx.guild.ban(member, delete_message_days=0, reason=f"Banned by {ctx.author.name} ({ctx.author.id}) for {reason}")
                     await ctx.reply(f'**{member}** was ***BANNED***\nReason: __{reason}__', mention_author=False)
                     message = f"You have been banned from {ctx.guild.name} by {ctx.author.mention} for {reason}"
                     try:
@@ -37,8 +36,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
                 except:
                     await ctx.reply("Missing permissions.")
         elif type(member) is discord.User:
-                reason = f"Banned by {ctx.author.name} for {reason}"
-                await ctx.guild.ban(member, reason=reason)
+                await ctx.guild.ban(member, delete_message_days=0, reason=f"Banned by {ctx.author.name} ({ctx.author.id}) for {reason}")
                 await ctx.reply(f'**{member}** was ***BANNED***\nReason: __{reason}__', mention_author=False)
         
     @commands.command(name='unban')

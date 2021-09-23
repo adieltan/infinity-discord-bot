@@ -17,6 +17,7 @@ class customCog(commands.Cog, name='custom'):
     def __init__(self, bot):
         self.bot = bot
         self.youtubeupdate.start()
+        self.ongoing_mm_games = dict()
 
     @commands.command(name="nitro")
     @server([709711335436451901])
@@ -271,22 +272,26 @@ class customCog(commands.Cog, name='custom'):
             channel = self.bot.get_channel(888337930379223060)
             invite = await channel.create_invite(max_age=300, max_uses=1)
             await message.author.send(f"You advanced to the next level! {str(invite)}")
-        elif "HELP" in message.content and message.guild.id == 888337125433569290:
+        elif "help" in message.content.lower() and message.guild.id == 888337125433569290:
             channel = self.bot.get_channel(888344586680934430)
             invite = await channel.create_invite(max_age=300, max_uses=1)
             await message.author.send(f"You advanced to the next level! {str(invite)}")
 
     @commands.command(name='messagemania', aliases=['mm'])
     @commands.has_any_role(841655266743418892)
-    @commands.cooldown(1,390, commands.BucketType.category)
+    @commands.cooldown(1,390, commands.BucketType.channel)
     @server([841654825456107530])
     async def messagemania(self, ctx):
         """Message Mania Minigame."""
-        startingtime = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
-        mmp = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
-        mmu = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
-        mmm = math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+        def unix_time():
+            return math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+        startingtime = unix_time()
+        
+        mmp = mmu = mmm = 0
         timer = '<a:timer:890234490100793404>'
+        if ctx.channel.id in self.ongoing_mm_games.keys():
+            await ctx.reply(f"There is an ongoing game in this channel.")
+            return
         if ctx.channel.id != 888384450285678602:
             await ctx.reply(f"Restricted to <#888384450285678602> only.")
             #return
@@ -296,30 +301,60 @@ class customCog(commands.Cog, name='custom'):
         overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
         overwrite.send_messages=True
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-        await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Unlocked\nChannel will be locked in 6.5 minutes.", colour=discord.Color.green()))
-        def check(m):
-            return m.channel == ctx.channel
-        while math.floor((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds()) < startingtime + 390:
-            try:
-                msg = await self.bot.wait_for('message', check=check, timeout=10)
-
-            except:
-                pass
+        message = await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Unlocked\nChannel will be locked in 6.5 minutes.", colour=discord.Color.green()))
+        self.ongoing_mm_games[ctx.channel.id] = message.created_at
+        await asyncio.sleep(390)
         overwrite.send_messages=False
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
         await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Locked", colour=discord.Color.red()))
+        del self.ongoing_mm_games[ctx.channel.id]
 
-#Message Mania
-#When channel message-mania unlocks, if user runs "=mmp" the bot purges the last 20 messages sent. Cooldown is 60 seconds. If user runs "=mmu" it removes all the message sent from a random player in the channel. Cooldown is 180 Seconds. If user runs "=mmm" it mutes a user from talking in that channel for 30 seconds. Cooldown is 120s.
-
-
+    @commands.command(name='mmp', hidden=True)
+    @commands.cooldown(1,60, commands.BucketType.channel)
+    @server([841654825456107530])
+    async def messagemaniammp(self, ctx):
+        if ctx.channel.id not in self.ongoing_mm_games.keys():
+            return
         def pinc(msg):
-            if msg.pinned:
+            if msg.pinned or msg.id == ctx.message.id:
                 return False
             else:
                 return True
-        #deleted = await ctx.channel.purge(limit=20, check=pinc)
-        #await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
+        await ctx.channel.purge(limit=20, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
+        await ctx.message.add_reaction('<a:verified:876075132114829342>')
+
+    @commands.command(name='mmu', hidden=True)
+    @commands.cooldown(1,60, commands.BucketType.channel)
+    @server([841654825456107530])
+    async def messagemaniammu(self, ctx):
+        if ctx.channel.id not in self.ongoing_mm_games.keys():
+            return
+
+        messages = await ctx.channel.history(after=self.ongoing_mm_games[ctx.channel.id]).flatten()
+        user = random.choice([set([x.author.id for x in messages if x.author.bot is not True])])
+
+        def pinc(msg):
+            if msg.pinned or msg.id == ctx.message.id or msg.author.id != user.pop():
+                return False
+            else:
+                return True
+        await ctx.channel.purge(limit=50, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
+        await ctx.message.add_reaction('<a:verified:876075132114829342>')
+
+    @commands.command(name='mmm', hidden=True)
+    @commands.cooldown(1,120, commands.BucketType.channel)
+    @server([841654825456107530])
+    async def messagemaniammm(self, ctx):
+        if ctx.channel.id not in self.ongoing_mm_games.keys():
+            return
+
+        messages = await ctx.channel.history(after=self.ongoing_mm_games[ctx.channel.id]).flatten()
+        user = random.choice([set([x for x in messages if x.author.bot is not True])])
+        await ctx.channel.set_permissions(user.pop(), send_messages=False)
+        await ctx.send(f"{user.pop().mention} muted for 30s.")
+        await asyncio.sleep(30)
+        await ctx.channel.set_permissions(user.pop(), overwrite=None)
+        await ctx.message.add_reaction('<a:verified:876075132114829342>')
 
 def setup(bot):
     bot.add_cog(customCog(bot))

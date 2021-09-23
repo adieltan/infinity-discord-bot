@@ -320,8 +320,11 @@ class customCog(commands.Cog, name='custom'):
                 return False
             else:
                 return True
-        await ctx.channel.purge(limit=20, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
-        await ctx.message.add_reaction('<a:verified:876075132114829342>')
+        try:    
+            await ctx.channel.purge(limit=20, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
+            await ctx.message.add_reaction('<a:verified:876075132114829342>')
+        except:
+            await ctx.message.add_reaction('<:exclamation:876077084986966016>')
 
     @commands.command(name='mmu', hidden=True)
     @commands.cooldown(1,60, commands.BucketType.channel)
@@ -334,12 +337,15 @@ class customCog(commands.Cog, name='custom'):
         user = random.choice([set([x.author.id for x in messages if x.author.bot is not True])])
 
         def pinc(msg):
-            if msg.pinned or msg.id == ctx.message.id or msg.author.id != user.pop():
+            if msg.pinned or msg.id == ctx.message.id or msg.author.id != next(iter(user)):
                 return False
             else:
                 return True
-        await ctx.channel.purge(limit=50, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
-        await ctx.message.add_reaction('<a:verified:876075132114829342>')
+        try:
+            await ctx.channel.purge(limit=50, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
+            await ctx.message.add_reaction('<a:verified:876075132114829342>')
+        except:
+            await ctx.message.add_reaction('<:exclamation:876077084986966016>')
 
     @commands.command(name='mmm', hidden=True)
     @commands.cooldown(1,120, commands.BucketType.channel)
@@ -347,14 +353,16 @@ class customCog(commands.Cog, name='custom'):
     async def messagemaniammm(self, ctx):
         if ctx.channel.id not in self.ongoing_mm_games.keys():
             return
-
-        messages = await ctx.channel.history(after=self.ongoing_mm_games[ctx.channel.id]).flatten()
-        user = random.choice([set([x for x in messages if x.author.bot is not True])])
-        await ctx.channel.set_permissions(user.pop(), send_messages=False)
-        await ctx.send(f"{user.pop().mention} muted for 30s.")
-        await asyncio.sleep(30)
-        await ctx.channel.set_permissions(user.pop(), overwrite=None)
-        await ctx.message.add_reaction('<a:verified:876075132114829342>')
+        try:
+            messages = await ctx.channel.history(after=self.ongoing_mm_games[ctx.channel.id]).flatten()
+            user = random.choice([set([x.author for x in messages if x.author.bot is not True])])
+            await ctx.channel.set_permissions(next(iter(user)), send_messages=False)
+            await ctx.send(f"{next(iter(user)).mention} muted for 30s.")
+            await asyncio.sleep(30)
+            await ctx.channel.set_permissions(user.pop(), overwrite=None)
+            await ctx.message.add_reaction('<a:verified:876075132114829342>')
+        except:
+            await ctx.message.add_reaction('<:exclamation:876077084986966016>')
 
 def setup(bot):
     bot.add_cog(customCog(bot))

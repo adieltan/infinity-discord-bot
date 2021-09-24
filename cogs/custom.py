@@ -327,7 +327,7 @@ class customCog(commands.Cog, name='custom'):
             await ctx.message.add_reaction('<:exclamation:876077084986966016>')
 
     @commands.command(name='mmu', hidden=True)
-    @commands.cooldown(1,60, commands.BucketType.channel)
+    @commands.cooldown(1,180, commands.BucketType.channel)
     @server([841654825456107530])
     async def messagemaniammu(self, ctx):
         if ctx.channel.id not in self.ongoing_mm_games.keys():

@@ -310,7 +310,7 @@ class customCog(commands.Cog, name='custom'):
         del self.ongoing_mm_games[ctx.channel.id]
 
     @commands.command(name='mmp', hidden=True)
-    @commands.cooldown(1,60, commands.BucketType.channel)
+    @commands.cooldown(1,60, commands.BucketType.user)
     @server([841654825456107530])
     async def messagemaniammp(self, ctx):
         if ctx.channel.id not in self.ongoing_mm_games.keys():
@@ -321,7 +321,7 @@ class customCog(commands.Cog, name='custom'):
             else:
                 return True
         try:    
-            await ctx.channel.purge(limit=20, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
+            await ctx.channel.purge(limit=10, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
             await ctx.message.add_reaction('<a:verified:876075132114829342>')
         except:
             await ctx.message.add_reaction('<:exclamation:876077084986966016>')

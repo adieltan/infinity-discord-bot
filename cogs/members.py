@@ -102,7 +102,14 @@ class MembersCog(commands.Cog, name='Members'):
             await ctx.reply("Failed due to role hierarchy.")
             return
         if role in member.roles:
-            await ctx.reply("User already has role.")
+            try:
+                await member.remove_roles(role)
+            except:
+                await ctx.reply("Failed")
+            else:
+                embed = discord.Embed(title='User role remove', description=f"Removed {role.mention} from {member.mention}", color=role.color)
+                embed.timestamp=datetime.datetime.utcnow()
+                await ctx.reply(embed=embed, mention_author=False)
             return
         try:
             await member.add_roles(role)

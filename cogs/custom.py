@@ -279,7 +279,6 @@ class customCog(commands.Cog, name='custom'):
 
     @commands.command(name='messagemania', aliases=['mm'])
     @commands.has_any_role(841655266743418892)
-    @commands.cooldown(1,390, commands.BucketType.channel)
     @server([841654825456107530])
     async def messagemania(self, ctx):
         """Message Mania Minigame."""

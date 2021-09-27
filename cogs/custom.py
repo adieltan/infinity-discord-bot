@@ -304,7 +304,7 @@ class customCog(commands.Cog, name='custom'):
         messages = [x.author.id for x in messages if x.author.bot is False]
         counter=collections.Counter(messages)
         winners = '\n'.join(f"<medal here>  <@{x[0]}>: {x[1]} messages" for x in counter.most_common(5))
-        winners.replace('<medal here>', '🥇', 1).replace('<medal here>', '🥈', 1).replace('<medal here>', '🥉', 1).replace('<medal here>', '🏅', 1).replace('<medal here>', '🏅', 1)
+        winners = winners.replace('<medal here>', '🥇', 1).replace('<medal here>', '🥈', 1).replace('<medal here>', '🥉', 1).replace('<medal here>', '🏅', 1).replace('<medal here>', '🏅', 1)
         embed = discord.Embed(title="Message Mania", description=f"**__Winners__**\n{winners}", color=discord.Color.gold()).set_thumbnail(url="https://images-ext-1.discordapp.net/external/LMTQPkVKqF0jESGgD5djPe1ROAUCybuofm-ismCdBUs/https/media.discordapp.net/attachments/841654825456107533/890903767845834762/MM.png")
         try:
             await ctx.reply(embed=embed)

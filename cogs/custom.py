@@ -281,20 +281,22 @@ class customCog(commands.Cog, name='custom'):
     @commands.command(name='messagemania', aliases=['mm'])
     @commands.has_any_role(841655266743418892)
     @server([841654825456107530])
-    async def messagemania(self, ctx):
+    async def messagemania(self, ctx, seconds:int=None):
         """Message Mania Minigame."""
         timer = '<a:timer:890234490100793404>'
         if ctx.channel.id in self.ongoing_mm_games.keys():
             await ctx.reply(f"There is an ongoing game in this channel.")
             return
+        if seconds is None:
+            seconds = 390
         overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
         overwrite.send_messages=True
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-        message = await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Unlocked\nChannel will be locked in 6.5 minutes.\n\n__Commands:__\n`mmp`: Purges 10 messages from the channel.\n`mmu`: Purges messages from a random user.\n`mmm`: Mutes a user from talking for 30 seconds.", colour=discord.Color.green()))
+        message = await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Unlocked\nChannel will be locked soon.\n\n__Commands:__\n`mmp`: Purges 10 messages from the channel.\n`mmu`: Purges messages from a random user.\n`mmm`: Mutes a user from talking for 30 seconds.", colour=discord.Color.green()))
         self.ongoing_mm_games[ctx.channel.id] = message.created_at
         timestamp = round(message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp())
-        await message.edit(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Unlocked\nChannel will be locked at <t:{timestamp+390}:T> <t:{timestamp+390}:R>.\n\n__Commands:__\n`mmp`: Purges 10 messages from the channel.\n`mmu`: Purges messages from a random user.\n`mmm`: Mutes a user from talking for 30 seconds.", colour=discord.Color.green()))
-        await asyncio.sleep(390)
+        await message.edit(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Unlocked\nChannel will be locked at <t:{timestamp+seconds}:T> <t:{timestamp+seconds}:R>.\n\n__Commands:__\n`mmp`: Purges 10 messages from the channel.\n`mmu`: Purges messages from a random user.\n`mmm`: Mutes a user from talking for 30 seconds.", colour=discord.Color.green()))
+        await asyncio.sleep(seconds)
         overwrite.send_messages=False
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
         await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Locked", colour=discord.Color.red()))
@@ -302,7 +304,7 @@ class customCog(commands.Cog, name='custom'):
         messages = [x.author.id for x in messages if x.author.bot is False]
         counter=collections.Counter(messages)
         winners = '\n'.join(f"<medal here>  <@{x[0]}>: {x[1]} messages" for x in counter.most_common(5))
-        winners.replace('<medal here>', '🥇', 0).replace('<medal here>', '🥈', 0).replace('<medal here>', '🥉', 0).replace('<medal here>', '🏅', 0).replace('<medal here>', '🏅', 0)
+        winners.replace('<medal here>', '🥇', 1).replace('<medal here>', '🥈', 1).replace('<medal here>', '🥉', 1).replace('<medal here>', '🏅', 1).replace('<medal here>', '🏅', 1)
         embed = discord.Embed(title="Message Mania", description=f"**__Winners__**\n{winners}", color=discord.Color.gold()).set_thumbnail(url="https://images-ext-1.discordapp.net/external/LMTQPkVKqF0jESGgD5djPe1ROAUCybuofm-ismCdBUs/https/media.discordapp.net/attachments/841654825456107533/890903767845834762/MM.png")
         try:
             await ctx.reply(embed=embed)

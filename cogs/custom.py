@@ -298,10 +298,11 @@ class customCog(commands.Cog, name='custom'):
         overwrite.send_messages=False
         await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
         await ctx.send(embed=discord.Embed(description=f"<a:verified:876075132114829342> {ctx.channel.mention} Locked", colour=discord.Color.red()))
-        messages = await ctx.channel.history(after=message.created_at).flatten()
+        messages = await ctx.channel.history(limit=None, after=message.created_at).flatten()
         messages = [x.author.id for x in messages if x.author.bot is False]
         counter=collections.Counter(messages)
-        winners = '\n'.join(f"<@{x[0]}> : {x[1]}" for x in counter.most_common(5))
+        winners = '\n'.join(f"<medal here>  <@{x[0]}>: {x[1]} messages" for x in counter.most_common(5))
+        winners.replace('<medal here>', '🥇', 0).replace('<medal here>', '🥈', 0).replace('<medal here>', '🥉', 0).replace('<medal here>', '🏅', 0).replace('<medal here>', '🏅', 0)
         embed = discord.Embed(title="Message Mania", description=f"**__Winners__**\n{winners}", color=discord.Color.gold()).set_thumbnail(url="https://images-ext-1.discordapp.net/external/LMTQPkVKqF0jESGgD5djPe1ROAUCybuofm-ismCdBUs/https/media.discordapp.net/attachments/841654825456107533/890903767845834762/MM.png")
         try:
             await ctx.reply(embed=embed)

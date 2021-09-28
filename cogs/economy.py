@@ -27,7 +27,7 @@ class EconomyCog(commands.Cog, name='Economy'):
                 return item
         
 
-    @commands.group(name="shop", invoke_without_command=True)
+    @commands.group(name="shop", invoke_without_command=True, hidden=True)
     async def shop(self, ctx, item_name:str=None):
         """Finds the information about the item in Infinity shop."""
         if self.items is None:

@@ -15,32 +15,6 @@ class ListenerCog(commands.Cog, name='Listener'):
     async def on_command_completion(self, ctx):
         self.bot.commands_invoked += 1
 
-    @commands.Cog.listener()
-    async def on_message (self, message: discord.Message):
-        self.bot.processed_messages += 1
-        if ('732917262297595925') in message.clean_content.lower():
-            await message.add_reaction("\U0000267e")
-        elif message.author.bot is True:
-            return
-        else:
-            try:
-                server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
-                try:keys = list(server['autoresponse'].keys())
-                except:return
-                clean = message.content.lower()
-                if any(key in clean for key in keys):
-                    for key in keys:
-                        if key in clean:
-                            server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
-                            response = server['autoresponse'][f'{key}']
-                            try:
-                                await message.reply(response, delete_after=60)
-                            except:pass
-            except:pass
-        if ('732917262297595925') in message.content.lower():
-            try:
-                await message.add_reaction("\U0000267e")
-            except:pass
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):

@@ -4,7 +4,7 @@ from discord_components import DiscordComponents, Button, ButtonStyle
 import matplotlib.pyplot as plt
 
 from PIL import Image, ImageDraw, ImageFont
-
+import blist, MotionBotList, topgg
 
 def is_manager():
     def predicate(ctx):
@@ -15,6 +15,10 @@ class OwnerCog(commands.Cog, name='Owner'):
     """*Only owner/managers can use this.*"""
     def __init__(self, bot):
         self.bot = bot
+        self.autostatsposting.start()
+        self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))
+        self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
+        self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)
 
     @commands.command(name='adm')
     @commands.cooldown(1,3)
@@ -336,6 +340,63 @@ class OwnerCog(commands.Cog, name='Owner'):
                         print(''.ljust(5, ' ') + f"▪ {sc.name} {sc.signature.replace('_', '')}".ljust(35, ' ') + f' {sc.help}')
             print('\n')
 
+
+    @commands.command(name='poststats')
+    async def autostatsposting(self, ctx):
+        """Post stats."""
+        await self.bot.wait_until_ready()
+        reports = self.bot.errors
+        async with aiohttp.ClientSession() as cs:
+            header={'Authorization':os.getenv('dbl_token')}
+            data = {'users':len(self.bot.users), 'guilds':len(self.bot.guilds)}
+            async with cs.post(url=f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats", data=data, headers=header) as data:
+                json = await data.json()
+                if json.get('success') != True:
+                    await reports.send(f"DiscordBotList\n{json}")
+            header={'Authorization':os.getenv('voidbots_token')}
+            data = {'server_count':len(self.bot.guilds)}
+            #async with cs.post(url=f"https://api.voidbots.net/bot/stats/{self.bot.user.id}", json=data, headers=header) as data:
+                #json = await data.json()
+                #if json.get('message') != "Servercount updated!":
+                    #await reports.send(f"VoidBots\n{json}")
+            header={'Authorization':os.getenv('botlists_api')}
+            data = {'status':'idle', 'guilds':len(self.bot.guilds), 'shards':1}
+            async with cs.patch(url=f"https://api.botlists.com/bot/{self.bot.user.id}", json=data, headers=header) as data:
+                json = await data.json()
+                if json.get('status') != 200:
+                    await reports.send(f"BotLists\n{json}")
+            header={'Authorization':os.getenv('listcord_token')}
+            data = {'server_count':len(self.bot.guilds)}
+            async with cs.post(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
+                json = await data.json()
+                if json.get('success') != True:
+                    await reports.send(f"Listcord\n{json}")
+            header={'Authorization':os.getenv('bladebot_token')}
+            data = {'servercount':len(self.bot.guilds)}
+            async with cs.post(url=f"https://bladebotlist.xyz/api/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
+                json = await data.json()
+                if json.get('errcode') != 200:
+                    await reports.send(f"BladeBot\n{json}")
+            header={'Authorization':os.getenv('discordservices_token')}
+            data = {'servers':len(self.bot.guilds), 'shards':0}
+            async with cs.post(url=f"https://api.discordservices.net/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
+                json = await data.json()
+                if json.get('code') != 200:
+                    await reports.send(f"DiscordServices\n{json}")
+            header={'Authorization':os.getenv('botlist_token')}
+            data = {'server_count':len(self.bot.guilds)}
+            async with cs.post(url=f"https://api.botlist.me/api/v1/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
+                json = await data.json()
+                if json.get('error') != False:
+                    await reports.send(f"Botlist\n{json}")
+        await cs.close()
+        await blist.Blist.post_bot_stats(self.blist)
+        self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
+        await self.topgg.post_guild_count(len(self.bot.guilds))
+
+    @commands.Cog.listener()
+    async def on_dbl_vote(self, data):
+        await self.voterchannel.send(f"{data}")
 
     @commands.command(name='test')
     @commands.is_owner()

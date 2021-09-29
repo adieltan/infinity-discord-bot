@@ -39,8 +39,6 @@ class FunCog(commands.Cog, name='Fun'):
     @commands.cooldown(1,3)
     async def draw(self, ctx, numbers:int):
         """Draws random people that reacted to a message."""
-        await ctx.trigger_typing()
-        
         me = ctx.message.reference
         users = []
         winners = []

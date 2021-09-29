@@ -3,7 +3,6 @@ from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle
 import matplotlib.pyplot as plt
 
- 
 
 
 class MembersCog(commands.Cog, name='Members'):
@@ -12,23 +11,42 @@ class MembersCog(commands.Cog, name='Members'):
         self.bot = bot
 
     @commands.command(name='userinfo', aliases=['ui', 'user', 'whois', 'i'])
-    @commands.cooldown(1,5)
-    @commands.guild_only()
-    async def userinfo(self, ctx, *, member: discord.Member=None):
+    async def userinfo(self, ctx, *, member: typing.Union[discord.Member, discord.User]=None):
         """Gets info about the user."""
         if member is None:
             member = ctx.author
-        await ctx.trigger_typing()
-
-        embed=discord.Embed(title="User Info", description=f"{member.mention} [Avatar]({member.avatar_url_as(static_format='png')})\n`Status  :` {member.raw_status}\n`Activity:` {member.activity}", color=member.color)
-        embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
-        embed.add_field(name="User ID", value=f"`{member.id}`")
-        embed.add_field(name="Nickname", value=member.display_name)
-        embed.add_field(name="Date Joined", value=member.joined_at.strftime("%a %Y %b %d , %H:%M:%S %Z"))
-        embed.add_field(name="Roles", value=f"`Top Role:` {member.top_role.mention}\n`{member.top_role.id}`\n`Number of roles:` {len(member.roles)}", inline=False)
-        embed.set_image(url=member.avatar_url)
-        embed.set_footer(text="User creation date")
-        embed.timestamp = member.created_at
+        if type(member) == discord.Member:
+            if member.status == discord.Status.online:
+                status = f"\🟢 Online"
+            elif member.status == discord.Status.idle:
+                status = f"\🟡 Idle"
+            elif member.status == discord.Status.dnd:
+                status = f"\🔴 DND"
+            elif member.status == discord.Status.offline:
+                status = f"\⚫ Offline"
+            else:
+                status = ''
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar_url})\n{status}\n{member.activity.name}", color=member.color, timestamp = datetime.datetime.utcnow())
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
+            embed.add_field(name="Joined", value=f"<t:{round(member.joined_at.timestamp())}:F>\n<t:{round(member.joined_at.timestamp())}:R>")
+            embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
+            if member.nick:
+                embed.description = f"`{member.nick}` " + embed.description
+            if member.bot:
+                embed.description += f"\n🤖 Bot Account"
+            if member.premium_since:
+                embed.add_field(name="Server Boost", description=f"\nBoosting since: <t:{round(member.premium_since.timestamp())}:f> <t:{round(member.premium_since.timestamp())}:R>")
+            embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
+            embed.set_thumbnail(url=member.avatar_url)
+            embed.set_footer(text=f"ID: {member.id}")
+        else:
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar_url})", color=member.color, timestamp = datetime.datetime.utcnow())
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
+            embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
+            if member.bot:
+                embed.description += f"\n🤖 Bot Account"
+            embed.set_thumbnail(url=member.avatar_url)
+            embed.set_footer(text=f"ID: {member.id}")
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name='perms', aliases=['permissions', 'perm'])
@@ -37,7 +55,6 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.has_permissions(manage_roles=True)
     async def check_permissions(self, ctx, object:typing.Union[discord.Member, discord.Role]=None):
         """Checks member's or role's permissions."""
-        await ctx.trigger_typing()
         if object is None:
             object = ctx.author
         if type(object) == discord.Role:
@@ -301,7 +318,6 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.guild_only()
     async def random(self, ctx, role:discord.Role=None, howmany:int=1):
         """Finds random peoples from the whole server or from roles."""
-        await ctx.trigger_typing()
         if role == None:
             role = ctx.guild.default_role
         people = role.members

@@ -109,7 +109,6 @@ class utilityCog(commands.Cog, name='utility'):
     @commands.cooldown(1,5)
     async def weather(self, ctx, *, city_name:str):
         """Weather infomation."""
-        await ctx.trigger_typing()
         async with aiohttp.ClientSession() as cs:
             async with cs.get(url=f"http://api.openweathermap.org/data/2.5/weather?appid=e18ed14fc4fe401e9b9133ef3e1ccee6&units=metric&q={city_name}") as w:
                 x = await w.json()

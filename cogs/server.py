@@ -171,9 +171,9 @@ class ServerCog(commands.Cog, name='server'):
         e.set_footer(text='Created').timestamp = guild.created_at
         await ctx.reply(embed=e)
 
-    @commands.command(name="leaveleaderboard", aliases=['ll'])
+    @commands.group(name="leaveleaderboard", aliases=['ll'])
     @commands.guild_only()
-    async def leaveleaderboard(self, ctx):
+    async def ll(self, ctx):
         """Sees who left the server the most."""
         results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
         dic = results.get('leaveleaderboard')
@@ -181,8 +181,15 @@ class ServerCog(commands.Cog, name='server'):
             await ctx.reply(f"No data.")
             return
         sort = dict(sorted(dic.items(), key = lambda x: x[1], reverse = True))
-        text='\n'.join([f"<@{key}> {value}"for key, value in sort.items()])
+        text='\n'.join([f"<@{k}> {sort[k]}"for k in list(sort)[:10]])
         await ctx.reply(embed=discord.Embed(title="Leave leaderboard", description=f"{text}", color=discord.Color.red()).set_footer(text="Sees who left the most times."))
+
+    @ll.command(name='reset')
+    @commands.has_guild_permissions(kick_members=True)
+    async def llreset(self, ctx):
+        """Resets the leave leaderboard."""
+        await self.bot.dba['server'].update_one({'_id':ctx.guild.id}, {'$set':{'leaveleaderboard':dict()}})
+        await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member:discord.Member):
@@ -376,7 +383,6 @@ class ServerCog(commands.Cog, name='server'):
     @commands.cooldown(1,8)
     async def first(self, ctx):
         """Gets the first message of the channel."""
-        await ctx.trigger_typing()
         meh = await ctx.channel.history(limit=1, oldest_first=True).flatten()
         message = meh[0]
         
@@ -498,7 +504,7 @@ class ServerCog(commands.Cog, name='server'):
     async def purge(self,ctx, no:int=None):
         """Purges a number of messages."""
         if no is None:
-            await ctx.reply(f"Purge commands: `user` `pins` `bot`")
+            await ctx.reply(f"Purge commands: `user` `pins` `bot` `human`")
             return
         def pinc(msg):
             if msg.pinned:
@@ -512,7 +518,7 @@ class ServerCog(commands.Cog, name='server'):
     async def user(self, ctx, user:discord.Member, no:int=100):
         """Purges messages from a user."""
         def pinc(msg):
-            if msg.author == user:
+            if msg.author == user and msg.pinned is not True:
                 return True
             else:
                 return False
@@ -530,11 +536,22 @@ class ServerCog(commands.Cog, name='server'):
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
-    @purge.command()
+    @purge.command(name='bot', aliases=['bots'])
     async def bot(self, ctx, no:int=100):
         """Purges messages from bots."""
         def pinc(msg):
-            if msg.author.bot == True:
+            if msg.author.bot == True and msg.pinned is not True:
+                return True
+            else:
+                return False
+        deleted = await ctx.channel.purge(limit=no+1, check=pinc)
+        await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
+
+    @purge.command(name='human', aliases=['humans'])
+    async def human(self, ctx, no:int=100):
+        """Purges messages from humans."""
+        def pinc(msg):
+            if msg.author.bot is False and msg.pinned is not True:
                 return True
             else:
                 return False

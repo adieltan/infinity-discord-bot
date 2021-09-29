@@ -16,7 +16,6 @@ class MiniGamesCog(commands.Cog, name='MiniGames'):
     @commands.cooldown(1, 100, commands.BucketType.category)
     async def corners(self, ctx):
         """8 corners Game."""
-        await ctx.trigger_typing()
         self.teams = []
 
         class team:

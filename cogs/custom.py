@@ -1,5 +1,6 @@
 from operator import matmul
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+from discord.channel import DMChannel
 from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle
 import matplotlib.pyplot as plt
@@ -208,6 +209,11 @@ class customCog(commands.Cog, name='custom'):
             bamboo_chat = self.bot.get_channel(717962272093372556)
             bots = sum(m.bot for m in member.guild.members)
             embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar_url)
+            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
+            dic = results.get('leaveleaderboard')
+            leavetimes = dic.get(f"{member.id}")
+            if leavetimes is not None:
+                embed.description += f"\nLeft the server {leavetimes} times."
             await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
 
     @commands.Cog.listener()
@@ -269,14 +275,17 @@ class customCog(commands.Cog, name='custom'):
     @server([888337006042689536, 888337125433569290])
     async def on_message(self, message:discord.Message):
         """Treasure Mystery"""
-        if "732917262297595925" in message.content and message.guild.id == 888337006042689536:
-            channel = self.bot.get_channel(888337930379223060)
-            invite = await channel.create_invite(max_age=300, max_uses=1)
-            await message.author.send(f"You advanced to the next level! {str(invite)}")
-        elif "help" in message.content.lower() and message.guild.id == 888337125433569290:
-            channel = self.bot.get_channel(888344586680934430)
-            invite = await channel.create_invite(max_age=300, max_uses=1)
-            await message.author.send(f"You advanced to the next level! {str(invite)}")
+        try:
+            if "732917262297595925" in message.content and message.guild.id == 888337006042689536:
+                channel = self.bot.get_channel(888337930379223060)
+                invite = await channel.create_invite(max_age=300, max_uses=1)
+                await message.author.send(f"You advanced to the next level! {str(invite)}")
+            elif "help" in message.content.lower() and message.guild.id == 888337125433569290:
+                channel = self.bot.get_channel(888344586680934430)
+                invite = await channel.create_invite(max_age=300, max_uses=1)
+                await message.author.send(f"You advanced to the next level! {str(invite)}")
+        except:
+            pass
 
     @commands.command(name='messagemania', aliases=['mm'])
     @commands.has_any_role(841655266743418892)

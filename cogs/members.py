@@ -50,7 +50,7 @@ class MembersCog(commands.Cog, name='Members'):
             embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
-            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
+            results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
             dic = results.get('leaveleaderboard')
             leavetimes = dic.get(f"{member.id}")
             if leavetimes is not None:

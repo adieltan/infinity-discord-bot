@@ -15,7 +15,7 @@ def server(id:list):
         return ctx.guild.id in id
     return commands.check(predicate)
 class CustomCog(commands.Cog, name='Custom'):
-    """*Custom commands for server.*"""
+    """🔧 Custom commands for server."""
     def __init__(self, bot):
         self.bot = bot
         self.youtubeupdate.start()

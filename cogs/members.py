@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class MembersCog(commands.Cog, name='Members'):
-    """*Information about members.*"""
+    """👤 Information / function about Users."""
     def __init__(self, bot):
         self.bot = bot
 

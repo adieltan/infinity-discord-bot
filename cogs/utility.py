@@ -16,7 +16,7 @@ parser = Parser()
 import lxml.html as lh
 
 class UtilityCog(commands.Cog, name='Utility'):
-    """*Utility commands for server.*"""
+    """🛠️ Commands to improve user experience, draw data, integration with APIs."""
     def __init__(self, bot):
         self.bot = bot
         self.togetherControl = DiscordTogether(bot)

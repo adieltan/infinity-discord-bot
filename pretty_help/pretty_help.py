@@ -195,7 +195,7 @@ class Paginator:
 
             for page_no, page in enumerate(self._pages, 1):
                 index.add_field(
-                    name=f"⚡ {page.title}",
+                    name=f"• {page.title} ",
                     value=f'{self.prefix}{page.description or "No Description"}{self.suffix}',
                     inline=True,
                 )

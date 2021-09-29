@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class ImageCog(commands.Cog, name='Image'):
-    """*Image Commands*"""
+    """📸 Image Commands."""
     def __init__(self, bot):
         self.bot = bot
     

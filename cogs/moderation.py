@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
  
 
 class ModerationCog(commands.Cog, name='Moderation'):
-    """*Moderation Commands.*"""
+    """🔨 Commands to keep your server safe."""
     def __init__(self, bot):
         self.bot = bot
 

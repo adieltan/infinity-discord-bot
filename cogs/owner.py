@@ -12,7 +12,7 @@ def is_manager():
     return commands.check(predicate)
 
 class OwnerCog(commands.Cog, name='Owner'):
-    """*Only owner/managers can use this.*"""
+    """🔐 Only owner/managers can use this."""
     def __init__(self, bot):
         self.bot = bot
         self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))

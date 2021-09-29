@@ -11,7 +11,7 @@ from PIL import Image
 
 
 class ServerCog(commands.Cog, name='Server'):
-    """*Server Commands*"""
+    """🌐 Tools for your server."""
     def __init__(self, bot):
         self.bot = bot
 

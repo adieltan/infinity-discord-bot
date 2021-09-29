@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from psutil._common import bytes2human
 
 class InfoCog(commands.Cog, name='Info'):
-    """*Info about bot and related servers.*"""
+    """❕ Info about bot and related servers."""
     def __init__(self, bot):
         self.bot = bot
         self.bot_info.start()

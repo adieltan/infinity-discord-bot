@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from thefuzz import process
 class EconomyCog(commands.Cog, name='Economy'):
-    """*Economy Commands*"""
+    """💰 Economy Commands."""
     def __init__(self, bot):
         self.bot = bot
         self.items = None

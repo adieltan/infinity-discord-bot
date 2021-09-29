@@ -15,7 +15,6 @@ class OwnerCog(commands.Cog, name='Owner'):
     """*Only owner/managers can use this.*"""
     def __init__(self, bot):
         self.bot = bot
-        self.autostatsposting.start()
         self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))
         self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
         self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)

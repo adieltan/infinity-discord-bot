@@ -195,9 +195,9 @@ class Paginator:
 
             for page_no, page in enumerate(self._pages, 1):
                 index.add_field(
-                    name=f"{page_no}) {page.title}",
+                    name=f"⚡ {page.title}",
                     value=f'{self.prefix}{page.description or "No Description"}{self.suffix}',
-                    inline=False,
+                    inline=True,
                 )
             index.set_footer(text=self.ending_note)
             self._pages.insert(0, index)

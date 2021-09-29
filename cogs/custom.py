@@ -14,7 +14,7 @@ def server(id:list):
     def predicate(ctx):
         return ctx.guild.id in id
     return commands.check(predicate)
-class customCog(commands.Cog, name='custom'):
+class CustomCog(commands.Cog, name='Custom'):
     """*Custom commands for server.*"""
     def __init__(self, bot):
         self.bot = bot
@@ -377,4 +377,4 @@ class customCog(commands.Cog, name='custom'):
             pass
 
 def setup(bot):
-    bot.add_cog(customCog(bot))
+    bot.add_cog(CustomCog(bot))

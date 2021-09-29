@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 import dateparser, pycountry
 
-class profileCog(commands.Cog, name='profile'):
+class ProfileCog(commands.Cog, name='Profile'):
     """*User based commands.*"""
     def __init__(self, bot):
         self.bot = bot
@@ -138,4 +138,4 @@ class profileCog(commands.Cog, name='profile'):
 
     
 def setup(bot):
-    bot.add_cog(profileCog(bot))
+    bot.add_cog(ProfileCog(bot))

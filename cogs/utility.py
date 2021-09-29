@@ -15,7 +15,7 @@ parser = Parser()
 
 import lxml.html as lh
 
-class utilityCog(commands.Cog, name='utility'):
+class UtilityCog(commands.Cog, name='Utility'):
     """*Utility commands for server.*"""
     def __init__(self, bot):
         self.bot = bot
@@ -575,4 +575,4 @@ class utilityCog(commands.Cog, name='utility'):
                 await ctx.reply(f"Error.\nCommon causes: Invalid channel id")
 
 def setup(bot):
-    bot.add_cog(utilityCog(bot))
+    bot.add_cog(UtilityCog(bot))

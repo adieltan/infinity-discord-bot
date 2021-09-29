@@ -10,7 +10,7 @@ from collections import Counter, OrderedDict
 from PIL import Image
 
 
-class ServerCog(commands.Cog, name='server'):
+class ServerCog(commands.Cog, name='Server'):
     """*Server Commands*"""
     def __init__(self, bot):
         self.bot = bot

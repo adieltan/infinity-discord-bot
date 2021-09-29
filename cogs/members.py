@@ -32,6 +32,11 @@ class MembersCog(commands.Cog, name='Members'):
             embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
             if member.nick:
                 embed.description = f"`{member.nick}` " + embed.description
+            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
+            dic = results.get('leaveleaderboard')
+            leavetimes = dic.get(f"{member.id}")
+            if leavetimes is not None:
+                embed.description += f"\nLeft the server {leavetimes} times."
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
             if member.premium_since:
@@ -45,6 +50,11 @@ class MembersCog(commands.Cog, name='Members'):
             embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
+            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
+            dic = results.get('leaveleaderboard')
+            leavetimes = dic.get(f"{member.id}")
+            if leavetimes is not None:
+                embed.description += f"\nLeft the server {leavetimes} times."
             embed.set_thumbnail(url=member.avatar_url)
             embed.set_footer(text=f"ID: {member.id}")
         await ctx.reply(embed=embed, mention_author=False)

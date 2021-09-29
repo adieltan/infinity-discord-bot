@@ -56,6 +56,32 @@ class utilityCog(commands.Cog, name='utility'):
         embed=discord.Embed(title="Bookmark System", description="React to a message with :bookmark: to bookmark the message.\nThe bot will send and pin a message in your dms which contain the content and jump link to the message you bookmarked.\nRefering to the bookmark message with `remark <remark>` can add a field to the embed containing the remark you made.")
         await ctx.reply(embed=embed)
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
+        if payload.event_type == "REACTION_ADD" and payload.emoji.name == "🔖" and payload.member is not None:
+            try:
+                message_channel = self.bot.get_channel(payload.channel_id)
+                m = await message_channel.fetch_message(payload.message_id)
+                try:m.clean_content
+                except:content = None
+                else:content = m.clean_content
+                embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on <t:{round(m.created_at.timestamp())}>\nAt {message_channel.mention} in {m.guild.name}", timestamp=datetime.datetime.utcnow(), color=discord.Color.from_rgb(0,255,255))
+                embed.set_author(name=m.author.name, icon_url=m.author.avatar_url)
+                embed.set_footer(text=m.guild.name, icon_url=m.guild.icon_url)
+                embed.add_field(name="Remark", value="Reply to this message with `remark <remark>` to add your remark.", inline=False)
+                message = await payload.member.send(content=content, embed=embed)
+                pins = await payload.member.dm_channel.pins()
+                if len(pins)>=50:
+                    pins.reverse()
+                    await pins[0].unpin()
+                    await pins[0].reply("This message has been unpinned due to the pin limit in this channel.")
+                await message.pin()
+                history = await payload.member.dm_channel.history(limit=1).flatten()
+                await history[0].delete()
+            except:pass
+        else:
+            pass
+
     @commands.command(name='time')
     @commands.cooldown(1,2)
     async def time(self, ctx, *, expression:str): 

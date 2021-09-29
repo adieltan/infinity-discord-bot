@@ -26,7 +26,9 @@ class MembersCog(commands.Cog, name='Members'):
                 status = f"\⚫ Offline"
             else:
                 status = ''
-            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar_url})\n{status}\n{member.activity.name}", color=member.color, timestamp = datetime.datetime.utcnow())
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar_url})\n{status}\n", color=member.color, timestamp = datetime.datetime.utcnow())
+            if member.activity:
+                embed.description += f"{member.activity.name}"
             embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
             embed.add_field(name="Joined", value=f"<t:{round(member.joined_at.timestamp())}:F>\n<t:{round(member.joined_at.timestamp())}:R>")
             embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")

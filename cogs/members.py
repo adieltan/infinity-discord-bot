@@ -230,7 +230,7 @@ class MembersCog(commands.Cog, name='Members'):
         if role is None:
             role = ctx.guild.default_role
         embed = discord.Embed(title="Role Info", description=f"{role.mention} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
-        embed.add_field(name="Permissions", value='❤'+'`🎈`'.join(perm for perm, value in role.permissions if value))
+        embed.add_field(name="Permissions", value='\u200B'+' '.join(perm.replace('_',' ').title() for perm, value in role.permissions if value))
         embed.set_footer(text="Role created at")
         embed.timestamp = role.created_at
         await ctx.reply(embed=embed, mention_author=True)

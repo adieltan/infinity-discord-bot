@@ -18,7 +18,7 @@ class InfoCog(commands.Cog, name='Info'):
         """Gets the links related to the bot."""
         
         embed=discord.Embed(title = "Infinity" , url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", description="Invite link: [Admin](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)  [~~Admin~~](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=0&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)", color=discord.Color.random())
-        embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal <:up:876079229748539393> [<a:infinity:874548940610097163>](https://discord.gg/dHGqUZNqCu) <#851637967952412723>")
+        embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal <:up:876079229748539393> [<a:infinity:874548940610097163>](https://discord.gg/dHGqUZNqCu) <#865148589381517342>")
         embed.add_field(name="Website", value="[Tynxen](https://tynxen.netlify.app/)")
         embed.timestamp=datetime.datetime.utcnow()
         
@@ -46,25 +46,67 @@ class InfoCog(commands.Cog, name='Info'):
         d = datetime.datetime.utcnow() -self.bot.startuptime
         embed.add_field(name="Uptime", value=f"{round(d.seconds/60/60,2)} hours")
         embed.add_field(name="Connected", value=f"To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
-        bot_lists = {
-            'Top.gg':'https://top.gg/bot/732917262297595925',
-            'DBL':'https://discordbotlist.com/bots/infinity-5345',
-            'BladeBotList':'https://bladebotlist.xyz/bot/732917262297595925',
-            'VoidBots':'https://voidbots.net/bot/732917262297595925/',
-            'ListCord':'https://listcord.gg/bot/732917262297595925',
-            'BotLists':'https://botlists.com/bot/732917262297595925',
-            'Fateslist':'https://fateslist.xyz/bot/732917262297595925',
-            'Blist':'https://blist.xyz/bot/732917262297595925',
-            'MotionList':'https://www.motiondevelopment.top/bots/732917262297595925',
-            'DiscordServices':'https://discordservices.net/bot/732917262297595925',
-            'BotList':'https://botlist.me/bots/732917262297595925',
-            'StellarBotList':'https://stellarbotlist.com/bot/732917262297595925',
-            'InfinityBotList':'https://infinitybotlist.com/bots/732917262297595925',
-            'Astralist':'https://astralist.tk/bot/732917262297595925/vote'
-        }
-        embed.add_field(name="Bot Lists", value=f"""{' | '.join([f"[{item}]({bot_lists[item]})" for item in bot_lists])}""", inline=False)
         await ctx.reply(embed=embed, mention_author=False)
         
+    @commands.group(name='vote', aliases=['v'], invoke_without_command=True)
+    @commands.cooldown(1, 4, commands.BucketType.user)
+    async def vote(self, ctx):
+        """Display vote websites and vote cooldowns."""
+        bl = {
+            'Top.gg':{'website':'https://top.gg/bot/732917262297595925/vote', 'vote':None},
+            'DBL':{'website':'https://discordbotlist.com/bots/infinity-5345/upvote', 'vote':None},
+            'BladeBotList':{'website':'https://bladelist.gg/bots/732917262297595925', 'vote':None},
+            'VoidBots':{'website':'https://voidbots.net/bot/732917262297595925/vote','vote':None},
+            'ListCord':{'website':'https://listcord.gg/bot/732917262297595925','vote':None},
+            'BotLists':{'website':'https://botlists.com/bot/732917262297595925','vote':None},
+            'Fateslist':{'website':'https://fateslist.xyz/bot/732917262297595925/vote','vote':None},
+            'Blist':{'website':'https://blist.xyz/bot/732917262297595925','vote':False},
+            'MotionList':{'website':'https://www.motiondevelopment.top/bots/732917262297595925/vote','vote':None},
+            'DiscordServices':{'website':'https://discordservices.net/bot/732917262297595925','vote':None},
+            'BotList':{'website':'https://botlist.me/bots/732917262297595925/vote','vote':None},
+            'StellarBotList':{'website':'https://stellarbotlist.com/bot/732917262297595925/vote','vote':None},
+            'InfinityBotList':{'website':'https://infinitybotlist.com/bots/732917262297595925/vote','vote':None},
+            'Astralist':{'website':'https://astralist.tk/bot/732917262297595925/vote','vote':None}
+        }
+        async with aiohttp.ClientSession() as cs:
+            header={'Authorization':os.getenv('topgg_token')}
+            async with cs.get(url=f"https://top.gg/api/bots/{self.bot.user.id}/check?userId={ctx.author.id}", headers=header) as data:
+                json = await data.json()
+                if json.get('voted') == 1:
+                    bl['Top.gg']['vote'] = True
+            header={'Authorization':os.getenv('voidbots_token')}
+            async with cs.get(url=f"https://api.voidbots.net/bot/voted/{self.bot.user.id}/{ctx.author.id}", headers=header) as data:
+                json = await data.json()
+                if json.get('voted') is True:
+                    bl['VoidBots']['vote'] = True
+                    bl['VoidBots']['nextvote'] = round(datetime.datetime.now().timestamp()) + round(json['nextVote']['ms'] / 1000)
+            header={'Authorization':os.getenv('listcord_token')}
+            async with cs.get(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/voted", headers=header, params={'user_id':f"{ctx.author.id}"}) as data:
+                json = await data.json()
+                if json.get('voted') is True:
+                    bl['ListCord']['vote'] = True
+                    bl['ListCord']['nextvote'] = round(json['next_at'] / 1000)
+
+        await cs.close()
+        lists = '\n'.join([f"""{'🚫'if bl[item]['vote'] is False else ''}{'<:neutral:875345584805003295>'if bl[item]['vote'] is None else ''}{'✅'if bl[item]['vote'] else ''} [{item}]({bl[item]['website']}) {f"<t:{bl[item].get('nextvote')}:R>"if bl[item].get('nextvote') else ''}""" for item in bl])
+        embed=discord.Embed(title="Vote for Infinity", description=f"{lists}\n\n✅ = Voted\n<:neutral:875345584805003295> = Available / Unable to get vote data\n🚫 = Not Available for Voting\n", color=discord.Color.gold())
+        await ctx.reply(embed=embed)
+
+    @vote.command(name='topgg')
+    async def topggvotes(self, ctx):
+        """Shows last 1000 voters for the bot via top.gg"""
+        async with aiohttp.ClientSession() as cs:
+            header={'Authorization':os.getenv('topgg_token')}
+            async with cs.get(url=f"https://top.gg/api/bots/{self.bot.user.id}/votes", headers=header) as data:
+                json = await data.json()
+        await cs.close()
+        text = ''
+        for vote in json:
+            text += f"Username: {vote['username']} • ID: {vote['id']}\n"
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await ctx.reply(file=discord.File(buffer, filename='topgglast1000votes.txt'))
+
+
     @commands.command(name="managers", aliases=["staff"])
     async def managers(self, ctx):
         """Shows the managers of the bot."""

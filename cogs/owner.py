@@ -151,10 +151,13 @@ class OwnerCog(commands.Cog, name='Owner'):
             managers.append(doc['_id'])
         self.bot.managers = managers
         await ctx.reply(f"Removed {user.mention} as Infinity Managers.")
-        guild = self.bot.get_guild(709711335436451901)
-        member = await guild.fetch_member(user.id)
-        role = guild.get_role(843375370627055637)
-        await member.remove_roles(role)
+        try:
+            guild = self.bot.get_guild(709711335436451901)
+            member = await guild.fetch_member(user.id)
+            role = guild.get_role(843375370627055637)
+            await member.remove_roles(role)
+        except:
+            pass
         embed=discord.Embed(title="Demoted from manager", description=f"{user.mention}", color=discord.Color.dark_orange())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await self.bot.changes.send(embed=embed)
@@ -319,41 +322,43 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.command(name="allcommands")
     @commands.is_owner()
     async def all_commands(self, ctx):
-        """Dumps all the commands into your terminal."""
+        """Returns all the commands + description."""
+        text = ''
         for cog in self.bot.cogs:
             cogobj = self.bot.get_cog(cog)
 
             try:
-                print('+' + '-' * 105 + '+')
-                print('| ' + cogobj.qualified_name.upper())
+                text += ('+' + '-' * 105 + '+' +'\n')
+                text += ('| ' + cogobj.qualified_name.upper() + '\n')
                 if cogobj.description:
-                    print('| ' + cogobj.description)
-                print('+' + '-' * 105 + '+')
+                    text += ('| ' + cogobj.description + '\n')
+                text += ('+' + '-' * 105 + '+' + '\n')
             except AttributeError:
                 pass # Idk how to make a no category category
 
             for c in cogobj.get_commands():
-                print(f"• {c.name} {c.signature.replace('_', '')}".ljust(35, ' ') + f' {c.help}')
+                text += (f"• {c.name} {c.signature.replace('_', '')}".ljust(35, ' ') + f' {c.help}' + '\n')
                 if isinstance(c, commands.Group):
                     for sc in c.commands:
-                        print(''.ljust(5, ' ') + f"▪ {sc.name} {sc.signature.replace('_', '')}".ljust(35, ' ') + f' {sc.help}')
-            print('\n')
+                        text += (''.ljust(5, ' ') + f"▪ {sc.name} {sc.signature.replace('_', '')}".ljust(35, ' ') + f' {sc.help}' + '\n')
+            text += ('\n')
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await ctx.reply(file=discord.File(buffer, filename='allcommands.txt'))
 
 
     @commands.command(name='poststats')
     async def autostatsposting(self, ctx):
         """Post stats."""
         await self.bot.wait_until_ready()
-        reports = self.bot.errors
+        text = ''
         async with aiohttp.ClientSession() as cs:
             header={'Authorization':os.getenv('dbl_token')}
             data = {'users':len(self.bot.users), 'guilds':len(self.bot.guilds)}
             async with cs.post(url=f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats", data=data, headers=header) as data:
                 json = await data.json()
-                if json.get('success') != True:
-                    await reports.send(f"DiscordBotList\n{json}")
-            header={'Authorization':os.getenv('voidbots_token')}
-            data = {'server_count':len(self.bot.guilds)}
+                text += f"DiscordBotList\n{json}"
+            #header={'Authorization':os.getenv('voidbots_token')}
+            #data = {'server_count':len(self.bot.guilds)}
             #async with cs.post(url=f"https://api.voidbots.net/bot/stats/{self.bot.user.id}", json=data, headers=header) as data:
                 #json = await data.json()
                 #if json.get('message') != "Servercount updated!":
@@ -362,32 +367,27 @@ class OwnerCog(commands.Cog, name='Owner'):
             data = {'status':'idle', 'guilds':len(self.bot.guilds), 'shards':1}
             async with cs.patch(url=f"https://api.botlists.com/bot/{self.bot.user.id}", json=data, headers=header) as data:
                 json = await data.json()
-                if json.get('status') != 200:
-                    await reports.send(f"BotLists\n{json}")
+                text += f"BotLists\n{json}"
             header={'Authorization':os.getenv('listcord_token')}
             data = {'server_count':len(self.bot.guilds)}
             async with cs.post(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
-                if json.get('success') != True:
-                    await reports.send(f"Listcord\n{json}")
+                text += f"Listcord\n{json}"
             header={'Authorization':os.getenv('bladebot_token')}
             data = {'servercount':len(self.bot.guilds)}
             async with cs.post(url=f"https://bladebotlist.xyz/api/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
-                if json.get('errcode') != 200:
-                    await reports.send(f"BladeBot\n{json}")
+                text += f"BladeBot\n{json}"
             header={'Authorization':os.getenv('discordservices_token')}
             data = {'servers':len(self.bot.guilds), 'shards':0}
             async with cs.post(url=f"https://api.discordservices.net/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
-                if json.get('code') != 200:
-                    await reports.send(f"DiscordServices\n{json}")
+                text += f"DiscordServices\n{json}"
             header={'Authorization':os.getenv('botlist_token')}
             data = {'server_count':len(self.bot.guilds)}
             async with cs.post(url=f"https://api.botlist.me/api/v1/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
-                if json.get('error') != False:
-                    await reports.send(f"Botlist\n{json}")
+                text += f"Botlist\n{json}"
         await cs.close()
         await blist.Blist.post_bot_stats(self.blist)
         self.motionlist.update(self.bot.user.id, len(self.bot.guilds))

@@ -143,7 +143,7 @@ class CustomCog(commands.Cog, name='Custom'):
             return
         elif len(message.content) < 1:
             return
-        elif message.author.bot == True:
+        elif message.author.bot is True:
             return
         roles = {
             'He/Him': 854353177804931083,

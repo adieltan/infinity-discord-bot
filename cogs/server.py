@@ -282,7 +282,7 @@ class ServerCog(commands.Cog, name='Server'):
                             server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
                             response = server['autoresponse'][f'{key}']
                             try:
-                                await message.reply(response, delete_after=60)
+                                await message.reply(response, allowed_mentions=discord.AllowedMentions.none(), mention_author=False, remove_after=100)
                             except:pass
             except:pass
         if ('732917262297595925') in message.content.lower():

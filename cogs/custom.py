@@ -88,9 +88,14 @@ class CustomCog(commands.Cog, name='Custom'):
         if member is None:
             message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
             member = message.mentions[0]
-             
-        await member.add_roles(panda, reason="Verification")
-        await ctx.reply(f"Verified {member.mention}")
+        if panda in member.roles:
+            await ctx.reply(f"User already verified.")
+            return
+        try:
+            await member.add_roles(panda, reason="Verification")
+            await ctx.reply(f"Verified {member.mention}")
+        except:
+            await ctx.reply(f"Verification uncessful.")
 
     async def supporter_autorole(self, member:discord.Member):
         await self.bot.wait_until_ready()
@@ -136,14 +141,9 @@ class CustomCog(commands.Cog, name='Custom'):
         """Checks online member's status."""
         await self.supporter_autorole(after)
 
-    @commands.Cog.listener()
-    @server([709711335436451901])
-    async def on_message(self, message: discord.Message):
+    async def self_role(self, message:discord.Message):
+        """Adds a specific pickable role to the member (Typical Pandas)."""
         if message.channel.id != 848892659828916274:
-            return
-        elif len(message.content) < 1:
-            return
-        elif message.author.bot is True:
             return
         roles = {
             'He/Him': 854353177804931083,
@@ -167,6 +167,7 @@ class CustomCog(commands.Cog, name='Custom'):
             'Giveaway': 807926618223018015,
             'Game/Event Time': 759685837088227328,
             'Infinity Updates': 848814884330537020,
+            'Wishlist Ping': 890775726524104714,
             'Bump Ping': 782937437206609941,
             'Chat Revival': 848826846669439026,
             'Poll Ping': 848807930085900320,
@@ -179,10 +180,18 @@ class CustomCog(commands.Cog, name='Custom'):
             'D Giveaway': 783133954047213609,
             'D Event': 807926892723437588,
         }
+        if message.content=='list':
+            text = ''
+            for role in roles:
+                text += f"{role} : <@&{roles[role]}>\n"
+            await message.reply(text, mention_author=False, allowed_mentions=discord.AllowedMentions.none(), remove_after=100)
+            return
         try:
             fuzzy = process.extractOne(message.content, roles.keys())
             id = roles.get(fuzzy[0])
             role = message.guild.get_role(id)
+            if fuzzy[1] < 70:
+                raise
         except:
             await message.reply(f"The code `{message.content}` is invalid.\nBe sure to check out <#723892038587646002> to see what roles you can get.")
         else:
@@ -199,6 +208,18 @@ class CustomCog(commands.Cog, name='Custom'):
                     await message.reply(f"The code `{message.content}` is invalid.")
                 else:
                     await message.reply(embed=discord.Embed(title="Roles add", description=f"Removed {role.mention} from {message.author.mention}", color=discord.Color.red()).set_footer(text=f"{fuzzy[1]}%"))
+
+    @commands.Cog.listener()
+    async def on_message(self, message:discord.Message):
+        if message.author.bot is True:
+            return
+        if message.channel.id == 848892659828916274:
+            await self.self_role(message=message)
+            return
+        else:
+            await self.treasure_mystery(message=message)
+            return
+
 
     @commands.Cog.listener()
     @server([709711335436451901])
@@ -246,7 +267,6 @@ class CustomCog(commands.Cog, name='Custom'):
                 await tbsub.edit(name=f"{format(int(stats['subscriberCount']), ',')} ⬅ Beggar's Subscribers")
                 await tbviews.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ Beggar's Views")
         await cs.close()
-        
 
     @commands.command(name="donolog", aliases=["dl"], hidden=True)
     @server([841654825456107530])
@@ -271,9 +291,7 @@ class CustomCog(commands.Cog, name='Custom'):
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 
-    @commands.Cog.listener()
-    @server([888337006042689536, 888337125433569290])
-    async def on_message(self, message:discord.Message):
+    async def treasure_mystery(self, message:discord.Message):
         """Treasure Mystery"""
         try:
             if "732917262297595925" in message.content and message.guild.id == 888337006042689536:

@@ -184,7 +184,7 @@ class CustomCog(commands.Cog, name='Custom'):
             text = ''
             for role in roles:
                 text += f"{role} : <@&{roles[role]}>\n"
-            await message.reply(text, mention_author=False, allowed_mentions=discord.AllowedMentions.none(), remove_after=100)
+            await message.reply(text, mention_author=False, allowed_mentions=discord.AllowedMentions.none(), delete_after=100)
             return
         try:
             fuzzy = process.extractOne(message.content, roles.keys())

@@ -42,7 +42,7 @@ class MembersCog(commands.Cog, name='Members'):
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
             if member.premium_since:
-                embed.add_field(name="Server Boost", description=f"\nBoosting since: <t:{round(member.premium_since.timestamp())}:f> <t:{round(member.premium_since.timestamp())}:R>")
+                embed.add_field(name="Server Boost", value=f"\nBoosting since: <t:{round(member.premium_since.timestamp())}:f> <t:{round(member.premium_since.timestamp())}:R>")
             embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
             embed.set_thumbnail(url=member.avatar_url)
             embed.set_footer(text=f"ID: {member.id}")

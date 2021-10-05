@@ -251,17 +251,19 @@ class UtilityCog(commands.Cog, name='Utility'):
     async def poll(self, ctx,*, question):
         """Creates a simple poll."""
         embed=discord.Embed(title="Simple Poll", description=f"{ctx.author.mention} asks: **{question}**", color=discord.Color.random())
-        msg = await ctx.reply(embed=embed, mention_author=False)
+        msg = await ctx.send(embed=embed, mention_author=False)
         await msg.add_reaction("\U0001f44d")
         await msg.add_reaction("\U0001f44e")
+        await ctx.message.delete()
 
     @poll.command(name="check")
     @commands.bot_has_permissions(add_reactions=True)
     async def checkpoll(self, ctx,*, question):
         """Poll to see how many people supports it."""
         embed=discord.Embed(title="Check Poll", description=f"{ctx.author.mention} asks: **{question}**", color=discord.Color.random())
-        msg = await ctx.reply(embed=embed, mention_author=False)
+        msg = await ctx.send(embed=embed, mention_author=False)
         await msg.add_reaction("<a:verified:876075132114829342>")
+        await ctx.message.delete()
         
     @commands.command(name="define", aliases=["meaning"])
     @commands.cooldown(1,3, commands.BucketType.guild)

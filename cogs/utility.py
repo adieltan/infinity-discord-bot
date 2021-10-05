@@ -499,7 +499,6 @@ class UtilityCog(commands.Cog, name='Utility'):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name='calc', aliases=['c', '='])
-    @commands.cooldown(1,2)
     async def calc (self, ctx, *, input):
         """Evaluates a maths equation."""
         inp = input.replace(",", "")

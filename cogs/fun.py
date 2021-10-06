@@ -594,7 +594,6 @@ class FunCog(commands.Cog, name='Fun'):
 
     @commands.command(name='mmp', hidden=True)
     @commands.cooldown(1,60, commands.BucketType.user)
-    @server([841654825456107530])
     async def messagemaniammp(self, ctx):
         if ctx.channel.id not in self.ongoing_mm_games.keys():
             return
@@ -611,7 +610,6 @@ class FunCog(commands.Cog, name='Fun'):
 
     @commands.command(name='mmu', hidden=True)
     @commands.cooldown(1,180, commands.BucketType.channel)
-    @server([841654825456107530])
     async def messagemaniammu(self, ctx):
         if ctx.channel.id not in self.ongoing_mm_games.keys():
             return
@@ -632,7 +630,6 @@ class FunCog(commands.Cog, name='Fun'):
 
     @commands.command(name='mmm', hidden=True)
     @commands.cooldown(1,120, commands.BucketType.channel)
-    @server([841654825456107530])
     async def messagemaniammm(self, ctx):
         if ctx.channel.id not in self.ongoing_mm_games.keys():
             return

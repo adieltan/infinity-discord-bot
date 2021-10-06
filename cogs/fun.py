@@ -3,7 +3,11 @@ from discord.ext import commands, tasks
 from discord_components import DiscordComponents, Button, ButtonStyle, Select, SelectOption
 import matplotlib.pyplot as plt
  
-
+from numpy import append
+from thefuzz import process
+import collections
+from PIL import Image
+import time
 
 class FunCog(commands.Cog, name='Fun'):
     """🥳 Fun / minigame commands."""

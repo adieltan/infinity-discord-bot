@@ -1,6 +1,6 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
+from discord_components import DiscordComponents, Button, ButtonStyle, Select, SelectOption
 import matplotlib.pyplot as plt
  
 
@@ -67,31 +67,6 @@ class FunCog(commands.Cog, name='Fun'):
                 embed.add_field(name="Winners", value=text)
                 embed.set_footer(text=f"{numbers} winners")
                 await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="8ball", aliases=['eightball', '8b'])
-    @commands.cooldown(1,5)
-    async def ball(self, ctx, *, mess):
-        """Ask 8ball about your life."""
-        if "suicide" in mess.lower():
-            await ctx.reply("NO SUICIDE.")
-            return
-        
-        fac = requests.get(url="https://api.monkedev.com/fun/8ball", params={'key':str(os.getenv("monkedevapi"))})
-        fact = fac.json()["answer"]
-        embed=discord.Embed(title="8ball", description=mess, color=discord.Color.random())
-        embed.add_field(name="Conclusion", value=fact)
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_footer(text="MonkeDev Api")
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="哥哥", aliases=['geigei'], hidden=True)
-    async def gege(self, ctx):
-        await ctx.reply("我只会心疼哥哥\nhttps://cdn.discordapp.com/attachments/717962272093372556/861518164160151582/video-1625470606.mp4")
-
-    @commands.command(name="english", hidden=True)
-    async def canuspeakenglish(self,ctx):
-        await ctx.reply("Can you speak english?\nhttps://cdn.discordapp.com/attachments/779326170612367390/863212817360748594/video0-13.mp4")
-
 
     @commands.command(name="8corners", aliases=['8c', 'corner', 'corners'])
     @commands.cooldown(1, 100, commands.BucketType.category)

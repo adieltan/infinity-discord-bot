@@ -509,22 +509,6 @@ class ServerCog(commands.Cog, name='Server'):
             webhook = presentwebhooks[0]
         else:
             webhook = await destination_channel.create_webhook(name="Export")
-        #await ctx.reply(f"Preparing to load messages.")
-        #messagestop = await ctx.channel.history(limit=limit).flatten()
-        #messagestop.reverse()
-        #await ctx.send(f"Estimated time: {len(messagestop)} seconds.")
-        #for m in messagestop:
-            #try:m.files
-            #except:files = None
-            #else:files = m.files
-            #try:m.embeds
-            #except:embeds = None
-            #else:embeds = m.embeds
-            #try:m.clean_content
-            #except:content = None
-            #else:content = m.clean_content
-            #await webhook.send(content=content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds, allowed_mentions=discord.AllowedMentions.none())
-        #await ctx.reply("Done")
         await ctx.message.add_reaction('<a:loading:880695857048072213>')
         async for m in ctx.channel.history(limit=limit, oldest_first=True):
             try:

@@ -31,7 +31,6 @@ const client = new Client({
 	], allowedMentions: { parse: ['users', 'roles'] } });
 client.commands = new Collection();
 client.emoji = emoji;
-client.mcommands = new Collection();
 
 const amari = new AmariBot(process.env.amari, {token:process.env.amari})
 
@@ -59,10 +58,5 @@ for (const file of eventFiles) {
 	}
 }
 
-const mcommandFiles = fs.readdirSync('./mcommands').filter(file => file.endsWith('.js'));
-for (const file of mcommandFiles) {
-	const mcommand = require(`./mcommands/${file}`);
-	client.mcommands.set(mcommand.data.name, mcommand);
-}
 
 client.login(process.env.DISCORD_TOKEN);

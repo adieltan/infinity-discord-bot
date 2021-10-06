@@ -497,7 +497,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.command(name="export")
     @commands.cooldown(1,40, commands.BucketType.category)
     @commands.has_permissions(administrator=True)
-    async def export(self, ctx, destination, limit:int=None):
+    async def export(self, ctx, destination, limit:int=100):
         """Exports chat messages to another channel."""
         channelid = int(re.sub("[^0-9]", "", destination))
         destination_channel = self.bot.get_channel(channelid)
@@ -509,20 +509,31 @@ class ServerCog(commands.Cog, name='Server'):
             webhook = presentwebhooks[0]
         else:
             webhook = await destination_channel.create_webhook(name="Export")
-        messagestop = await ctx.channel.history(limit=limit).flatten()
-        messagestop.reverse()
-        await ctx.send(f"Estimated time: {len(messagestop)} seconds.")
-        for m in messagestop:
-            try:m.files
-            except:files = None
-            else:files = m.files
-            try:m.embeds
-            except:embeds = None
-            else:embeds = m.embeds
-            try:m.clean_content
-            except:content = None
-            else:content = m.clean_content
-            await webhook.send(content=content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds, allowed_mentions=discord.AllowedMentions.none())
+        #await ctx.reply(f"Preparing to load messages.")
+        #messagestop = await ctx.channel.history(limit=limit).flatten()
+        #messagestop.reverse()
+        #await ctx.send(f"Estimated time: {len(messagestop)} seconds.")
+        #for m in messagestop:
+            #try:m.files
+            #except:files = None
+            #else:files = m.files
+            #try:m.embeds
+            #except:embeds = None
+            #else:embeds = m.embeds
+            #try:m.clean_content
+            #except:content = None
+            #else:content = m.clean_content
+            #await webhook.send(content=content, username=m.author.name, avatar_url=m.author.avatar_url, files=files, embeds=embeds, allowed_mentions=discord.AllowedMentions.none())
+        #await ctx.reply("Done")
+        await ctx.message.add_reaction('<a:loading:880695857048072213>')
+        async for m in ctx.channel.history(limit=limit, oldest_first=True):
+            try:
+                attachments = m.attachments
+                for attachment in attachments:
+                    m.content += f"\n {str(attachment)}"
+                await webhook.send(content=m.content if m.content else None, username=m.author.name, avatar_url=m.author.avatar_url, embeds=m.embeds if m.embeds else None, allowed_mentions=discord.AllowedMentions.none())
+            except:
+                pass
         await ctx.reply("Done")
 
     @commands.group(invoke_without_command=True)

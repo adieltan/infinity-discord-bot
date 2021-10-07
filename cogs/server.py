@@ -537,7 +537,7 @@ class ServerCog(commands.Cog, name='Server'):
                     for attachment in attachments:
                         m.content += f"\n {str(attachment)}"
                     content = f"{last_message.content}\n" + f"[<t:{round(m.created_at.timestamp())}:d>]({m.jump_url}) {m.content if m.content else ''}"
-                    msg = await last_webhookmsg.edit(content=content, embeds=last_message.embeds + m.embeds)
+                    msg = await last_webhookmsg.edit(content=content, embeds=last_message.embeds + m.embeds, allowed_mentions=discord.AllowedMentions.none())
                     last_webhookmsg = msg
                     m.content = content
                     last_message = m

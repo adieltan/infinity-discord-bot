@@ -35,7 +35,7 @@ class MembersCog(commands.Cog, name='Members'):
             if member.nick:
                 embed.description = f"`{member.nick}` " + embed.description
             results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
-            dic = results.get('leaveleaderboard')
+            dic = results.get('leaveleaderboard') or {}
             leavetimes = dic.get(f"{member.id}")
             if leavetimes is not None:
                 embed.description += f"\nLeft the server {leavetimes} times."
@@ -149,6 +149,25 @@ class MembersCog(commands.Cog, name='Members'):
             embed.timestamp=datetime.datetime.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
     
+    @role.command(name='colour', aliases=['color', 'c'])
+    @commands.has_permissions(manage_roles=True)
+    async def role_colour(self, ctx, role:discord.Role, colour_hex:str=None):
+        "Changes/views the role colour."
+        if colour_hex is None:
+            embed=discord.Embed(description=f"{role.mention}\nRGB: {role.colour.to_rgb()}\nInt: {role.colour.value}\nHex: {str(hex(role.colour.value))[2:]}", color=role.color)
+            await ctx.reply(embed=embed, mention_author=False)
+            return
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        c = tuple(int(colour_hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+
+        await role.edit(colour=discord.Colour.from_rgb(c[0], c[1], c[2]), reason="Changed by {ctx.author.name}.")
+        embed = discord.Embed(title='Role Colour', description=f"{role.mention} colour edit.", color=discord.Colour.from_rgb(c[0], c[1], c[2]))
+        embed.timestamp=datetime.datetime.utcnow()
+        await ctx.reply(embed=embed, mention_author=False)
+
+
     @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)

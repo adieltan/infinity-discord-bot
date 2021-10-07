@@ -497,27 +497,62 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.command(name="export")
     @commands.cooldown(1,40, commands.BucketType.category)
     @commands.has_permissions(administrator=True)
-    async def export(self, ctx, destination, limit:int=100):
-        """Exports chat messages to another channel."""
-        channelid = int(re.sub("[^0-9]", "", destination))
-        destination_channel = self.bot.get_channel(channelid)
+    async def export(self, ctx, destination, first_message_id:typing.Optional[int]=None, limit:int=100):
+        """Exports chat messages to another channel.\n<first_message_id> is the id of the first message you wanna start exporting from.\n<limit> is the max number of messages to export."""
+        destination_channel = self.bot.get_channel(int(re.sub("[^0-9]", "", destination)))
+        if first_message_id is None:
+            try:
+                first_message_id = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+            except:
+                pass
+        elif len(f"{first_message_id}") < 18:
+            limit = first_message_id
+            first_message_id = None
+        else:
+            first_message_id = await ctx.channel.fetch_message(first_message_id)
+
+
         channel_perms = dict(iter(destination_channel.permissions_for(ctx.author)))
         if channel_perms.get('administrator') is not True:
             raise commands.MissingPermissions(missing_perms=['administrator'])
-        presentwebhooks = await destination_channel.webhooks() or []
-        if len(presentwebhooks) > 0:
-            webhook = presentwebhooks[0]
+        bot_perms_in_channel = dict(iter(destination_channel.permissions_for(await destination_channel.guild.fetch_member(self.bot.user.id))))
+        if bot_perms_in_channel.get('manage_webhooks') is not True:
+            raise commands.BotMissingPermissions(missing_perms=['manage_webhooks'])
+        presentwebhooks = await destination_channel.webhooks()
+        if any(w for w in presentwebhooks if w.name == 'Export'): #len(presentwebhooks) > 0:
+            w = [w for w in presentwebhooks if w.name == 'Export']
+            webhook = w[0]
         else:
             webhook = await destination_channel.create_webhook(name="Export")
         await ctx.message.add_reaction('<a:loading:880695857048072213>')
-        async for m in ctx.channel.history(limit=limit, oldest_first=True):
+        last_message = None
+        last_webhookmsg = None
+
+        async for m in ctx.channel.history(limit=limit, after=first_message_id, oldest_first=True):
             try:
+                if last_message is None:
+                    raise
+                elif m.author.id == last_message.author.id:
+                    attachments = m.attachments
+                    for attachment in attachments:
+                        m.content += f"\n {str(attachment)}"
+                    content = f"{last_message.content}\n" + f"[<t:{round(m.created_at.timestamp())}:d>]({m.jump_url}) {m.content if m.content else ''}"
+                    msg = await last_webhookmsg.edit(content=content, embeds=last_message.embeds + m.embeds)
+                    last_webhookmsg = msg
+                    m.content = content
+                    last_message = m
+                else:
+                    raise
+            except:
                 attachments = m.attachments
                 for attachment in attachments:
                     m.content += f"\n {str(attachment)}"
-                await webhook.send(content=m.content if m.content else None, username=m.author.name, avatar_url=m.author.avatar_url, embeds=m.embeds if m.embeds else None, allowed_mentions=discord.AllowedMentions.none())
-            except:
-                pass
+                content = f"[<t:{round(m.created_at.timestamp())}:d>]({m.jump_url}) {m.content if m.content else ''}"
+                msg = await webhook.send(content=content, wait=True, username=m.author.name, avatar_url=m.author.avatar_url, embeds=m.embeds if m.embeds else None, allowed_mentions=discord.AllowedMentions.none())
+                last_webhookmsg = msg
+                m.content = content
+                last_message = m
+            
         await ctx.reply("Done")
 
     @commands.group(invoke_without_command=True)

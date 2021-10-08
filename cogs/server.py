@@ -181,8 +181,11 @@ class ServerCog(commands.Cog, name='Server'):
             await ctx.reply(f"No data.")
             return
         sort = dict(sorted(dic.items(), key = lambda x: x[1], reverse = True))
-        text='\n'.join([f"<@{k}> {sort[k]}"for k in list(sort)[:10]])
-        await ctx.reply(embed=discord.Embed(title="Leave leaderboard", description=f"{text}", color=discord.Color.red()).set_footer(text="Sees who left the most times."))
+        text='\n'.join([f"<@{k}> {sort[k]}"for k in list(sort)])
+        
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await ctx.reply('Leave Leaderboard', file=discord.File(buffer, filename=f'{ctx.guild.id}_leaveleaderboard.txt'))
+
 
     @ll.command(name='reset')
     @commands.has_guild_permissions(kick_members=True)

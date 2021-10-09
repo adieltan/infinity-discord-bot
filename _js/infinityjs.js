@@ -5,7 +5,7 @@ const {AmariBot} = require('amaribot.js')
 const emoji = require('./emoji.js');
 const logger = require('./utils/logger.js');
 const MongoClient = require('mongodb').MongoClient;
-
+require('./handlers/error'); //* Error handler
 const mongoose = require('mongoose');
 
 main().catch(err => console.log(err));

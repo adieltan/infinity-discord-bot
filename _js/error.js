@@ -1,4 +1,4 @@
-const logger = require('../utils/logger')
+const logger = require('././utils/logger')
 const nodeMajorVersion = parseInt(process.versions.node.split('.')[0, 10]); // Get the Node version
 
 if (nodeMajorVersion < 10) { //This bot only works with a version 10 of Node.js/higher. So, stop running if this is the case 
@@ -10,7 +10,7 @@ const { accessSync } = require('fs')
 const path = require('path')
 
 try {
-    accessSync(path.join(__dirname, '..', 'node_modules')); //Check if node_modules folder exists
+    accessSync(path.join(__dirname, './.', 'node_modules')); //Check if node_modules folder exists
 } catch (err) {
     logger.warn('Please install all dependencies before starting the bot, the node_modules directory was not found.');
     process.exit(1);
@@ -23,11 +23,11 @@ process.on('uncaughtExeption', err => {
 })
 
 try {
-    const packageJson = require('../package.json');
+    const packageJson = require('./package.json');
     const modules = Object.keys(packageJson.dependencies);
     //These are names of all the modules
     modules.forEach(mod => {
-        accessSync(path.join(__dirname, '..', node_modules, mod))
+        accessSync(path.join(__dirname, './', 'node_modules', mod))
     })
 }
 //For each of these modules, check if they exist in the node_modules folder.

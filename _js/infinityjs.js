@@ -3,9 +3,9 @@ const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const {AmariBot} = require('amaribot.js')
 const emoji = require('./emoji.js');
-const logger = require('./utils/logger.js');
+const logger = require('././utils/logger');
 const MongoClient = require('mongodb').MongoClient;
-require('./handlers/error'); //* Error handler
+require('././error'); /* Error handler */ //! Might not be working
 const mongoose = require('mongoose');
 
 main().catch(err => console.log(err));

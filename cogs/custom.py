@@ -19,7 +19,7 @@ class CustomCog(commands.Cog, name='Custom'):
     def __init__(self, bot):
         self.bot = bot
         self.youtubeupdate.start()
-        self.ongoing_mm_games = dict()
+        self.ongoing_bm_game = dict()
 
     @commands.command(name="nitro")
     @server([709711335436451901])
@@ -304,6 +304,56 @@ class CustomCog(commands.Cog, name='Custom'):
                 await message.author.send(f"You advanced to the next level! {str(invite)}")
         except:
             pass
+
+    @commands.command(name='bm')
+    @server([888587803812839424])
+    async def banmystery(self, ctx, target:typing.Union[discord.Member, str]=None):
+        """Intialises a banmystery game."""
+        role = ctx.guild.get_role(888588301852893254)
+        surviver = 888589185475313685
+        rooms = [888589270045040650, 888589293814173727, 888589315087675423, 888589338751946752, 888589353901768715, 888589372432207922, 888589388978733088, 888589409174290462, 888589443836022805, 888589480624291870]
+        chars = list(string.ascii_uppercase)
+        if bool(self.ongoing_bm_game) is False and dict(iter(ctx.channel.permissions_for(ctx.author)))['administrator'] is True:
+            self.ongoing_bm_game = {'banner':random.choice(role.members), 'code':[''.join([random.choice(chars) for _ in range(5)]) for _ in range(10)], 'cd':0}
+            await self.ongoing_bm_game['banner'].send(f"You are the banner. Run `=bm` in all the ban rooms to search for ban codes. 1 out of the 3 codes will work. \nRun `=bm <code>` to use them and I will ban a random person. All codes are 1 time used. \nOnce you have searched all the 10 channels, I will refresh the codes and there will be 10 new set of codes. \nYou need to try and ban everyone in the server and the survivors need to find out who you are and run `=bb {self.ongoing_bm_game['banner'].mention}` in <#{surviver}> to eject you. \nThey have a cd of 60 seconds and you can sabotage them by suspecting in <#{surviver}>. I will tell you how long their cd each time you search.")
+            await ctx.reply(f"{role.mention}. Game started.")
+        if bool(self.ongoing_bm_game) is False:
+            return
+        elif ctx.channel.id in rooms and ctx.author is self.ongoing_bm_game['banner']:
+            await ctx.message.delete()
+            if any(self.ongoing_bm_game['code']) is False:
+                self.ongoing_bm_game['code'] = [''.join([random.choice(chars) for _ in range(5)]) for _ in range(10)]
+            code = self.ongoing_bm_game['code'][rooms.index(ctx.channel.id)]
+            if target is None:
+                #search
+                codes = [''.join(random.sample(code, len(code))), ''.join(random.sample(code, len(code))), code]
+                random.shuffle(codes)
+                await ctx.author.send(f"""{' '.join(codes)}\n{f"Suspect will be available in {self.ongoing_bm_game['cd'] + 60 - round(datetime.datetime.utcnow().timestamp())} seconds." if self.ongoing_bm_game['cd'] + 60 > round(datetime.datetime.utcnow().timestamp()) else 'Suspect is ready.'}""")
+            elif target.upper() == code:
+                members = ctx.guild.get_role(888588301852893254).members
+                members.remove(ctx.author)
+                await random.choice(members).remove_roles(role)
+                await ctx.author.send(f"Got 1 player out.")
+                self.ongoing_bm_game['code'][rooms.index(ctx.channel.id)] = False
+                if len(ctx.guild.get_role(888588301852893254).members) == 1:
+                    await ctx.reply(f"{role.mention}. Great job Banner{ctx.author.mention}.")
+                    self.ongoing_bm_game = dict()
+            else: await ctx.author.send('Wrong code.')
+        elif ctx.channel.id == surviver:
+            if round(datetime.datetime.utcnow().timestamp()) < self.ongoing_bm_game['cd'] + 60:
+                await ctx.reply('⏳')
+            elif target is None:
+                suspects = '\n'.join(m.mention for m in role.members)
+                await ctx.reply(embed=discord.Embed(description=f"**__SUSPECTS**__\n{suspects}"))
+            elif target == self.ongoing_bm_game['banner']:
+                await self.ongoing_bm_game['banner'].remove_roles(role)
+                await ctx.reply(f"{role.mention} Great job. {self.ongoing_bm_game['banner'].mention} was the Banner.")
+                self.ongoing_bm_game = dict()
+            else:
+                await ctx.reply(f"Wrong Guess.")
+                self.ongoing_bm_game['cd'] = round(datetime.datetime.utcnow().timestamp())
+        else:
+            await ctx.message.delete()
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

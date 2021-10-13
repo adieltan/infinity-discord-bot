@@ -97,7 +97,10 @@ class ListenerCog(commands.Cog, name='Listener'):
         else:            # All other Errors not returned come here. And we can just print the default TraceBack.
             embed=discord.Embed(title=f"{type(error).__name__}", description=f"{str(error)}", color=discord.Color.red())
             embed.timestamp = datetime.datetime.utcnow()
-            await ctx.reply(embed=embed)
+            try:
+                await ctx.reply(embed=embed)
+            except:
+                await ctx.send(embed=embed)
             embed=discord.Embed(title="Error", description=f"{ctx.author.mention}\nIgnoring exception in command {ctx.command}", color=discord.Color.random())
             embed.timestamp=datetime.datetime.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)

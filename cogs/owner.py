@@ -19,10 +19,10 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
         self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)
 
-    @commands.command(name='adm')
+    @commands.command(name='dm', aliases=['adm'])
     @commands.cooldown(1,3)
     @is_manager()
-    async def adm(self,ctx, user: discord.User, *, message:str):
+    async def dm(self,ctx, user: discord.User, *, message:str):
         """Anounymous DM."""
         try:
             await user.send(message)
@@ -31,25 +31,6 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
-    @commands.command(name='dm')
-    @commands.cooldown(1,3)
-    @is_manager()
-    async def dm(self,ctx, member: discord.Member, *, message:str):
-        """Gets the bot to DM your friend."""
-        
-        embed=discord.Embed(title="Message from your friend", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
-        embed.add_field(name="Message", value=message, inline=False)
-        embed.add_field(name="Specially for you by", value=f"{ctx.author.name} <@{ctx.author.id}> [Jump]({ctx.message.jump_url})", inline=False)
-        embed.add_field(name="To reply:", value=f"Type\n`dm {ctx.author.id} <your message>` . UPDATE: ENABLED FOR INFINITY MANAGERS ONLY.")
-        embed.set_footer(text=f"DM function.")
-        try:
-            await member.send(embed=embed)
-        except:
-            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
-        else:
-            await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.command(name='blacklist', aliases=['bl'])
     @is_manager()
@@ -60,7 +41,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = True
-        results['blreason'] = reason
+        results['blreason'] = reason + f"\nResponsible manager: {ctx.author.id}"
         await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
         blquery = {'bl':True}
         bled = []
@@ -82,7 +63,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             return
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
         results['bl'] = False
-        results['blreason'] = reason
+        results['blreason'] = reason + f"\nResponsible manager: {ctx.author.id}"
         await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
         blquery = {'bl':True}
         bled = []
@@ -100,24 +81,19 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
         results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
-        try:
-            out = results['bl']
-        except:
-            out = False
-        try:
-            reason = results['blreason']
-        except:
-            reason = None
-        await ctx.reply(f"{user.mention}'s blacklist status: {out}.\nReason: {reason}")
+        await ctx.reply(embed=discord.Embed(description=f"{user.mention}'s blacklist status: {results.get('bl')}.\nReason: {results.get('blreason')}"))
 
     @commands.command(name='blacklisted')
     @is_manager()
     async def blacklisted(self, ctx):
         bled = set({})
+        text = ''
         async for doc in self.bot.dba['profile'].find({'bl':True}):
             bled.add(doc['_id'])
+            text += f"{doc['_id']} {doc['blreason']}\n"
         self.bot.bled = bled
-        await ctx.send(f"{' '.join([f'<@{bl}>' for bl in bled])}")
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await ctx.reply(file=discord.File(buffer, filename='blacklisted.txt'))
     
     @commands.command(name="manageradd", aliases=['ma'])
     @commands.is_owner()
@@ -161,25 +137,6 @@ class OwnerCog(commands.Cog, name='Owner'):
         embed=discord.Embed(title="Demoted from manager", description=f"{user.mention}", color=discord.Color.dark_orange())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await self.bot.changes.send(embed=embed)
-
-    @commands.command(name="update")
-    @commands.is_owner()
-    async def updates(self, ctx, status:str, *args):
-        """Bot updates."""
-        info = str(' '.join(args))
-        embed=discord.Embed(title="Bot updates", description=status , color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
-        embed.add_field(name="Details", value=info, inline=False)
-        embed.set_footer(text=f"Infinity Updates")
-        channel = self.bot.get_channel(813251614449074206)
-        ping = channel.guild.get_role(848814884330537020)
-        try:
-            await channel.send(ping.mention, embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
-        except:
-            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
-        else:
-            await ctx.message.add_reaction("<a:verified:876075132114829342>") 
 
     @commands.command(name="timer", aliases=['countdown', 'cd'])
     @commands.is_owner()
@@ -250,9 +207,9 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def chat(self, ctx, channel:discord.TextChannel):
         to = 60
-        await ctx.reply(f'Type messages that you want to send through the bot to {channel.mention}\nType `quit` to exit.\nSession will timeout after {to} seconds of inactivity.', mention_author=False)
+        await ctx.reply(f'Type messages that you want to send through the bot to {channel.mention}\nType `quit` to exit.\nSession will timeout after 60 seconds of inactivity.', mention_author=False)
         def author(m):
-            return m.author == ctx.author
+            return m.author == ctx.author and m.channel.id == ctx.channel.id
         quit = False
         while quit is not True:
             try:
@@ -269,32 +226,7 @@ class OwnerCog(commands.Cog, name='Owner'):
                         await message.add_reaction("<a:verified:876075132114829342>")
             except asyncio.TimeoutError:
                 quit = True
-                return await ctx.reply(f'Session timeout. The broadcast session has ended.', mention_author=False)
-
-    @commands.command(name="botstatus")
-    @commands.is_owner()
-    async def botstatus(self, ctx, activitytype, title, info=None, link=None):
-        if link is None:
-            link = 'https://discord.gg//RJFfFHH'
-        if info is None:
-            info = "._."
-        if 'play' in activitytype.lower():
-            activity = discord.ActivityType.playing
-        elif 'stream' in activitytype.lower():
-            activity = discord.ActivityType.streaming
-        elif 'listen' in activitytype.lower():
-            activity = discord.ActivityType.listening
-        elif 'watch' in activitytype.lower():
-            activity = discord.ActivityType.watching
-        elif 'custom' in activitytype.lower():
-            activity = discord.ActivityType.custom
-        elif 'competing' in activitytype.lower():
-            activity = discord.ActivityType.competing
-        else:
-            await ctx.reply(f"Activity Type {activitytype} not recognised.")
-            return
-        await self.bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=activity, name=title, details=info, url=link))
-        await ctx.reply("Done")
+                await ctx.reply(f'Session timeout. The broadcast session has ended.', mention_author=False)
 
     @commands.command(name="remove")
     @commands.is_owner()

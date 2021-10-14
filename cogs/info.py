@@ -114,20 +114,6 @@ class InfoCog(commands.Cog, name='Info'):
         embed=discord.Embed(title="Infinity Managers", description='\n'.join([f'<@{manag}>' for manag in managers]), color=discord.Color.random())
         await ctx.reply(embed=embed)
 
-    @commands.command(name="newsupdate", aliases=['latestnews', 'news'])
-    async def newsupdate(self, ctx):
-        """Shows the update log of the bot."""
-        updatechannel = self.bot.get_channel(813251614449074206)
-        messagestop = await updatechannel.history(limit=5).flatten()
-        embed=discord.Embed(title="News Update", description="<#813251614449074206>", colour=discord.Color.random())
-        for message in messagestop:
-            if message.author.id != self.bot.user.id:
-                return
-            newsembed = message.embeds[0]
-            field = newsembed.fields[0]
-            embed.add_field(name=f"{newsembed.description} <t:{round(message.created_at.timestamp())}>", value=f"{field.value}", inline=False)
-        await ctx.reply(embed=embed)
-
     @commands.group(name="suggest", invoke_without_command=True)
     async def suggest(self, ctx, *, suggestion:str):
         """Suggests a feature that you want added to the bot."""

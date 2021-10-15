@@ -358,5 +358,11 @@ class CustomCog(commands.Cog, name='Custom'):
                 await ctx.reply(f"Wrong Guess.")
                 self.ongoing_bm_game['cd'] = round(datetime.datetime.utcnow().timestamp())
 
+    @commands.command(name='iv')
+    @server([])
+    async def iv(self, ctx):
+        pass
+
+
 def setup(bot):
     bot.add_cog(CustomCog(bot))

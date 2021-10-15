@@ -20,7 +20,6 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)
 
     @commands.command(name='dm', aliases=['adm'])
-    @commands.cooldown(1,3)
     @is_manager()
     async def dm(self,ctx, user: discord.User, *, message:str):
         """Anounymous DM."""

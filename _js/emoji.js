@@ -17,5 +17,6 @@ module.exports = {
     gift:'<:Gift_Icon:882098662380036136>',
     role:'<:Role_Icon:882098706437001276>',
     sticker:'<:Sticker_Icon:882098738766696468>',
-    javascript:'<:javascript:882621813291642921>'
+    javascript:'<:javascript:882621813291642921>',
+    discord: '<:discord:898384034932080720>'
 };

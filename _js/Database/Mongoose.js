@@ -1,5 +1,4 @@
 const Discord = require("discord.js");
-const config = require("./../config.json");
 const guildSchema = require("./Schema/server.js"),
 memberSchema = require("./Schema/Member.js")
 

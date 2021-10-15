@@ -1,3 +1,10 @@
+/*
+* InfinityJS v1.0.0
+* Authors: adieltan, SamuelCodez
+* Discord.js v13.1.0
+* Node.js v16.2.0
+*/
+
 require('dotenv').config();
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
@@ -5,7 +12,9 @@ const {AmariBot} = require('amaribot.js')
 const emoji = require('./emoji.js');
 const logger = require('././utils/logger');
 const MongoClient = require('mongodb').MongoClient;
-require('././error'); /* Error handler */ //! Might not be working
+require('././error');
+require('./handlers/console')
+const bot = require('./utils/botData')
 const mongoose = require('mongoose');
 
 main().catch(err => console.log(err));

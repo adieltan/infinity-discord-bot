@@ -46,8 +46,8 @@ module.exports = {
       ],
       status: "idle",
     });
-    const channel = client.channels.cache.get("874461656938340402");
-    channel.send(`∞ ${client.emoji.javascript}`);
+     const channel = client.channels.cache.get("874461656938340402");
+    // channel.send(`∞ ${client.emoji.javascript}`);
     const embedMsg = new MessageEmbed()
       .setColor("RANDOM")
       .setTitle("InfinityJS Startup Information")

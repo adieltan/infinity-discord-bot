@@ -22,6 +22,12 @@ process.on('uncaughtExeption', err => {
     process.exit(1)
 })
 
+process.on('TypeError', err => {
+    logger.error(err);
+    process.exit(1)
+})
+
+
 try {
     const packageJson = require('./package.json');
     const modules = Object.keys(packageJson.dependencies);

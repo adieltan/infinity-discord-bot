@@ -2,6 +2,7 @@ const logger = require("../utils/logger");
 Discord = require("discord.js");
 const bot = require("../utils/botData");
 const { MessageEmbed } = require("discord.js");
+require('dotenv').config()
 module.exports = {
   name: "ready",
   once: true,
@@ -32,6 +33,7 @@ module.exports = {
     logger.info(
       `${client.user.tag}\nNode version: ${process.version}\nDiscord.js version: ${Discord.version}\nPlatform: ${os}\nPID: ${pid}`
     );
+    logger.warn('InfinityJS is still under development.')
     client.user.setPresence({
       activities: [
         {
@@ -44,9 +46,8 @@ module.exports = {
       ],
       status: "idle",
     });
-    const channel = client.channels.cache.get("813251835371454515");
+    const channel = client.channels.cache.get("874461656938340402");
     channel.send(`∞ ${client.emoji.javascript}`);
-    const user = client.users.cache.get("718328210030592031");
     const embedMsg = new MessageEmbed()
       .setColor("RANDOM")
       .setTitle("InfinityJS Startup Information")
@@ -58,7 +59,8 @@ module.exports = {
 .addField(client.emoji.discord+"`Discord version:`", '`' + Discord.version + '`' , true)
 .addField(':desktop:'+ "`Platform:`", '`' + os + '`' , true)
 .addField(':placard:'+ "`PID:`", '`' + process.pid + '`' , true)
+.addField(client.emoji.server + '`Hosted on:`',  '`' + process.env.HOST + '`', true)
 .setTimestamp()
-    user.send({ embeds: [embedMsg] });
+    channel.send({ embeds: [embedMsg] });
   },
 };

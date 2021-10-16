@@ -18,5 +18,6 @@ module.exports = {
     role:'<:Role_Icon:882098706437001276>',
     sticker:'<:Sticker_Icon:882098738766696468>',
     javascript:'<:javascript:882621813291642921>',
-    discord: '<:discord:898384034932080720>'
+    discord: '<:discord:898811517217144882>',
+    server: '<:server:898813129235001344>'
 };

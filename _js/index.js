@@ -10,9 +10,9 @@ const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const {AmariBot} = require('amaribot.js')
 const emoji = require('./emoji.js');
-const logger = require('././utils/logger');
+const logger = require('./utils/logger');
 const MongoClient = require('mongodb').MongoClient;
-require('././error');
+require('./error');
 require('./handlers/console')
 const bot = require('./utils/botData')
 const mongoose = require('mongoose');

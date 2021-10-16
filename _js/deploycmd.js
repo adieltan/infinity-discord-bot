@@ -3,7 +3,7 @@ const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const logger = require('./utils/logger');
-const { CLIENT_RENEG_WINDOW } = require('tls');
+//const { CLIENT_RENEG_WINDOW } = require('tls');
 
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -23,7 +23,7 @@ const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
     logger.log('Started refreshing application (/) commands.');
 
     await rest.put(
-      Routes.applicationCommands(clientId,guildId),
+      Routes.applicationGuildCommands(clientId, guildId),
       { body: commands },
     );
 

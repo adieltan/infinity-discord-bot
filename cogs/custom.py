@@ -358,10 +358,84 @@ class CustomCog(commands.Cog, name='Custom'):
                 await ctx.reply(f"Wrong Guess.")
                 self.ongoing_bm_game['cd'] = round(datetime.datetime.utcnow().timestamp())
 
-    @commands.command(name='iv')
-    @server([])
-    async def iv(self, ctx):
-        pass
+    def iv_view(self, name, price, emoji):
+        emoji = discord.Embed(title="Item Value", description=f"Value: ⏣ {price.format(',')}", colour=discord.Colour.random()).set_footer(text=name.lower(), icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+        return emoji
+
+
+    @commands.group(name='iv', invoke_without_command=True)
+    @server([894628265963159622])
+    async def iv(self, ctx, items):
+        """Item Value calculation tool."""
+        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        ivlist = server.get('iv') or {}
+        if len(ivlist) == 0:
+            return await ctx.reply("No items.")
+        item = items.lower()
+        fuzzy = process.extractOne(item, ivlist.keys())
+        if fuzzy[1] < 50:
+            await ctx.reply(f"{item} Not Found")
+        else:
+            await ctx.reply(embed=self.iv_view(fuzzy[0], ivlist[fuzzy[0]]['v'], ivlist[fuzzy[0]]['e']))
+
+    @iv.command(name='add')
+    @commands.has_guild_permissions(administrator=True)
+    async def iv_add(self, ctx, item_name, value, emoji:typing.Union[discord.PartialEmoji, str]):
+        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        ivlist = server.get('iv') or {}
+        if item_name in ivlist.keys():
+            return await ctx.reply(f"{item_name} already exists.", embed=self.iv_view(item_name, value, ivlist[item_name]['e']))
+        ivlist[item_name.lower()] = {'v':value, 'e':emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', '')}
+        await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+        await ctx.reply(f"{item_name} added with value ⏣ {value.format(',')}.", embed=self.iv_view(item_name, value, emoji))
+
+    @iv.command(name='remove')
+    @commands.has_guild_permissions(administrator=True)
+    async def iv_remove(self, ctx, item_name):
+        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        ivlist = server.get('iv') or {}
+        if len(ivlist) == 0:
+            return await ctx.reply(f"No items.")
+        fuzzy = process.extractOne(item_name.lower(), ivlist.keys())
+        if fuzzy[1] < 50:
+            await ctx.reply(f"{item_name} Not Found")
+        else:
+            ivlist.pop(fuzzy[0])
+            await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+            await ctx.reply(f"{fuzzy[0]} removed.")
+
+    @iv.command(name='edit')
+    @commands.has_guild_permissions(administrator=True)
+    async def iv_edit(self, ctx, item_name, new:typing.Union[str, int]):
+        """Edits name/value for an item."""
+        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        ivlist = server.get('iv') or {}
+        if len(ivlist) == 0:
+            return await ctx.reply(f"No items.")
+        fuzzy = process.extractOne(item_name.lower(), ivlist.keys())
+        if fuzzy[1] < 50:
+            await ctx.reply(f"{item_name} Not Found")
+        else:
+            if type(new) is str:
+                ivlist[new] = fuzzy[0]
+                ivlist.pop(fuzzy[0])
+                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+                await ctx.reply(f"{item_name} renamed to {new}.")
+            elif type(new) is int:
+                ivlist[fuzzy[0]]['v'] = new
+                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+                await ctx.reply(f"{item_name}'s value is now {new.format(',')}.")
+
+    @iv.command(name='list')
+    async def iv_list(self, ctx):
+        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        ivlist = server.get('iv') or {}
+        text = 'Item - Value\n'
+        for i in ivlist:
+            text += f"{i} - ⏣ {ivlist[i]['v']}\n"
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await ctx.reply(file=discord.File(buffer, filename='iv.txt'))
+
 
 
 def setup(bot):

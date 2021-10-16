@@ -76,7 +76,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.MissingPermissions):
             await ctx.reply(f"You don't have {', '.join(error.missing_perms)} perms")
         elif isinstance(error, commands.CheckFailure):
-            pass
+            await ctx.message.add_reaction('⛔')
         elif isinstance(error, commands.BotMissingPermissions):
             await ctx.send(f"The bot dosen't have {', '.join(error.missing_perms)} perms", mention_author=True)
         elif isinstance(error, commands.CommandOnCooldown):

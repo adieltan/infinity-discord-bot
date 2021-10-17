@@ -248,7 +248,7 @@ class MembersCog(commands.Cog, name='Members'):
         """Shows infomation about a role."""
         if role is None:
             role = ctx.guild.default_role
-        embed = discord.Embed(title="Role Info", description=f"{role.mention} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
+        embed = discord.Embed(title="Role Info", description=f"{role.mention} Pos: {role.position} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
         embed.add_field(name="Permissions", value='\u200B'+'\n'.join(perm.replace('_',' ').title() for perm, value in role.permissions if value))
         embed.set_footer(text="Role created at")
         embed.timestamp = role.created_at

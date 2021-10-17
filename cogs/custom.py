@@ -379,7 +379,8 @@ class CustomCog(commands.Cog, name='Custom'):
             await ctx.reply(embed=self.iv_view(fuzzy[0], ivlist[fuzzy[0]]['v'], ivlist[fuzzy[0]]['e']))
 
     @iv.command(name='add')
-    @commands.has_guild_permissions(administrator=True)
+    #@commands.has_guild_permissions(administrator=True)
+    @commands.is_owner()
     async def iv_add(self, ctx, item_name, value, emoji:typing.Union[discord.PartialEmoji, str]):
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
@@ -390,7 +391,8 @@ class CustomCog(commands.Cog, name='Custom'):
         await ctx.reply(f"{item_name} added with value ⏣ {value.format(',')}.", embed=self.iv_view(item_name, value, emoji))
 
     @iv.command(name='remove')
-    @commands.has_guild_permissions(administrator=True)
+    #@commands.has_guild_permissions(administrator=True)
+    @commands.is_owner()
     async def iv_remove(self, ctx, item_name):
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
@@ -405,7 +407,8 @@ class CustomCog(commands.Cog, name='Custom'):
             await ctx.reply(f"{fuzzy[0]} removed.")
 
     @iv.command(name='edit')
-    @commands.has_guild_permissions(administrator=True)
+    #@commands.has_guild_permissions(administrator=True)
+    @commands.is_owner()
     async def iv_edit(self, ctx, item_name, new:typing.Union[str, int]):
         """Edits name/value for an item."""
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}

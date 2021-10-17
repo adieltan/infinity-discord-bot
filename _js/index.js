@@ -16,6 +16,7 @@ require('./error');
 require('./handlers/console')
 const bot = require('./utils/botData')
 const mongoose = require('mongoose');
+require('./deploycmd')
 
 main().catch(err => console.log(err));
 

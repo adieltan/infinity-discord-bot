@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const guildSchema = require("./Schema/server.js"),
 memberSchema = require("./Schema/Member.js")
+const logger = require('../utils/logger')
 
 //Create/find Guilds Database
 module.exports.fetchGuild = async function(key){
@@ -16,7 +17,7 @@ module.exports.fetchGuild = async function(key){
             autoresponse: {},
             autoreact: {}
         })
-        await guildDB.save().catch(err => console.log(err));
+        await guildDB.save().catch(err => logger.error(err));
         return guildDB;
     }
 };

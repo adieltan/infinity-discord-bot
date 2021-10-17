@@ -10,9 +10,30 @@ module.exports = {
           .addComponents(
                new MessageButton()
                     .setStyle('LINK')
-                    .setLabel('Website')
+                    .setLabel('Home')
                     .setURL(`https://tynxen.netlify.app`),
+
+                    new MessageButton()
+                    .setStyle('LINK')
+                    .setLabel('Privacy')
+                    .setURL('https://tynxen.netlify.app/privacy'),
+
+                    new MessageButton()
+                    .setStyle('LINK')
+                    .setLabel('Terms')
+                    .setURL('https://tynxen.netlify.app/terms'),
+
+                    new MessageButton()
+                    .setStyle('LINK')
+                    .setLabel('Bot')
+                    .setURL('https://tynxen.netlify.app/bot'),
+    
+                    new MessageButton()
+                    .setStyle('LINK')
+                    .setLabel('Team')
+                    .setURL('https://tynxen.netlify.app/team'),
+
           );
-          return interaction.reply({content:`https://tynxen.netlify.app`,components:[row]})
+          return interaction.reply({content:'Tynxen',components:[row]})
      }
 }

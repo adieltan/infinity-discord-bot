@@ -30,6 +30,9 @@ module.exports = {
     if (platform == "sunos") {
       os = "SunOS";
     }
+    else{
+      os = platform
+    }
     logger.info(
       `${client.user.tag}\nNode version: ${process.version}\nDiscord.js version: ${Discord.version}\nPlatform: ${os}\nPID: ${pid}`
     );

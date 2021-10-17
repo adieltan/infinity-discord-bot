@@ -33,9 +33,16 @@ async def get_prefix(bot, message):
 class Infinity(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+intents = discord.Intents.all()
+intents.presences = False
+intents.typing = False
+intents.voice_states = False
+intents.integrations = False
+intents.webhooks = False
+intents.invites = False
 
 bot = Infinity(
-command_prefix=get_prefix, description='**__Infinity__**', case_insensitive=True, strip_after_prefix=True, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
+command_prefix=get_prefix, description='**__Infinity__**', case_insensitive=True, strip_after_prefix=True, intents=intents, allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 bot.owner_ids = set({701009836938231849,703135131459911740,708233854640455740})
 bot.dba = motor.motor_tornado.MotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE)['infinity']
 bot.bled = set({})

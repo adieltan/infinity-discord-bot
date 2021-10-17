@@ -16,7 +16,7 @@ require('./error');
 require('./handlers/console')
 const bot = require('./utils/botData')
 const mongoose = require('mongoose');
-require('./deploycmd')
+//require('./deploycmd')
 
 main().catch(err => console.log(err));
 
@@ -53,10 +53,10 @@ for (const file of commandFiles) {
 	client.commands.set(command.data.name, command);
 }
 //functions
-const functions = fs.readdirSync('./functions').filter(file => file.endsWith('.js'));
+/* const functions = fs.readdirSync('./functions').filter(file => file.endsWith('.js'));
 for (file of functions) {
 	require(`./functions/${file}`)(client);
-}
+} */
 //events
 const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 for (const file of eventFiles) {

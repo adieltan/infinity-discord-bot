@@ -269,7 +269,6 @@ class UtilityCog(commands.Cog, name='Utility'):
     @commands.cooldown(1,3, commands.BucketType.guild)
     async def define(self, ctx, *, phrase:str):
         """Defines a word."""
-        await ctx.trigger_typing()
         async with aiohttp.ClientSession() as cs:
             header={'Authorization':f"Token {os.getenv('owlbot')}"}
             async with cs.get(url=f"https://owlbot.info/api/v4/dictionary/{phrase}", headers=header) as data:
@@ -320,7 +319,6 @@ class UtilityCog(commands.Cog, name='Utility'):
     @commands.cooldown(1,6)
     async def qr(self, ctx, *,text:str=None):
         """Generates a qr code."""
-        ctx.typing()
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_H,

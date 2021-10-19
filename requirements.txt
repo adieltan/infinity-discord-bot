@@ -16,7 +16,6 @@ pillow
 numpy
 tornado
 matplotlib
-discord_components[button,interaction]
 lxml
 discord-together
 udpy

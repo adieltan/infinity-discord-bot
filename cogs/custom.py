@@ -1,12 +1,8 @@
 from operator import matmul
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.channel import DMChannel
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
 
-
-from numpy import append
 from thefuzz import process
 import collections
 
@@ -14,6 +10,23 @@ def server(id:list):
     def predicate(ctx):
         return ctx.guild.id in id
     return commands.check(predicate)
+
+class NitroButtons(discord.ui.View):
+    def __init__(self, msg, ctx):
+        super().__init__(timeout=30)
+        self.ctx = ctx
+        self.msg = msg
+
+    async def on_timeout(self):
+        self.clear_items()
+        self.add_item(discord.ui.Button(label='\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800', style=discord.ButtonStyle.gray, disabled=True))
+        self.msg.embeds[0].description= "Looks like someone already redeemed this gift."
+        await self.msg.edit(embed=self.msg.embeds[0], view=self)
+
+    @discord.ui.button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", style=discord.ButtonStyle.green)
+    async def accept(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.send_message('https://imgur.com/NQinKJB', ephemeral=True)
+
 class CustomCog(commands.Cog, name='Custom'):
     """🔧 Custom commands for server."""
     def __init__(self, bot):
@@ -22,25 +35,15 @@ class CustomCog(commands.Cog, name='Custom'):
         self.ongoing_bm_game = dict()
 
     @commands.command(name="nitro")
-    @server([709711335436451901])
+    @server([709711335436451901, 336642139381301249, 895176280813752330])
     async def nitro(self, ctx):
         """Generates nitro codes."""
-        letters = string.ascii_lowercase + string.ascii_lowercase + string.digits
+        letters = string.ascii_uppercase + string.ascii_lowercase + string.digits
         text = ''.join([random.choice(letters) for _ in range(16)])
         embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
         embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
-        mes = await ctx.send(f"<https://dizcord.gift/{text}>",embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.green)])
-        while True:
-            try:
-                interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id == "Accept",timeout = 20)
-            except asyncio.TimeoutError:
-                embed.description="Looks like someone already redeemed this gift."
-                await mes.edit(embed=embed, components=[Button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", id="Accept", style=ButtonStyle.gray, disabled=True)])
-                break
-            else:
-                try:
-                    await interaction.respond(ephemeral=True, content="Claim your gift after completing this survey. ||(rickroll)||", components=[[Button(label="\u2800\u2800\u2800\u2800\u2800Claim\u2800\u2800\u2800\u2800\u2800", style=ButtonStyle.URL, url="https://youtu.be/dQw4w9WgXcQ")]])
-                except:pass
+        mes = await ctx.send(f"https://discord.gift\{text}",embed=embed)
+        await mes.edit(view=NitroButtons(mes, ctx))
 
     @commands.command(name="heist")
     @commands.has_any_role(783134076772941876)
@@ -55,7 +58,7 @@ class CustomCog(commands.Cog, name='Custom'):
         embed = discord.Embed(title='Dank Memer Heist', description=f"Amount: {into}", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
         embed.add_field(name='Info', value=f"Donator: {donator.mention}\n{msg} ", inline=False)
-        embed.set_thumbnail(url=f"{donator.avatar_url}")
+        embed.set_thumbnail(url=f"{donator.avatar}")
         embed.set_footer(text=f'Remember to thank {donator.name} !')
         await heistchannel.send(content=f"{heistping.mention} ", embed=embed, allowed_mentions=discord.AllowedMentions.all(),  mention_author=False)
 
@@ -85,13 +88,14 @@ class CustomCog(commands.Cog, name='Custom'):
     async def verify(self, ctx, member:discord.Member=None):
         """Gives someone the verified role."""
         panda= ctx.guild.get_role(717957198675968024)
-        if member is None:
-            message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-            member = message.mentions[0]
-        if panda in member.roles:
-            await ctx.reply(f"User already verified.")
-            return
         try:
+            if member is None:
+                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                member = message.mentions[0]
+            if panda in member.roles:
+                await ctx.reply(f"User already verified.")
+                return
+
             await member.add_roles(panda, reason="Verification")
             await ctx.reply(f"Verified {member.mention}")
         except:
@@ -229,7 +233,7 @@ class CustomCog(commands.Cog, name='Custom'):
         else:
             bamboo_chat = self.bot.get_channel(717962272093372556)
             bots = sum(m.bot for m in member.guild.members)
-            embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar_url)
+            embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar)
             results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
             dic = results.get('leaveleaderboard')
             leavetimes = dic.get(f"{member.id}")
@@ -283,10 +287,10 @@ class CustomCog(commands.Cog, name='Custom'):
         
         embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator** : {user.mention}\n**Donation** : {quantity} {item}(s) worth {human} [Proof]({proof})", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar_url, name=f"Logged by: {ctx.author.name}")
+        embed.set_author(icon_url=ctx.author.avatar, name=f"Logged by: {ctx.author.name}")
         embed.add_field(name="Logging command", value=f"`,d a {user.id} {valu:.2e} {proof}`\nLog in <#814490036842004520>", inline=False)
         embed.add_field(name="Raw", value=f"||`{ctx.message.content}`||", inline=False)
-        embed.set_thumbnail(url=user.avatar_url)
+        embed.set_thumbnail(url=user.avatar)
         embed.set_footer(text=f"React with a ✅ after logged.")
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
@@ -359,7 +363,7 @@ class CustomCog(commands.Cog, name='Custom'):
                 self.ongoing_bm_game['cd'] = round(datetime.datetime.utcnow().timestamp())
 
     def iv_view(self, name, price, emoji):
-        emoji = discord.Embed(title="Item Value", description=f"Value: ⏣ {price.format(',')}", colour=discord.Colour.random()).set_footer(text=name.lower(), icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+        emoji = discord.Embed(title="Item Value", description=f"Value: ⏣ {price.format(',')}", colour=discord.Colour.random()).set_footer(text=name.lower(), _url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
         return emoji
 
 

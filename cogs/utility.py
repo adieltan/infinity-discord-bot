@@ -1,25 +1,20 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
+
+
  
 import dateparser, pytz
 from discord.http import Route
-from discordTogether import DiscordTogether
 import qrcode
-from translate import Translator
 
 from py_expression_eval import Parser
 from fractions import Fraction
 parser = Parser()
 
-import lxml.html as lh
-
 class UtilityCog(commands.Cog, name='Utility'):
     """🛠️ Commands to improve user experience, draw data, integration with APIs."""
     def __init__(self, bot):
         self.bot = bot
-        self.togetherControl = DiscordTogether(bot)
         
     @commands.command(name='cleandm')
     @commands.dm_only()
@@ -66,8 +61,8 @@ class UtilityCog(commands.Cog, name='Utility'):
                 except:content = None
                 else:content = m.clean_content
                 embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on <t:{round(m.created_at.timestamp())}>\nAt {message_channel.mention} in {m.guild.name}", timestamp=datetime.datetime.utcnow(), color=discord.Color.from_rgb(0,255,255))
-                embed.set_author(name=m.author.name, icon_url=m.author.avatar_url)
-                embed.set_footer(text=m.guild.name, icon_url=m.guild.icon_url)
+                embed.set_author(name=m.author.name, icon_url=m.author.avatar)
+                embed.set_footer(text=m.guild.name, icon=m.guild.icon_url)
                 embed.add_field(name="Remark", value="Reply to this message with `remark <remark>` to add your remark.", inline=False)
                 message = await payload.member.send(content=content, embed=embed)
                 pins = await payload.member.dm_channel.pins()
@@ -178,73 +173,6 @@ class UtilityCog(commands.Cog, name='Utility'):
         await ctx.reply(embed=embed, mention_author=False)
         await cs.close()
 
-    @commands.command(name='app')
-    async def app(self, ctx, activity=None, voicechannel=None):
-        """Discord Party Games"""
-        defaultApplications = {  # Credits to RemyK888
-            'youtube': '755600276941176913',
-            'poker': '755827207812677713',
-            'betrayal': '773336526917861400',
-            'fishing': '814288819477020702',
-            'chess': '832012586023256104'
-            }
-        if activity not in defaultApplications.keys():
-            avi = '\n'.join(defaultApplications.keys())
-            await ctx.reply(f"**Avalible activities:**\n{avi}")
-            return
-        if voicechannel is None:
-            try:
-                voicechannelid = ctx.author.voice.channel.id
-            except:
-                await ctx.reply(f"You have to join a voice channel first.")
-                return
-        else:
-            voicechannelid = int(re.sub("[^0-9]", "", voicechannel))
-        if activity and (str(activity).lower().replace(" ", "") in defaultApplications.keys()):   
-
-            data = {
-                'max_age': 86400,
-                'max_uses': 0,
-                'target_application_id': defaultApplications[str(activity).lower().replace(" ","")],
-                'target_type': 2,
-                'temporary': False,
-                'validate': None
-            }
-            
-            try:
-                result = await self.bot.http.request(
-                    Route("POST", f"/channels/{voicechannelid}/invites"), json = data
-                )
-            #Error Handling
-            except Exception as e:
-                if "10003" in str(e):
-                    raise discord.InvalidArgument("Voice Channel ID is invalid.")
-                elif "50013" in str(e):
-                    raise discord.InvalidArgument("Bot can't create link to the channel.")  
-                elif "130000" in str(e):
-                    raise ConnectionError("API resource is currently overloaded. Try again a little later.")      
-                else:
-                    raise ConnectionError("An error occurred while retrieving data from Discord API.")
-            
-            await ctx.send(f"Click on the blue link. <#{voicechannelid}>\nhttps://discord.com/invite/{result['code']}")
-
-    @commands.command(name="youtube", aliases=['yt'])
-    async def youtube(self, ctx):
-        """Discord Party Games"""
-        try:
-            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'youtube')
-            await ctx.send(f"Click the blue link!\n{link}")
-        except:
-            await ctx.reply(f"You have to join a voice channel first.")
-
-    @commands.command(name="fishing")
-    async def fishing(self, ctx):
-        """Discord Party Games"""
-        try:
-            link = await self.togetherControl.create_link(ctx.author.voice.channel.id, 'fishing')
-            await ctx.send(f"Click the blue link!\n{link}")
-        except:
-            await ctx.reply(f"You have to join a voice channel first.")
 
     @commands.group(name="poll", invoke_without_command=True)
     @commands.bot_has_permissions(add_reactions=True)
@@ -304,16 +232,6 @@ class UtilityCog(commands.Cog, name='Utility'):
                     text += f"\nEg: \u2800\u2800\u2800\u2800\u2800{example}"
                 embed.add_field(name=f"{defi.get('emoji')} {defi.get('type')}", value=text, inline=False)
             await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="translate", aliases=['tr'])
-    @commands.cooldown(1,6)
-    async def translate(self, ctx,language:str, *,text:str):
-        """Translates a term."""
-        translator= Translator(to_lang=language)
-        translation = translator.translate(f"{text}")
-        embed=discord.Embed(title="Translator", description=f"{text}", color=discord.Color.random())
-        embed.add_field(name=language, value=translation, inline=False)
-        await ctx.reply(embed=embed)
 
     @commands.command(name='qrcode', aliases=['qr'])
     @commands.cooldown(1,6)
@@ -511,47 +429,6 @@ class UtilityCog(commands.Cog, name='Utility'):
             embed=discord.Embed(title="Calc Help", description="Usable expressions\n `+` `-` `*` `/` `%` `^` `PI` `E` `sin(x)` `cos(x)` `tan(x)` `asin(x)` `acos(x)` `atan(x)` `log(x)` `log(x, base)` `abs(x)` `ceil(x)` `floor(x)` `round(x)` `exp(x)` `and` `or` `xor` `not` `in`") 
             embed.set_footer(text=f'Requested by {ctx.author}')
             await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="amari", aliases=['amarigraph'])
-    async def amari(self, ctx, serverid:int=None):
-        """Plots the xp of the server's amari data in a chart."""
-        try:
-            async with ctx.typing():
-                rank = []
-                xp = []
-                if serverid is None:
-                    serverid = ctx.guild.id
-                async with aiohttp.ClientSession() as cs:
-                    async with cs.get(url=f"https://lb.amaribot.com/index.php?gID={serverid}") as data:
-                        #soup = BeautifulSoup(data.text, "html.parser")
-                        doc = lh.fromstring(await data.text())
-                tr_elements = doc.xpath('//tr')
-                firstxp = int(tr_elements[0][2].text_content())
-                for t in tr_elements:
-                    rawrank=int(t[0].text_content())
-                    rawxp = int(t[2].text_content())
-                    if rawxp < (firstxp*0.005):
-                        break
-                    else:
-                        rank.append(rawrank)
-                        xp.append(rawxp)
-                plt.plot(rank, xp, label = "xp")
-                plt.xlabel('Rank')
-                plt.ylabel('XP')
-                plt.title(f"{serverid}'s Amari Xp")
-                buf = io.BytesIO()
-                plt.savefig(buf, format='png')
-                buf.seek(0)
-                f = discord.File(fp=buf, filename="image.png")
-                embed=discord.Embed(title=f"{serverid}'s Amari Xp", url=f"https://lb.amaribot.com/index.php?gID={serverid}")
-                embed.set_image(url="attachment://image.png")
-                embed.timestamp=datetime.datetime.utcnow()
-                await ctx.reply(file=f, embed=embed)
-                plt.close()
-                buf.close()
-                await cs.close()
-        except:
-            await ctx.reply(f"Error\nCommon Issues: There is no amari data in the server.")
 
     @commands.command(name="youtubestats", aliases=['ytstats'])
     async def youtubestats(self, ctx, channelid:str):

@@ -1,20 +1,18 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
-try:from dotenv import load_dotenv
-except:pass
+
 
 import motor.motor_asyncio, motor.motor_tornado, traceback, pytz
 from pretty_help import PrettyHelp, DefaultMenu
 
-try:load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
 except:pass
 
 import ssl
 
 os.environ['JISHAKU_UNDERSCORE'] = 'True'
-#os.environ['JISHAKU_RETAIN'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
 os.environ['JISHAKU_NO_DM_TRACEBACK'] = 'True'
 os.environ['JISHAKU_NO_UNDERSCORE']= 'True'
@@ -30,9 +28,10 @@ async def get_prefix(bot, message):
         await bot.dba['server'].update_one({"_id":message.guild.id}, {"$set": {'prefix':'='}}, True)
         return commands.when_mentioned_or("=")(bot, message)
 
-class Infinity(commands.Bot):
+class Infinity(commands.AutoShardedBot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
 intents = discord.Intents.all()
 intents.presences = False
 intents.typing = False
@@ -44,12 +43,12 @@ intents.invites = False
 bot = Infinity(
 command_prefix=get_prefix, description='**__Infinity__**', case_insensitive=True, strip_after_prefix=True, intents=intents, allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 bot.owner_ids = set({701009836938231849,703135131459911740,708233854640455740})
+bot._BotBase__cogs = commands.core._CaseInsensitiveDict()
 bot.dba = motor.motor_tornado.MotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE)['infinity']
 bot.bled = set({})
 bot.owners = bot.owner_ids
 bot.managers = set({})
 bot.infinityemoji = "<a:infinity:874548940610097163>"
-bot._BotBase__cogs = commands.core._CaseInsensitiveDict()
 bot.serverdb = None
 bot.snipedb = dict({})
 bot.startuptime = datetime.datetime.utcnow()
@@ -75,9 +74,9 @@ for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cog
 def blacklisted(ctx) -> bool:
     return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
 
-menu = DefaultMenu(page_left="<:left:876079229769482300>", page_right="<:right:876079229710762005>", remove=bot.infinityemoji, active_time=20)
-ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
-bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
+#menu = DefaultMenu(page_left="<:left:876079229769482300>", page_right="<:right:876079229710762005>", remove=bot.infinityemoji, active_time=20)
+#ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
+#bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
 
 @bot.event
 async def on_ready():
@@ -90,22 +89,15 @@ async def on_ready():
     async for doc in bot.dba['profile'].find({'manager':True}):
         manag.add(doc['_id'])
     bot.managers = manag
-    DiscordComponents(bot)
-
-    t = datetime.datetime.utcnow()
-    ti = t.strftime("%H:%M %d %b %Y")
-    tgmt8 = datetime.datetime.now(pytz.timezone("Asia/Kuala_Lumpur"))
-    tigmt8 = tgmt8.strftime("%H:%M %d %b %Y")
-    login = f"\n{bot.user}\u2800\u2800UTC: {ti}\u2800\u2800GMT +8: {tigmt8}"
-    print(login)
-    bot.startuptime = datetime.datetime.utcnow()
 
     bot.errors = bot.get_channel(825900714013360199)
     bot.logs = bot.get_channel(874461656938340402)
     bot.changes = bot.get_channel(859779506038505532)
     status.start()
-    performanceupdate.start()
     performance.start()
+    login = f"\n{bot.user} ~ UTC: {datetime.datetime.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}"
+    print(login)
+    bot.startuptime = datetime.datetime.utcnow()
 
 @bot.event
 async def on_error(event, *args, **kwargs):
@@ -121,32 +113,6 @@ async def status():
     d = timenow-bot.startuptime
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
 
-ping = []
-time = []
-cpu = []
-memory = []
-@tasks.loop(minutes=1, reconnect=True)
-async def performanceupdate():
-    await bot.wait_until_ready()
-    if (len(ping) and len(time) and len(cpu) and len(memory) > 30):
-        ping.pop(0)
-        time.pop(0)
-        cpu.pop(0)
-        memory.pop(0)
-    rawping = bot.latency
-    if rawping != float('inf'): 
-        pingvalue = round(rawping *1000 )
-        ping.append(pingvalue)
-    else:
-        pingvalue = "∞"
-        ping.append(0)
-    cpuvalue = psutil.cpu_percent()
-    memoryvalue= psutil.virtual_memory().percent
-    timenow = datetime.datetime.now().strftime('%M')
-    cpu.append(cpuvalue)
-    memory.append(memoryvalue)
-    time.append(timenow)
-
 @tasks.loop(minutes=30, reconnect=True)
 async def performance():
     #Report on performance every 30 mins.
@@ -154,34 +120,13 @@ async def performance():
     rawping = bot.latency
     if rawping != float('inf'): 
         pingvalue = round(rawping *1000 )
-        ping.append(pingvalue)
     else:
         pingvalue = "∞"
-        ping.append(0)
     cpuvalue = psutil.cpu_percent()
     memoryvalue= psutil.virtual_memory().percent
     timenow = datetime.datetime.now().strftime('%M')
-    cpu.append(cpuvalue)
-    memory.append(memoryvalue)
-    time.append(timenow)
     embed=discord.Embed(title="Performance report", description=f"`Ping  :` {pingvalue}ms\n`CPU   :` {cpuvalue}%\n`Memory:` {memoryvalue}%", color=discord.Color.random())
-    plt.plot(time, ping, label = "Ping (ms)")
-    plt.plot(time, cpu, label = "CPU (%)")
-    plt.plot(time, memory, label= "Memory (%)")
-    plt.xlabel('Time (minute)')
-    #plt.ylabel('')
-    plt.title('Performance')
-    plt.legend()
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    f = discord.File(fp=buf, filename="image.png")
-    embed.set_image(url="attachment://image.png")
     embed.timestamp=datetime.datetime.utcnow()
-    await bot.logs.send(file=f, embed=embed)
-    plt.close()
-    buf.close()
+    await bot.logs.send(embed=embed)
 
-
-token = str(os.getenv("DISCORD_TOKEN"))
-bot.run(token, bot=True, reconnect=True)
+bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)

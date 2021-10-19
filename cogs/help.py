@@ -1,14 +1,55 @@
-__all__ = ["PrettyHelp"]
-
+from __future__ import annotations
+import re, discord, itertools, asyncio
+from thefuzz import process
+from discord.ext import commands, menus
+from collections import namedtuple
+from jishaku.codeblocks import Codeblock
+from typing import Any, Tuple, List, Union, Optional, Dict, TYPE_CHECKING
+from discord import ui
 from random import randint
-from typing import List, Union
+from abc import ABCMeta
 
-import discord
-from discord.channel import _single_delete_strategy
-from discord.ext import commands
-from discord.ext.commands.help import HelpCommand
+# Unimportant part
 
-from .menu import DefaultMenu
+class Menu(ui.View):
+    def __init__(self, msg, ctx, pages:list[discord.Embed]) -> None:
+        super().__init__(timeout=30)
+        self.current_page = 0
+        self.pages = pages
+        self.ctx = ctx
+        self.msg = msg
+
+    async def on_timeout(self):
+        self.clear_items()
+        await self.msg.edit(view=None)
+
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+
+    @ui.button(emoji='<:rewind:899651431294967908>', style=discord.ButtonStyle.blurple)
+    async def first_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[0])
+        self.current_page = 0
+
+    @ui.button(emoji='<:left:876079229769482300>', style=discord.ButtonStyle.blurple)
+    async def before_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[(self.current_page - 1) % len(self.pages)])
+        self.current_page = (self.current_page - 1) % len(self.pages)
+
+    @ui.button(emoji='<a:infinity:874548940610097163>', style=discord.ButtonStyle.blurple)
+    async def stop_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await self.msg.delete()
+        self.stop()
+
+    @ui.button(emoji='<:right:876079229710762005>', style=discord.ButtonStyle.blurple)
+    async def next_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[(self.current_page + 1) % len(self.pages)])
+        self.current_page = (self.current_page + 1) % len(self.pages)
+
+    @ui.button(emoji='<:forward:899651567869906994>', style=discord.ButtonStyle.blurple)
+    async def last_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[len(self.pages) -1 ])
+        self.current_page = len(self.pages) - 1
 
 
 class Paginator:
@@ -70,7 +111,7 @@ class Paginator:
         Returns:
             discord.Emebed: Returns an embed with the title and color set
         """
-        return discord.Embed(title=title, description=description, color=self.color)
+        return discord.Embed(title=title, description=description, color=self.color).set_author(name='Infinity', icon_url='https://cdn.discordapp.com/avatars/732917262297595925/2e48cb5004ee713a664a622eac81d594.png')
 
     def _add_page(self, page: discord.Embed):
         """
@@ -151,10 +192,13 @@ class Paginator:
             signature (str): The command signature/usage string
         """
         desc = f"{command.description}\n\n" if command.description else ""
+
         page = self._new_page(
             command.qualified_name,
             f"{self.prefix}{self.__command_info(command)}{self.suffix}" or "",
         )
+        if command.hidden:
+            page.add_field(name="Hidden", value="✅")
         if command.aliases:
             aliases = ", ".join(command.aliases)
             page.add_field(
@@ -162,8 +206,10 @@ class Paginator:
                 value=f"{self.prefix}{aliases}{self.suffix}",
                 inline=False,
             )
+        if command._max_concurrency:
+            page.add_field(name="Concurrent uses", value=f"{command._max_concurrency.number} uses per {command._max_concurrency.per}")
         page.add_field(
-            name="Usage", value=f"{self.prefix}{signature}{self.suffix}", inline=False
+            name="Usage", value=f"```\n{self.prefix}{signature}{self.suffix}\n```", inline=False
         )
         self._add_page(page)
 
@@ -222,7 +268,7 @@ class Paginator:
         return lst
 
 
-class PrettyHelp(HelpCommand):
+class GoodHelp(commands.HelpCommand):
     """The implementation of the prettier help command.
     A more refined help command format
     This inherits from :class:`HelpCommand`.
@@ -267,7 +313,7 @@ class PrettyHelp(HelpCommand):
         self.index_title = options.pop("index_title", "Categories")
         self.no_category = options.pop("no_category", "No Category")
         self.sort_commands = options.pop("sort_commands", True)
-        self.menu = options.pop("menu", DefaultMenu())
+        #self.menu = options.pop("menu", DefaultMenu())
         self.paginator = Paginator(
             color=self.color, show_index=options.pop("show_index", True)
         )
@@ -294,8 +340,7 @@ class PrettyHelp(HelpCommand):
     def get_ending_note(self):
         """Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         note = self.ending_note or (
-            "Type {help.clean_prefix}{help.invoked_with} command for more info on a command.\n"
-            "You can also type {help.clean_prefix}{help.invoked_with} category for more info on a category."
+            "Use {ctx.clean_prefix}help [command] or help [category] for more information \n <> is required | [] is optional"
         )
         return note.format(ctx=self.context, help=self)
 
@@ -304,8 +349,11 @@ class PrettyHelp(HelpCommand):
         destination = self.get_destination()
         if not pages:
             await destination.send(f"```{self.get_ending_note()}```")
+        if len(pages) < 2:
+            await self.context.channel.send(embed=pages[0])
         else:
-            await self.menu.send_pages(self.context, destination, pages)
+            msg = await self.context.channel.send(embed=pages[0])
+            await msg.edit(view=Menu(msg, self.context, pages))
 
     def get_destination(self):
         ctx = self.context
@@ -362,3 +410,21 @@ class PrettyHelp(HelpCommand):
             )
             self.paginator.add_cog(cog, filtered)
         await self.send_pages()
+
+class HelpCog(commands.Cog):
+    def __init__(self, bot):
+       self.bot = bot
+        
+       # Focus here
+       # Setting the cog for the help
+       help_command = GoodHelp()
+       help_command.cog = self # Instance of YourCog class
+       bot.help_command = help_command
+       self.bot.help_command = help_command
+
+    def cog_unload(self) -> None:
+        self.bot.help_command = commands.HelpCommand
+
+
+def setup(bot):
+    bot.add_cog(HelpCog(bot))

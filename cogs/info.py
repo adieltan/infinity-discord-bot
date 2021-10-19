@@ -1,7 +1,7 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
+
+
  
 
  
@@ -37,7 +37,7 @@ class InfoCog(commands.Cog, name='Info'):
         app = await self.bot.application_info()
         embed=discord.Embed(title="Bot Info", description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", color=discord.Color.random())
         embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(name=self.bot.user, url=self.bot.user.avatar_url)
+        embed.set_author(name=self.bot.user, icon_url=self.bot.user.avatar)
         embed.add_field(name="Owner", value=f"""{' '.join([f"<@{owner}>" for owner in self.bot.owners])}""")
         embed.add_field(name="Ping", value=f'{round (self.bot.latency * 1000)}ms ')
         embed.add_field(name="CPU", value=f'Count: {psutil.cpu_count()}\nUsage: {psutil.cpu_percent()}%')
@@ -119,7 +119,7 @@ class InfoCog(commands.Cog, name='Info'):
         """Suggests a feature that you want added to the bot."""
         suggestchannel = self.bot.get_channel(827896302008139806)
         embed=discord.Embed(title="Suggestion", description=f"{suggestion}", color=discord.Color.blue())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         await suggestchannel.send(embed=embed)
         await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
@@ -175,7 +175,7 @@ class InfoCog(commands.Cog, name='Info'):
             message = await self.bot.get_channel(878527673343815700).fetch_message(878542454717022238)
             if len(message.embeds) < 1:
                 embed = discord.Embed(title="Bot Info", color=discord.Color.gold())
-                embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar_url)
+                embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar)
                 embed.set_footer(text="Last updated on")
                 embed.timestamp = datetime.datetime.utcnow()
                 embed.add_field(name="System", value=f"Ping: {round (self.bot.latency * 1000)}ms\nCPU: {psutil.cpu_count()} core {psutil.cpu_percent()}%\nMemory: {psutil.virtual_memory().percent}%", inline=False)
@@ -185,7 +185,7 @@ class InfoCog(commands.Cog, name='Info'):
             else:
                 oldembed = message.embeds[0]
                 embed = discord.Embed(title="Bot Info", color=discord.Color.gold())
-                embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar_url)
+                embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar)
                 embed.set_footer(text="Last updated on")
                 embed.timestamp = datetime.datetime.utcnow()
                 embed.add_field(name="System", value=f"Ping: {round (self.bot.latency * 1000)}ms\nCPU: {psutil.cpu_count()} core {psutil.cpu_percent()}%\nMemory: {psutil.virtual_memory().percent}%", inline=False)

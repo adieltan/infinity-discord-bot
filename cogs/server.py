@@ -1,19 +1,35 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
-from numpy import byte
-from discord.ext.commands.core import check
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
- 
 
 from collections import Counter, OrderedDict
 from PIL import Image
 
+class Confirm(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=10)
+        self.value = None
+        self.ctx = ctx
+    
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+
+    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.value = True
+        self.stop()
+
+    # This one is similar to the confirmation button except sets the inner value to `False`
+    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.value = False
+        self.stop()
 
 class ServerCog(commands.Cog, name='Server'):
     """🌐 Tools for your server."""
     def __init__(self, bot):
-        self.bot = bot
+        self.bot = bot        
 
     @commands.command(name='prefix')
     @commands.cooldown(1,8)
@@ -56,7 +72,7 @@ class ServerCog(commands.Cog, name='Server'):
         pages = [emlist[i:i + 12] for i in range(0, len(emlist), 12)]
         for page in pages:
             text = '\n'.join([emoji for emoji in page])
-            await ctx.send(f"\u200B{text}")
+            await ctx.send(f"\u200b{text}")
 
     @commands.command(name='serverinfo', aliases=['guildinfo', 'si'])
     @commands.guild_only()
@@ -95,7 +111,7 @@ class ServerCog(commands.Cog, name='Server'):
         e.title = guild.name
         e.description = f'**ID**: {guild.id}\n**Owner**: {guild.owner}'
         if guild.icon:
-            e.set_thumbnail(url=guild.icon_url)
+            e.set_thumbnail(url=guild.icon)
 
         channel_info = []
         key_to_emoji = {
@@ -186,7 +202,6 @@ class ServerCog(commands.Cog, name='Server'):
         buffer = io.BytesIO(text.encode('utf-8'))
         await ctx.reply('Leave Leaderboard', file=discord.File(buffer, filename=f'{ctx.guild.id}_leaveleaderboard.txt'))
 
-
     @ll.command(name='reset')
     @commands.has_guild_permissions(kick_members=True)
     async def llreset(self, ctx):
@@ -217,7 +232,7 @@ class ServerCog(commands.Cog, name='Server'):
             await ctx.reply("Autoresponse commands: `add` `remove` `list`")
 
     @ar.command(name="add")
-    async def add_ar(self, ctx, trigger:str):
+    async def add_ar(self, ctx, *,trigger:str):
         """Adds a text response for the trigger."""
         trigger = trigger.lower()
         results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
@@ -243,7 +258,7 @@ class ServerCog(commands.Cog, name='Server'):
             self.bot.serverdb = results
 
     @ar.command(name="remove")
-    async def remove_ar(self, ctx, trigger:str):
+    async def remove_ar(self, ctx, *,trigger:str):
         """Removes the trigger."""
         trigger = trigger.lower()
         results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
@@ -295,7 +310,7 @@ class ServerCog(commands.Cog, name='Server'):
 
     @commands.group(name="delete")
     @commands.guild_only()
-    @commands.cooldown(1,8)
+    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.has_guild_permissions(administrator=True)
     async def delete(self, ctx):
         """Warning: This might affect the server's structure."""
@@ -303,43 +318,72 @@ class ServerCog(commands.Cog, name='Server'):
             await ctx.reply("Subcommands: `category` `channel` `allchannel`")
 
     @delete.command(name="category", aliases=['cat'])
-    async def catdel(self,ctx, category:discord.CategoryChannel, *, reason:str=None):
+    async def catdel(self,ctx, categorys:commands.Greedy[discord.CategoryChannel]):
         """Deletes all the channels in the category."""
-        verificationletter = random.choice(string.ascii_lowercase)
-        await ctx.reply(f"Send **{verificationletter}** to confirm your action.")
-        def check(m):
-            return m.content.lower() == verificationletter and m.author == ctx.author
-        try:
-            response = await self.bot.wait_for('message', check=check, timeout=20)
-            if response.content.lower() != verificationletter:
-                raise discord.InvalidArgument("Verification not successful.")
-        except:
-            await ctx.reply(f"Failed to verify.")
+        view = Confirm(ctx)
+        channels = 0
+        errors = []
+        embed = discord.Embed(title="Category Deletion", description=f"Deleting {len(categorys)} categories.\n{' '.join([cate.mention for cate in categorys])}\nClick Confirm.", color=discord.Color.brand_red())
+        msg = await ctx.reply(embed=embed, view=view)
+        msgv = discord.ui.View.from_message(msg)
+        for v in msgv.children:
+            v.disabled = True
+        await view.wait()
+        if view.value is None:
+            embed.description = 'Timeout.'
+            await msg.edit(embed=embed, view=msgv)
+        elif view.value:
+            embed.description += '\nConfirmed.'
+            embed.color = discord.Color.green()
+            await msg.edit(embed=embed, view=msgv)
+            for category in categorys:
+                for channel in category.channels:
+                    try:
+                        await channel.delete(reason=f"Deleted by {ctx.author.name}.")
+                    except:
+                        errors.append(channel.id)
+                    else:
+                        channels += 1
+                await category.delete(reason=f"Deleted by {ctx.author.name}.")
+            err = 'Errors:\n' + ' '.join([f'<#{id}>' for error in errors if error])
+            await ctx.reply(f"Deleted {channels} channels.\n{err if errors else ''}")
         else:
-            await ctx.reply(f"Starting to delete {category.mention}")
-            channels = category.channels
-            for channel in channels:
-                await channel.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
-            await category.delete(reason=f"Deleted by {ctx.author.name} for {reason}")
-            await ctx.reply(f"Deleted {category.name}")
+            embed.description = 'Cancelled.'
+            embed.color = discord.Color.red()
+            await msg.edit(embed=embed, view=msgv)
 
     @delete.command(name="channel", aliases=['chan'])
-    async def chandel(self,ctx, channel:discord.TextChannel, *, reason:str=None):
+    async def chandel(self,ctx, channels:commands.Greedy[discord.TextChannel]):
         """Deletes the channel."""
-        verificationletter = random.choice(string.ascii_lowercase)
-        await ctx.reply(f"Send **{verificationletter}** to confirm your action.")
-        def check(m):
-            return m.content.lower() == verificationletter and m.author == ctx.author
-        try:
-            response = await self.bot.wait_for('message', check=check, timeout=20)
-            if response.content.lower() != verificationletter:
-                raise discord.InvalidArgument("Verification not successful.")
-        except:
-            await ctx.reply(f"Failed to verify.")
+        view = Confirm(ctx)
+        channelno = 0
+        errors = []
+        embed = discord.Embed(title="Channel Deletion", description=f"Deleting {len(channels)} channels.\n{' '.join([chan.mention for chan in channels])}\nClick Confirm.", color=discord.Color.brand_red())
+        msg = await ctx.reply(embed=embed, view=view)
+        msgv = discord.ui.View.from_message(msg)
+        for v in msgv.children:
+            v.disabled = True
+        await view.wait()
+        if view.value is None:
+            embed.description = 'Timeout.'
+            await msg.edit(embed=embed, view=msgv)
+        elif view.value:
+            embed.description += '\nConfirmed.'
+            embed.color = discord.Color.green()
+            await msg.edit(embed=embed, view=msgv)
+            for channel in channels:
+                try:
+                    await channel.delete(reason=f"Deleted by {ctx.author.name}.")
+                except:
+                    errors.append(channel.id)
+                else:
+                    channelno += 1
+            err = 'Errors:\n' + ' '.join([f'<#{id}>' for error in errors if error])
+            await ctx.reply(f"Deleted {channelno} channels.\n{err if errors else ''}")
         else:
-            await ctx.reply(f"Starting to delete {channel.mention}")
-            await channel.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
-            await ctx.reply(f"Deleted {channel.name}")
+            embed.description = 'Cancelled.'
+            embed.color = discord.Color.red()
+            await msg.edit(embed=embed, view=msgv)
 
     @delete.command(name="allchannel")
     async def purgeallchannel(self,ctx):
@@ -347,27 +391,36 @@ class ServerCog(commands.Cog, name='Server'):
         if ctx.author != ctx.guild.owner:
             await ctx.reply("You are not server owner.")
             return
-        verificationletter = random.choice(string.ascii_lowercase)
-        await ctx.reply(f"Send **{verificationletter}** to confirm your action.")
-        def check(m):
-            return m.content.lower() == verificationletter and m.author == ctx.author
-        try:
-            response = await self.bot.wait_for('message', check=check, timeout=20)
-            if response.content.lower() != verificationletter:
-                raise discord.InvalidArgument("Verification not successful.")
-        except:
-            await ctx.reply(f"Failed to verify.")
-        else:
-            await ctx.reply(f"Starting to delete all channels.")
-            channels = ctx.guild.channels
-            c=0
-            for channel in channels:
+        """Deletes the channel."""
+        view = Confirm(ctx)
+        channels = 0
+        errors = []
+        embed = discord.Embed(title="Guild Channel Deletion", description=f"Deleting {len(ctx.guild.channels)} channels.\nClick Confirm.", color=discord.Color.brand_red())
+        msg = await ctx.reply(embed=embed, view=view)
+        msgv = discord.ui.View.from_message(msg)
+        for v in msgv.children:
+            v.disabled = True
+        await view.wait()
+        if view.value is None:
+            embed.description = 'Timeout.'
+            await msg.edit(embed=embed, view=msgv)
+        elif view.value:
+            embed.description += '\nConfirmed.'
+            embed.color = discord.Color.green()
+            await msg.edit(embed=embed, view=msgv)
+            for channel in ctx.guild.channels:
                 try:
                     await channel.delete(reason=f"Deleted by {ctx.author.name}.")
-                    c += 1
                 except:
-                    pass
-            await ctx.reply(f"Deleted {c} channels.")
+                    errors.append(channel.id)
+                else:
+                    channels += 1
+            err = 'Errors:\n' + ' '.join([f'<#{id}>' for error in errors if error])
+            await ctx.reply(f"Deleted {channels} channels.\n{err if errors else ''}")
+        else:
+            embed.description = 'Cancelled.'
+            embed.color = discord.Color.red()
+            await msg.edit(embed=embed, view=msgv)
 
     @commands.command(name="muteoverwrites")
     @commands.cooldown(1,6)
@@ -402,7 +455,7 @@ class ServerCog(commands.Cog, name='Server'):
             await ctx.reply(f"No cached deleted message.")
         else:
             embed=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
-            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar_url)
+            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar)
             await ctx.reply(embed=embed)
 
     @commands.Cog.listener()
@@ -418,7 +471,7 @@ class ServerCog(commands.Cog, name='Server'):
         
         embed=discord.Embed(title="First Message", url=message.jump_url, description=f"[Jump]({message.jump_url})\n{message.content}", color=discord.Color.random())
         embed.timestamp = message.created_at
-        embed.set_author(icon_url=message.author.avatar_url, name=message.author)
+        embed.set_author(icon_url=message.author.avatar, name=message.author)
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="hide", aliases=['h'])
@@ -498,7 +551,7 @@ class ServerCog(commands.Cog, name='Server'):
         await ctx.reply(f'**`SUCCESSFULLY`** unlocked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="export")
-    @commands.cooldown(1,40, commands.BucketType.category)
+    @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.has_permissions(administrator=True)
     async def export(self, ctx, destination, first_message_id:typing.Optional[int]=None, limit:int=100):
         """Exports chat messages to another channel.\n<first_message_id> is the id of the first message you wanna start exporting from.\n<limit> is the max number of messages to export."""
@@ -551,7 +604,7 @@ class ServerCog(commands.Cog, name='Server'):
                 for attachment in attachments:
                     m.content += f"\n {str(attachment)}"
                 content = f"[<t:{round(m.created_at.timestamp())}:d>]({m.jump_url}) {m.content if m.content else ''}"
-                msg = await webhook.send(content=content, wait=True, username=m.author.name, avatar_url=m.author.avatar_url, embeds=m.embeds if m.embeds else None, allowed_mentions=discord.AllowedMentions.none())
+                msg = await webhook.send(content=content, wait=True, username=m.author.name, avatar_url=m.author.avatar, embeds=m.embeds, allowed_mentions=discord.AllowedMentions.none())
                 last_webhookmsg = msg
                 m.content = content
                 last_message = m

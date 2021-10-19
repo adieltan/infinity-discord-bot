@@ -1,9 +1,6 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle, Select, SelectOption
-import matplotlib.pyplot as plt
- 
-from numpy import append
+
 from thefuzz import process
 import collections
 from PIL import Image
@@ -24,7 +21,7 @@ class FunCog(commands.Cog, name='Fun'):
             return
         
         embed = discord.Embed(title=f"{ctx.author}'s Rolling Game", color=discord.Color.random())
-        embed.set_author(icon_url=ctx.author.avatar_url, name=str(ctx.author))
+        embed.set_author(icon_url=ctx.author.avatar, name=str(ctx.author))
         embed.timestamp=datetime.datetime.utcnow()
         for _ in range(number_of_dice):
             embed.add_field(name='\uFEFF', value=f'{random.choice(range(1,number_of_sides + 1))}', inline=True)
@@ -67,7 +64,7 @@ class FunCog(commands.Cog, name='Fun'):
                     users.remove(win)
                 embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=discord.Color.random())
                 embed.timestamp=datetime.datetime.utcnow()
-                embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
+                embed.set_author(icon_url=ctx.author.avatar, name=ctx.author)
                 text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
                 embed.add_field(name="Winners", value=text)
                 embed.set_footer(text=f"{numbers} winners")
@@ -366,19 +363,19 @@ class FunCog(commands.Cog, name='Fun'):
             async with cs.get("https://i.imgur.com/iJ4XpZb.png") as img:
                 bg = Image.open(io.BytesIO(await img.read()))
             if winner1 is not None:
-                async with cs.get(f"{winner1.avatar_url_as(static_format='png', size= 512)}") as img:
+                async with cs.get(f"{winner1.avatar_as(static_format='png', size= 512)}") as img:
                     offset = (1825, 1625)
                     ava1 = Image.open(io.BytesIO(await img.read()))
                     img = ava1.resize((512, 512), Image.ANTIALIAS)
                     bg.paste(img, offset)
             if winner2 is not None:
-                async with cs.get(f"{winner2.avatar_url_as(static_format='png', size=1024)}") as img:
+                async with cs.get(f"{winner2.avatar_as(static_format='png', size=1024)}") as img:
                     offset = (1150, 1790)
                     ava2 = Image.open(io.BytesIO(await img.read()))
                     img = ava2.resize((512, 512), Image.ANTIALIAS)
                     bg.paste(img, offset)
             if winner3 is not None:
-                async with cs.get(f"{winner3.avatar_url_as(static_format='png', size=1024)}") as img:
+                async with cs.get(f"{winner3.avatar_as(static_format='png', size=1024)}") as img:
                     offset = (2400, 1790)
                     ava3 = Image.open(io.BytesIO(await img.read()))
                     img = ava3.resize((512, 512), Image.ANTIALIAS)

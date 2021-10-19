@@ -1,4 +1,5 @@
-discord.py[voice]
+git+https://github.com/Rapptz/discord.py
+git+https://github.com/Rapptz/discord-ext-menus
 asyncio
 requests
 datetime
@@ -9,8 +10,6 @@ pyzbar
 PyDictionary
 wordfreq
 py_expression_eval
-#discord-pretty-help
-pymongo[tls,srv]
 jishaku
 dateparser
 pillow
@@ -27,5 +26,4 @@ blistpy
 motionbotlist
 topggpy
 thefuzz[speedup]
-
 pytz

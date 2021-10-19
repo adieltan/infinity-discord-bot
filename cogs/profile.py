@@ -1,7 +1,7 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
+
+
  
 
 import dateparser, pycountry
@@ -117,8 +117,8 @@ class ProfileCog(commands.Cog, name='Profile'):
 
             birthday = datetime.datetime.fromtimestamp(bd)
 
-            desc = "\u200B"
-            loca = "\u200B"
+            desc = "\u200b"
+            loca = "\u200b"
             if results.get('bl'):
                 desc += '<:exclamation:876077084986966016> **Blacklisted**' + '\n'
             if results.get('manager'):
@@ -128,8 +128,8 @@ class ProfileCog(commands.Cog, name='Profile'):
                 loca += f":flag_{fuzzy[0].alpha_2.lower()}: {fuzzy[0].name}" + '\n'
             
             embed=discord.Embed(title="Profile", description=desc, color=discord.Color.random())
-            embed.set_author(icon_url=member.avatar_url, name=member.display_name)
-            embed.set_thumbnail(url=member.avatar_url)
+            embed.set_author(icon_url=member.avatar, name=member.display_name)
+            embed.set_thumbnail(url=member.avatar)
             embed.add_field(name="BMI", value=f"Height: {height} cm\nWeight: {weight} kg\n**BMI: {round(bmi, 2)} ({status})**")
             embed.add_field(name="Location", value=loca)
             embed.set_footer(text="Birthday: ")

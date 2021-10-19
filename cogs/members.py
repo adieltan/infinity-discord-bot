@@ -1,9 +1,36 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
 
+class Menu(discord.ui.View):
+    def __init__(self, ctx, pages:list[discord.Embed]) -> None:
+        super().__init__(timeout=60)
+        self.current_page = 0
+        self.pages = pages
+        self.ctx = ctx
+        self.value = None
 
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+
+    @discord.ui.button(emoji='<:rewind:899651431294967908>', style=discord.ButtonStyle.blurple)
+    async def first_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[0])
+        self.current_page = 0
+
+    @discord.ui.button(emoji='<:left:876079229769482300>', style=discord.ButtonStyle.blurple)
+    async def before_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[(self.current_page - 1) % len(self.pages)])
+        self.current_page = (self.current_page - 1) % len(self.pages)
+
+    @discord.ui.button(emoji='<:right:876079229710762005>', style=discord.ButtonStyle.blurple)
+    async def next_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[(self.current_page + 1) % len(self.pages)])
+        self.current_page = (self.current_page + 1) % len(self.pages)
+
+    @discord.ui.button(emoji='<:forward:899651567869906994>', style=discord.ButtonStyle.blurple)
+    async def last_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[len(self.pages) -1 ])
+        self.current_page = len(self.pages) - 1
 
 class MembersCog(commands.Cog, name='Members'):
     """👤 Information / function about Users."""
@@ -26,10 +53,10 @@ class MembersCog(commands.Cog, name='Members'):
                 status = f"\⚫ Offline"
             else:
                 status = ''
-            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar_url})\n{status}\n", color=member.color, timestamp = datetime.datetime.utcnow())
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.display_avatar})\n{status}\n", color=member.color, timestamp = datetime.datetime.utcnow())
             if member.activity:
                 embed.description += f"{member.activity.name}"
-            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.display_avatar}')
             embed.add_field(name="Joined", value=f"<t:{round(member.joined_at.timestamp())}:F>\n<t:{round(member.joined_at.timestamp())}:R>")
             embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
             if member.nick:
@@ -44,11 +71,11 @@ class MembersCog(commands.Cog, name='Members'):
             if member.premium_since:
                 embed.add_field(name="Server Boost", value=f"\nBoosting since: <t:{round(member.premium_since.timestamp())}:f> <t:{round(member.premium_since.timestamp())}:R>")
             embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
-            embed.set_thumbnail(url=member.avatar_url)
+            embed.set_thumbnail(url=member.display_avatar)
             embed.set_footer(text=f"ID: {member.id}")
         else:
-            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar_url})", color=member.color, timestamp = datetime.datetime.utcnow())
-            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar_url}')
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar})", color=member.color, timestamp = datetime.datetime.utcnow())
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar}')
             embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
@@ -57,7 +84,7 @@ class MembersCog(commands.Cog, name='Members'):
             leavetimes = dic.get(f"{member.id}")
             if leavetimes is not None:
                 embed.description += f"\nLeft the server {leavetimes} times."
-            embed.set_thumbnail(url=member.avatar_url)
+            embed.set_thumbnail(url=member.avatar)
             embed.set_footer(text=f"ID: {member.id}")
         await ctx.reply(embed=embed, mention_author=False)
 
@@ -102,7 +129,7 @@ class MembersCog(commands.Cog, name='Members'):
         
         embed = discord.Embed(title='Permissions for:', description=object.mention+'\n'+perms, color=discord.Color.random())
         if object is discord.Member:
-            embed.set_author(icon_url=object.avatar_url, name=str(object))
+            embed.set_author(icon_url=object.avatar, name=str(object))
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="selfharm", aliases=["suicide", 'die'])
@@ -111,7 +138,7 @@ class MembersCog(commands.Cog, name='Members'):
         if victim is None:
             victim = ctx.author
         embed=discord.Embed(title="Suicide & Selfharm Prevention", url="https://www.who.int/health-topics/suicide", description="You are not alone. Everyone is special in their own ways and thats why you shouldn't give up.", color=discord.Color.blurple())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         embed.add_field(name="Get some help today.", value=f"[Suicide prevention](https://www.who.int/health-topics/suicide)\n[Contact Numbers](https://www.opencounseling.com/suicide-hotlines)\n[Crisis Lines](https://en.wikipedia.org/wiki/List_of_suicide_crisis_lines)")
         embed.set_thumbnail(url="https://www.nursingcenter.com/getattachment/NCBlog/September-2016-(1)/World-Suicide-Prevention-Day/2016_wspd_ribbon_250X250.png.aspx?width=200&height=200")
         embed.set_image(url="https://sm.mashable.com/mashable_me/photo/default/gettyimages-6130324100_675p.jpg")
@@ -249,7 +276,7 @@ class MembersCog(commands.Cog, name='Members'):
         if role is None:
             role = ctx.guild.default_role
         embed = discord.Embed(title="Role Info", description=f"{role.mention} Pos: {role.position} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
-        embed.add_field(name="Permissions", value='\u200B'+'\n'.join(perm.replace('_',' ').title() for perm, value in role.permissions if value))
+        embed.add_field(name="Permissions", value='\u200b'+'\n'.join(perm.replace('_',' ').title() for perm, value in role.permissions if value))
         embed.set_footer(text="Role created at")
         embed.timestamp = role.created_at
         await ctx.reply(embed=embed, mention_author=True)
@@ -268,81 +295,18 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.has_permissions(manage_roles=True)
     async def list(self, ctx):
         """Lists all the roles of the guild in a paginated way."""
-        await ctx.trigger_typing()
         roles = ctx.guild.roles
         roles.reverse()
         n = 10
-        pageno = 0
         pages = [roles[i:i + n] for i in range(0, len(roles), n)]
-        
-        embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        lis = [f'{r.mention} `{r.id}`' for r in pages[pageno]]
-        text = '\n'.join(lis)
-        embed.description=text
-        msg = await ctx.reply(embed=embed,
-                components = [ #Use any button style you wish to :)
-            [
-                Button(
-                    label = "Prev",
-                    id = "back",
-                    style = ButtonStyle.green
-                ),
-                Button(
-                    label = f"Page {int( pages.index( pages[pageno])) + 1}/{len( pages)}",
-                    id = "cur",
-                    style = ButtonStyle.grey,
-                ),
-                Button(
-                    label = "Next",
-                    id = "front",
-                    style = ButtonStyle.green
-                )]])
-        while True:
-            #Try and except blocks to catch timeout and break
-            try:
-                interaction = await self.bot.wait_for("button_click",check = lambda i: i.component.id in ["back", "front", "cur"] and i.user == ctx.author,timeout = 20.0)
-                #Getting the right list index
-                if interaction.component.id == "back":
-                    pageno -= 1
-                elif interaction.component.id == "front":
-                    pageno += 1
-                elif interaction.component.id == "cur":
-                    raise asyncio.TimeoutError
-                #If its out of index, go back to start / end
-                if pageno == len( pages):
-                    pageno = 0
-                elif pageno < 0:
-                    pageno = len( pages) - 1
-
-                #Edit to new page + the center counter changes
-                await interaction.respond(embed=discord.Embed(title=f"{ctx.guild.name}'s Roles", description= '\n'.join([f'{r.mention} `{r.id}`' for r in pages[pageno]]),color=discord.Color.random(), timestamp=datetime.datetime.utcnow()),
-                    components = [
-                        [   Button(
-                                label = "Prev",
-                                id = "back",
-                                style = ButtonStyle.green
-                            ),
-                            Button(
-                                label = f"Page {int( pages.index( pages[pageno])) + 1}/{len( pages)}",
-                                id = "cur",
-                                style = ButtonStyle.grey,
-                            ),
-                            Button(
-                                label = "Next",
-                                id = "front",
-                                style = ButtonStyle.green
-                            )]])
-
-            except asyncio.TimeoutError:
-                #Disable and get outta here
-                await msg.edit(
-                    components = [Button(
-                                label = f"Page {int( pages.index( pages[pageno])) + 1}/{len( pages)}",
-                                id = "cur",
-                                style = ButtonStyle.grey,
-                                disabled = True)])
-                break
+        pagess = [discord.Embed(title=f"{ctx.guild.name}'s Roles", description='\n'.join([f'{r.mention} `{r.id}`' for r in page]), color=discord.Color.random()).set_footer(text=f"{pages.index(page) + 1} / {len(pages)} pages").set_thumbnail(url=ctx.guild.icon) for page in pages]
+        v = Menu(ctx, pagess)
+        msg = await ctx.reply(embed=pagess[0], view=v)
+        vd = discord.ui.View.from_message(msg)
+        for item in vd.children:
+            item.disabled = True
+        await v.wait()
+        await msg.edit(view=vd)
 
     @role.command(name='random', aliases=['randommember'])
     @commands.cooldown(1,2)

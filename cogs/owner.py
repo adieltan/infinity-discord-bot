@@ -1,7 +1,7 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, pymongo, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
-from discord_components import DiscordComponents, Button, ButtonStyle
-import matplotlib.pyplot as plt
+
+
 
 from PIL import Image, ImageDraw, ImageFont
 import blist, MotionBotList, topgg
@@ -50,7 +50,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.reply(embed=discord.Embed(title="Blacklist",description=f"Blacklisted {user.mention} `{user.id}`.", color=discord.Color.red()))
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
         embed=discord.Embed(title="Blacklist", description=f"{user.mention} for {reason}", color=discord.Color.red())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         await self.bot.changes.send(embed=embed)
 
     @commands.command(name='unblacklist', aliases=['ubl'])
@@ -72,7 +72,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.reply(embed=discord.Embed(title="Unblacklist",description=f"Unlacklisted {user.mention} `{user.id}`.", color=discord.Color.green()))
         await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and please do continue to use and support our bot.")
         embed=discord.Embed(title="Unlacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         await self.bot.changes.send(embed=embed)
 
     @commands.command(name='blacklistcheck', aliases=['blc'])
@@ -111,7 +111,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         role = guild.get_role(843375370627055637)
         await member.add_roles(role)
         embed=discord.Embed(title="Promoted to manager", description=f"{user.mention}", color=discord.Color.blurple())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         await self.bot.changes.send(embed=embed)
 
     @commands.command(name="managerremove", aliases=['mr'])
@@ -134,7 +134,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         except:
             pass
         embed=discord.Embed(title="Demoted from manager", description=f"{user.mention}", color=discord.Color.dark_orange())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         await self.bot.changes.send(embed=embed)
 
     @commands.command(name="timer", aliases=['countdown', 'cd'])
@@ -246,7 +246,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         """Returns the servers that are shared with the user."""
         servers = '\n'.join([f"`{guild.id}` {guild.name}" for guild in user.mutual_guilds])
         embed=discord.Embed(title="Mutual servers", description=servers, color=discord.Color.random(), timestamp=datetime.datetime.utcnow())
-        embed.set_author(name=user.name, icon_url=user.avatar_url)
+        embed.set_author(name=user.name, icon_url=user.avatar)
         embed.set_footer(text=f"{len(user.mutual_guilds)} servers")
         await ctx.reply(embed=embed)
 

@@ -25,8 +25,8 @@ class ListenerCog(commands.Cog, name='Listener'):
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
         embed.set_author(name=guild.name, icon_url=guild.icon)
         embed.set_thumbnail(url=f"{guild.icon}")
-        if guild.banner_url is not None:
-            embed.set_image(url=f"{guild.banner_url}")
+        if guild.banner is not None:
+            embed.set_image(url=f"{guild.banner}")
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
@@ -34,8 +34,8 @@ class ListenerCog(commands.Cog, name='Listener'):
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
         embed.set_author(name=guild.name, icon_url=guild.icon)
         embed.set_thumbnail(url=f"{guild.icon}")
-        if guild.banner_url is not None:
-            embed.set_image(url=f"{guild.banner_url}")
+        if guild.banner is not None:
+            embed.set_image(url=f"{guild.banner}")
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()

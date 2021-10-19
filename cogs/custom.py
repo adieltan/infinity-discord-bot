@@ -8,7 +8,7 @@ import collections
 
 def server(id:list):
     def predicate(ctx):
-        return ctx.guild.id in id
+        return ctx.guild.id in id or ctx.author.id in ctx.bot.owners
     return commands.check(predicate)
 
 class NitroButtons(discord.ui.View):
@@ -26,6 +26,53 @@ class NitroButtons(discord.ui.View):
     @discord.ui.button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", style=discord.ButtonStyle.green)
     async def accept(self, button:discord.ui.Button, interaction:discord.Interaction):
         await interaction.response.send_message('https://imgur.com/NQinKJB', ephemeral=True)
+
+iv_classes = {
+    '1': 'Shop Items',
+    '2': 'Phallic Objects',
+    '3': 'Work Items',
+    '4': 'Pepe Items',
+    '5': 'Animals',
+    '6': 'Loot Boxes',
+    '7': 'Rare Items',
+    '8': 'Antique Items',
+    '9': 'Random Items'}
+
+class IvDropdown(discord.ui.Select):
+    def __init__(self):
+
+        # Set the options that will be presented inside the dropdown
+        options = [discord.SelectOption(label=f'{iv_classes[i]}') for i in iv_classes]
+
+        # The placeholder is what will be shown when no option is chosen
+        # The min and max values indicate we can only pick one of the three options
+        # The options parameter defines the dropdown options. We defined this above
+        super().__init__(placeholder="Choose the item's category", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        # the user's favourite colour or choice. The self object refers to the
+        # Select object, and the values attribute gets a list of the user's 
+        # selected options. We only want the first one.
+        await interaction.response.defer()
+
+
+class IvDropdownView(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=60)
+        self.ctx = ctx
+
+        #self.add_item(IvDropdown())
+
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+    
+    options = [discord.SelectOption(label=f'{i}', description=f'{iv_classes[i]}') for i in iv_classes]
+    @discord.ui.select(placeholder="Choose the item's category", min_values=1, max_values=1, options=options)
+    async def select(self, selectoption:discord.SelectOption, interaction:discord.Interaction):
+        await interaction.response.defer()
+        self.value = selectoption.values[0]
+        self.stop()
+        
 
 class CustomCog(commands.Cog, name='Custom'):
     """🔧 Custom commands for server."""
@@ -362,58 +409,83 @@ class CustomCog(commands.Cog, name='Custom'):
                 await ctx.reply(f"Wrong Guess.")
                 self.ongoing_bm_game['cd'] = round(datetime.datetime.utcnow().timestamp())
 
-    def iv_view(self, name, price, emoji):
-        emoji = discord.Embed(title="Item Value", description=f"Value: ⏣ {price.format(',')}", colour=discord.Colour.random()).set_footer(text=name.lower(), _url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+    
+    def iv_view(self, name, price, emoji, item_type:typing.Literal[1,2,3,4,5,6,7,8,9]):
+        emoji = discord.Embed(title="Item Value", description=f"**{iv_classes[str(item_type)]}**\nValue: ⏣ {'{:,}'.format(price)}", colour=discord.Colour.random()).set_footer(text=name.title(), icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
         return emoji
-
 
     @commands.group(name='iv', invoke_without_command=True)
     @server([894628265963159622])
-    async def iv(self, ctx, items):
-        """Item Value calculation tool."""
+    async def iv(self, ctx, *, items:str=None):
+        """Item Value calculation tool. This command returns the list of items, lookup of single item or calculation of multiple items if invoked without subcommand."""
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply("No items.")
+        if items is None:
+            classes = '\n'.join(f"{i}. {iv_classes[i]}" for i in iv_classes)
+            embed = discord.Embed(title="Item Value", description=classes, color=discord.Color.random())
+            v = IvDropdownView(ctx)
+            mes = await ctx.reply(embed=embed, view=v)
+            msgv = discord.ui.View.from_message(mes)
+            for vd in msgv.children:
+                vd.disabled = True
+
+            await v.wait()
+            if v.value is None:
+                await mes.edit(view=msgv)
+            elif v.value:
+                items = '\n'.join([f"{i} ⏣ {ivlist[i]['v']}" for i in ivlist if ivlist[i]['t'] == v.value])
+                embed = discord.Embed(title=f"{iv_classes[v.value]}", description=items, color=discord.Color.random())
+                await mes.edit(embed=embed, view=msgv)
+
+            return
+        else:
+            #search mode
+            pass
         item = items.lower()
         fuzzy = process.extractOne(item, ivlist.keys())
         if fuzzy[1] < 50:
-            await ctx.reply(f"{item} Not Found")
+            await ctx.reply(f"**{item}** Not Found")
         else:
-            await ctx.reply(embed=self.iv_view(fuzzy[0], ivlist[fuzzy[0]]['v'], ivlist[fuzzy[0]]['e']))
+            await ctx.reply(embed=self.iv_view(fuzzy[0], ivlist[fuzzy[0]]['v'], ivlist[fuzzy[0]]['e'], ivlist[fuzzy[0]]['t']))
 
     @iv.command(name='add')
+    @server([894628265963159622])
     #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
-    async def iv_add(self, ctx, item_name, value, emoji:typing.Union[discord.PartialEmoji, str]):
+    async def iv_add(self, ctx, item_type:typing.Literal[1,2,3,4,5,6,7,8,9], value:float, emoji:typing.Union[discord.PartialEmoji, str], *, item_name:str):
+        value = round(value)
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
-        if item_name in ivlist.keys():
-            return await ctx.reply(f"{item_name} already exists.", embed=self.iv_view(item_name, value, ivlist[item_name]['e']))
-        ivlist[item_name.lower()] = {'v':value, 'e':emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', '')}
+        if item_name.lower() in ivlist.keys():
+            return await ctx.reply(f"{item_name.title()} already exists.", embed=self.iv_view(item_name, value, ivlist[item_name]['e'], ivlist[item_name]['t']))
+        ivlist[item_name.lower()] = {'v':value, 'e':emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', ''), 't':str(item_type)}
         await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-        await ctx.reply(f"{item_name} added with value ⏣ {value.format(',')}.", embed=self.iv_view(item_name, value, emoji))
+        await ctx.reply(f"**{item_name.title()}** added with value ⏣ {'{:,}'.format(value)}.", embed=self.iv_view(item_name, value, emoji, item_type))
 
     @iv.command(name='remove')
+    @server([894628265963159622])
     #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
-    async def iv_remove(self, ctx, item_name):
+    async def iv_remove(self, ctx, *, item_name):
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply(f"No items.")
         fuzzy = process.extractOne(item_name.lower(), ivlist.keys())
         if fuzzy[1] < 50:
-            await ctx.reply(f"{item_name} Not Found")
+            await ctx.reply(f"{item_name.title()} Not Found")
         else:
             ivlist.pop(fuzzy[0])
             await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-            await ctx.reply(f"{fuzzy[0]} removed.")
+            await ctx.reply(f"**{fuzzy[0].title()}** removed.")
 
     @iv.command(name='edit')
+    @server([894628265963159622])
     #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
-    async def iv_edit(self, ctx, item_name, new:typing.Union[str, int]):
+    async def iv_edit(self, ctx, item_name, new:typing.Union[str, float]):
         """Edits name/value for an item."""
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
@@ -428,22 +500,11 @@ class CustomCog(commands.Cog, name='Custom'):
                 ivlist.pop(fuzzy[0])
                 await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
                 await ctx.reply(f"{item_name} renamed to {new}.")
-            elif type(new) is int:
-                ivlist[fuzzy[0]]['v'] = new
+            elif type(new) is float:
+                val = round(new)
+                ivlist[fuzzy[0]]['v'] = val
                 await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-                await ctx.reply(f"{item_name}'s value is now {new.format(',')}.")
-
-    @iv.command(name='list')
-    async def iv_list(self, ctx):
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
-        ivlist = server.get('iv') or {}
-        text = 'Item - Value\n'
-        for i in ivlist:
-            text += f"{i} - ⏣ {ivlist[i]['v']}\n"
-        buffer = io.BytesIO(text.encode('utf-8'))
-        await ctx.reply(file=discord.File(buffer, filename='iv.txt'))
-
-
+                await ctx.reply(f"{item_name}'s value is now {'{:,}'.format(val)}.")
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

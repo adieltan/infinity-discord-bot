@@ -411,7 +411,7 @@ class CustomCog(commands.Cog, name='Custom'):
 
     
     def iv_view(self, name, price, emoji, item_type:typing.Literal[1,2,3,4,5,6,7,8,9]):
-        emoji = discord.Embed(title="Item Value", description=f"**{iv_classes[str(item_type)]}**\nValue: ⏣ {'{:,}'.format(price)}", colour=discord.Colour.random()).set_footer(text=name.title(), icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+        emoji = discord.Embed(title=f"Item Value", description=f"**{name.title()}**\nValue: ⏣ {'{:,}'.format(price)}", colour=discord.Colour.random()).set_footer(text=iv_classes[str(item_type)], icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
         return emoji
 
     @commands.group(name='iv', invoke_without_command=True)
@@ -436,19 +436,49 @@ class CustomCog(commands.Cog, name='Custom'):
                 await mes.edit(view=msgv)
             elif v.value:
                 items = '\n'.join([f"{i} ⏣ {ivlist[i]['v']}" for i in ivlist if ivlist[i]['t'] == v.value])
-                embed = discord.Embed(title=f"{iv_classes[v.value]}", description=items, color=discord.Color.random())
+                embed = discord.Embed(title=f"Item Value", description=items, color=discord.Color.random()).set_footer(text=f'{iv_classes[v.value]}')
                 await mes.edit(embed=embed, view=msgv)
 
             return
         else:
             #search mode
-            pass
-        item = items.lower()
-        fuzzy = process.extractOne(item, ivlist.keys())
-        if fuzzy[1] < 50:
-            await ctx.reply(f"**{item}** Not Found")
-        else:
-            await ctx.reply(embed=self.iv_view(fuzzy[0], ivlist[fuzzy[0]]['v'], ivlist[fuzzy[0]]['e'], ivlist[fuzzy[0]]['t']))
+            itemlist = items.split('+')
+            if len(itemlist) < 2:
+                #one item
+                number = re.findall('\d+', itemlist[0])
+                itemname = re.sub(r'[0-9]', '', itemlist[0])
+                if itemname == '':
+                    await ctx.reply(f"**{items}** is invalid.")
+                    return
+                try: quantity = number[0]
+                except: quantity = 1
+                fuz = process.extractOne(itemname, ivlist.keys())
+                if fuz[1] < 50:
+                    await ctx.reply(f"**{itemname}** Not Found")
+                else:
+                    await ctx.reply(embed=self.iv_view(f"{quantity} {fuz[0]}", ivlist[fuz[0]]['v'] * int(quantity), ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']))
+            else:
+                invalids = list()
+                value_list = list()
+                for item in itemlist:
+                    number = re.findall('\d+', item)
+                    itemname = re.sub(r'[0-9]', '', item)
+                    if itemname == '':
+                        invalids.append(item)
+                    else:
+                        try: quantity = number[0]
+                        except: quantity = 1
+                        fuz = process.extractOne(itemname, ivlist.keys())
+                        if fuz[1] < 50:
+                            invalids.append(itemname)
+                        else:
+                            value = ivlist[fuz[0]]['v'] * int(quantity)
+                            value_list.append(value)
+                e=discord.Embed(title='Item Value Calculator', description=f'```fix\n{items}\n```', color=discord.Color.random())
+                if len(invalids) > 0:
+                    e.add_field(name='Invalid Items', value=', '.join(invalids), inline=False)
+                e.add_field(name="Calculation", value='```fix\n'+' + '.join([str(value) for value in value_list]) + f'\n = ⏣ {sum(value_list)}\n```', inline=False)
+                await ctx.reply(embed=e)
 
     @iv.command(name='add')
     @server([894628265963159622])
@@ -458,13 +488,15 @@ class CustomCog(commands.Cog, name='Custom'):
         value = round(value)
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
+        item_name = re.sub(r'[0-9]', '', item_name)
         if item_name.lower() in ivlist.keys():
-            return await ctx.reply(f"{item_name.title()} already exists.", embed=self.iv_view(item_name, value, ivlist[item_name]['e'], ivlist[item_name]['t']))
-        ivlist[item_name.lower()] = {'v':value, 'e':emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', ''), 't':str(item_type)}
+            return await ctx.reply(f"{item_name.title()} already exists.", embed=self.iv_view(item_name, round(value), ivlist[item_name]['e'], ivlist[item_name]['t']))
+        emoji = emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', '')
+        ivlist[item_name.lower()] = {'v':value, 'e':emoji, 't':str(item_type)}
         await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-        await ctx.reply(f"**{item_name.title()}** added with value ⏣ {'{:,}'.format(value)}.", embed=self.iv_view(item_name, value, emoji, item_type))
+        await ctx.reply(f"**{item_name.title()}** added with value ⏣ {'{:,}'.format(value)}.", embed=self.iv_view(item_name, value, emoji,   item_type))
 
-    @iv.command(name='remove')
+    @iv.command(name='remove', aliases=['delete', 'del'])
     @server([894628265963159622])
     #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
@@ -485,7 +517,7 @@ class CustomCog(commands.Cog, name='Custom'):
     @server([894628265963159622])
     #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
-    async def iv_edit(self, ctx, item_name, new:typing.Union[str, float]):
+    async def iv_edit(self, ctx, new:typing.Union[float, str], *, item_name:str):
         """Edits name/value for an item."""
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
@@ -496,7 +528,7 @@ class CustomCog(commands.Cog, name='Custom'):
             await ctx.reply(f"{item_name} Not Found")
         else:
             if type(new) is str:
-                ivlist[new] = fuzzy[0]
+                ivlist[new.lower()] = ivlist[fuzzy[0]]
                 ivlist.pop(fuzzy[0])
                 await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
                 await ctx.reply(f"{item_name} renamed to {new}.")
@@ -504,7 +536,7 @@ class CustomCog(commands.Cog, name='Custom'):
                 val = round(new)
                 ivlist[fuzzy[0]]['v'] = val
                 await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-                await ctx.reply(f"{item_name}'s value is now {'{:,}'.format(val)}.")
+                await ctx.reply(f"{fuzzy[0].title()}'s value is now {'{:,}'.format(val)}.")
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

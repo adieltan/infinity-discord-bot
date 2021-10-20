@@ -23,8 +23,11 @@ class ListenerCog(commands.Cog, name='Listener'):
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
-        embed.set_author(name=guild.name, icon_url=guild.icon)
-        embed.set_thumbnail(url=f"{guild.icon}")
+        try:
+            embed.set_author(name=guild.name, icon_url=guild.icon)
+            embed.set_thumbnail(url=f"{guild.icon}")
+        except Exception as e:
+            await self.bot.changes.send(f"Error\n{e}")
         if guild.banner is not None:
             embed.set_image(url=f"{guild.banner}")
         await self.bot.changes.send(embed=embed)
@@ -32,8 +35,11 @@ class ListenerCog(commands.Cog, name='Listener'):
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
-        embed.set_author(name=guild.name, icon_url=guild.icon)
-        embed.set_thumbnail(url=f"{guild.icon}")
+        try:
+            embed.set_author(name=guild.name, icon_url=guild.icon)
+            embed.set_thumbnail(url=f"{guild.icon}")
+        except Exception as e:
+            await self.bot.changes.send(f"Error\n{e}")
         if guild.banner is not None:
             embed.set_image(url=f"{guild.banner}")
         await self.bot.changes.send(embed=embed)

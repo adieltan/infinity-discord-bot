@@ -102,9 +102,9 @@ async def on_ready():
 @bot.event
 async def on_error(event, *args, **kwargs):
     print('Ignoring exception in {}'.format(event), file=sys.stderr)
-    embed=discord.Embed(title='Ignoring exception in {}'.format(event), timestamp=datetime.datetime.utcnow(), color=discord.Color.dark_gold())
-    embed.description = discord.utils.escape_markdown(traceback.format_exc())
-    await bot.errors.send(embed=embed)
+    text = discord.utils.escape_markdown(traceback.format_exc())
+    buffer = io.BytesIO(text.encode('utf-8'))
+    await bot.errors.send(f'<t:{round(datetime.datetime.utcnow().timestamp())}> Ignoring exception in {event}', file=discord.File(buffer, filename='traceback.txt'))
 
 @tasks.loop(minutes=5, reconnect=True)
 async def status():

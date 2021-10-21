@@ -17,7 +17,7 @@ class InfoCog(commands.Cog, name='Info'):
         embed=discord.Embed(title = "Infinity Bot Info" , url=discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.all(), scopes=('bot','applications.commands')), description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", color=discord.Color.random(), timestamp=discord.utils.utcnow()).set_author(name=self.bot.user, icon_url=self.bot.user.avatar)
         embed.add_field(name="Owner", value=f"""{' '.join([f"<@{owner}>" for owner in self.bot.owners])}""")
         embed.add_field(name="Ping", value=f'{round (self.bot.latency * 1000)}ms ')
-        d = datetime.datetime.utcnow() -self.bot.startuptime
+        d = discord.utils.utcnow() -self.bot.startuptime
         embed.add_field(name="Uptime", value=f"{round(d.seconds/60/60,2)} hours")
         embed.add_field(name="Connected", value=f"To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
         v = discord.ui.View()

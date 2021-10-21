@@ -51,7 +51,7 @@ bot.managers = set({})
 bot.infinityemoji = "<a:infinity:874548940610097163>"
 bot.serverdb = None
 bot.snipedb = dict({})
-bot.startuptime = datetime.datetime.utcnow()
+bot.startuptime = discord.utils.utcnow()
 
 bot.errors = bot.get_channel(825900714013360199)
 bot.logs = bot.get_channel(874461656938340402)
@@ -95,21 +95,21 @@ async def on_ready():
     bot.changes = bot.get_channel(859779506038505532)
     status.start()
     performance.start()
-    login = f"\n{bot.user} ~ UTC: {datetime.datetime.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}"
+    login = f"\n{bot.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}"
     print(login)
-    bot.startuptime = datetime.datetime.utcnow()
+    bot.startuptime = discord.utils.utcnow()
 
 @bot.event
 async def on_error(event, *args, **kwargs):
     print('Ignoring exception in {}'.format(event), file=sys.stderr)
     text = discord.utils.escape_markdown(traceback.format_exc())
     buffer = io.BytesIO(text.encode('utf-8'))
-    await bot.errors.send(f'<t:{round(datetime.datetime.utcnow().timestamp())}> Ignoring exception in {event}', file=discord.File(buffer, filename='traceback.txt'))
+    await bot.errors.send(f"{discord.utils.format_dt(discord.utils.utcnow(), style='t')} Ignoring exception in {event}", file=discord.File(buffer, filename='traceback.txt'))
 
 @tasks.loop(minutes=5, reconnect=True)
 async def status():
     await bot.wait_until_ready()
-    timenow = datetime.datetime.utcnow()
+    timenow = discord.utils.utcnow()
     d = timenow-bot.startuptime
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
 
@@ -126,7 +126,7 @@ async def performance():
     memoryvalue= psutil.virtual_memory().percent
     timenow = datetime.datetime.now().strftime('%M')
     embed=discord.Embed(title="Performance report", description=f"`Ping  :` {pingvalue}ms\n`CPU   :` {cpuvalue}%\n`Memory:` {memoryvalue}%", color=discord.Color.random())
-    embed.timestamp=datetime.datetime.utcnow()
+    embed.timestamp=discord.utils.utcnow()
     await bot.logs.send(embed=embed)
 
 bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)

@@ -592,7 +592,7 @@ class ServerCog(commands.Cog, name='Server'):
                     attachments = m.attachments
                     for attachment in attachments:
                         m.content += f"\n {str(attachment)}"
-                    content = f"{last_message.content}\n" + f"[<t:{round(m.created_at.timestamp())}:d>]({m.jump_url}) {m.content if m.content else ''}"
+                    content = f"{last_message.content}\n" + f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) {m.content if m.content else ''}"
                     msg = await last_webhookmsg.edit(content=content, embeds=last_message.embeds + m.embeds, allowed_mentions=discord.AllowedMentions.none())
                     last_webhookmsg = msg
                     m.content = content
@@ -603,7 +603,7 @@ class ServerCog(commands.Cog, name='Server'):
                 attachments = m.attachments
                 for attachment in attachments:
                     m.content += f"\n {str(attachment)}"
-                content = f"[<t:{round(m.created_at.timestamp())}:d>]({m.jump_url}) {m.content if m.content else ''}"
+                content = f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) {m.content if m.content else ''}"
                 msg = await webhook.send(content=content, wait=True, username=m.author.name, avatar_url=m.author.avatar, embeds=m.embeds, allowed_mentions=discord.AllowedMentions.none())
                 last_webhookmsg = msg
                 m.content = content

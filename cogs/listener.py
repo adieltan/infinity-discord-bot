@@ -21,10 +21,10 @@ class ListenerCog(commands.Cog, name='Listener'):
         await self.bot.process_commands(after)
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild:discord.Guild):
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
         try:
-            embed.set_author(name=guild.name, icon_url=guild.icon)
+            embed.set_author(name=guild.name, icon_url=guild.icon if guild.icon else discord.embeds.MaybeEmpty)
             embed.set_thumbnail(url=f"{guild.icon}")
         except Exception as e:
             await self.bot.changes.send(f"Error\n{e}")
@@ -33,10 +33,10 @@ class ListenerCog(commands.Cog, name='Listener'):
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_guild_remove(self, guild):
+    async def on_guild_remove(self, guild:discord.Guild):
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
         try:
-            embed.set_author(name=guild.name, icon_url=guild.icon)
+            embed.set_author(name=guild.name, icon_url=guild.icon if guild.icon else discord.embeds.MaybeEmpty)
             embed.set_thumbnail(url=f"{guild.icon}")
         except Exception as e:
             await self.bot.changes.send(f"Error\n{e}")
@@ -90,7 +90,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.MaxConcurrencyReached):
             await ctx.reply(embed=discord.Embed(title='Too many Concurrent Uses', description=f"{error.number} concurrent uses per {error.per}"))
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}` is a required argument that is missing.", color=discord.Color.dark_teal()))
+            await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}` is a required argument that is missing.\n\nUsage:\n```\n{ctx.prefix}{ctx.command.signature}\n```", color=discord.Color.dark_teal()))
         elif isinstance(error, commands.NotOwner):
             embed=discord.Embed(title="Owner only command", description=f"Imagine using this.")
             embed.set_image(url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652")
@@ -107,13 +107,13 @@ class ListenerCog(commands.Cog, name='Listener'):
 
         else:            # All other Errors not returned come here. And we can just print the default TraceBack.
             embed=discord.Embed(title=f"{type(error).__name__}", description=f"{str(error)}", color=discord.Color.red())
-            embed.timestamp = datetime.datetime.utcnow()
+            embed.timestamp = discord.utils.utcnow()
             try:
                 await ctx.reply(embed=embed)
             except:
                 await ctx.send(embed=embed)
             embed=discord.Embed(title="Error", description=f"{ctx.author.mention}\nIgnoring exception in command {ctx.command}", color=discord.Color.random())
-            embed.timestamp=datetime.datetime.utcnow()
+            embed.timestamp=discord.utils.utcnow()
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
             embed.set_footer(text=ctx.author.id)
             embed.add_field(name="Info", value=f"[{ctx.message.content}]({ctx.message.jump_url})\n`⬇` **Traceback**")

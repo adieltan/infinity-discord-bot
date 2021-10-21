@@ -25,7 +25,7 @@ class ImageCog(commands.Cog, name='Image'):
         embed=discord.Embed(title="Monkey", description=f"[Image]({imageurl})", color=discord.Color.random())
         embed.add_field(name="Monkey Fact", value=fact)
         embed.set_image(url=imageurl)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
         await cs.close()
@@ -41,7 +41,7 @@ class ImageCog(commands.Cog, name='Image'):
         imageurl = picj["url"]
         embed=discord.Embed(title="Bird", description=f"[Image]({imageurl})", color=discord.Color.random())
         embed.set_image(url=imageurl)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
         await cs.close()
@@ -60,7 +60,7 @@ class ImageCog(commands.Cog, name='Image'):
                 image = cat[0]['url']
         embed=discord.Embed(title="Cat", description=f"[Image]({image})", color=discord.Color.random())
         embed.add_field(name="Cat Fact", value=fact)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_image(url=image)
         embed.set_footer(text="MonkeDev Api")
         await ctx.reply(embed=embed, mention_author=False)
@@ -80,7 +80,7 @@ class ImageCog(commands.Cog, name='Image'):
                 image = dog['message']
         embed=discord.Embed(title="Dog", description=f"[Image]({image})", color=discord.Color.random())
         embed.add_field(name="Dog Fact", value=fact)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_image(url=image)
         embed.set_footer(text="MonkeDev Api + Dog Api")
         await ctx.reply(embed=embed, mention_author=False)
@@ -100,7 +100,7 @@ class ImageCog(commands.Cog, name='Image'):
                 image = img['image']
         embed=discord.Embed(title="Fox", description=f"[Image]({image})", color=discord.Color.random())
         embed.add_field(name="Fox Fact", value=fact)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_image(url=image)
         embed.set_footer(text="RandomFoxAPI + SomeRandomAPI")
         await ctx.reply(embed=embed, mention_author=False)
@@ -116,7 +116,7 @@ class ImageCog(commands.Cog, name='Image'):
                 category = meme['category']
         
         embed=discord.Embed(title="Meme", description=f"[Image]({url})\n{caption}", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_image(url=url)
         embed.set_footer(text=category)
         await ctx.reply(embed=embed, mention_author=False)

@@ -38,24 +38,6 @@ iv_classes = {
     '8': 'Antique Items',
     '9': 'Random Items'}
 
-class IvDropdown(discord.ui.Select):
-    def __init__(self):
-
-        # Set the options that will be presented inside the dropdown
-        options = [discord.SelectOption(label=f'{iv_classes[i]}') for i in iv_classes]
-
-        # The placeholder is what will be shown when no option is chosen
-        # The min and max values indicate we can only pick one of the three options
-        # The options parameter defines the dropdown options. We defined this above
-        super().__init__(placeholder="Choose the item's category", min_values=1, max_values=1, options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        # the user's favourite colour or choice. The self object refers to the
-        # Select object, and the values attribute gets a list of the user's 
-        # selected options. We only want the first one.
-        await interaction.response.defer()
-
-
 class IvDropdownView(discord.ui.View):
     def __init__(self, ctx):
         super().__init__(timeout=60)
@@ -70,7 +52,8 @@ class IvDropdownView(discord.ui.View):
     @discord.ui.select(placeholder="Choose the item's category", min_values=1, max_values=1, options=options)
     async def select(self, selectoption:discord.SelectOption, interaction:discord.Interaction):
         await interaction.response.defer()
-        self.value = selectoption.values[0]
+        try:self.value = selectoption.values[0]
+        except:self.value = None
         self.stop()
         
 
@@ -89,6 +72,7 @@ class CustomCog(commands.Cog, name='Custom'):
         text = ''.join([random.choice(letters) for _ in range(16)])
         embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
         embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
+        embed.set_footer(text='\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800Expires in 46 hours.')
         mes = await ctx.send(f"https://discord.gift\{text}",embed=embed)
         await mes.edit(view=NitroButtons(mes, ctx))
 
@@ -103,7 +87,7 @@ class CustomCog(commands.Cog, name='Custom'):
 
         into = format(amount, ',')
         embed = discord.Embed(title='Dank Memer Heist', description=f"Amount: {into}", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.add_field(name='Info', value=f"Donator: {donator.mention}\n{msg} ", inline=False)
         embed.set_thumbnail(url=f"{donator.avatar}")
         embed.set_footer(text=f'Remember to thank {donator.name} !')
@@ -124,7 +108,7 @@ class CustomCog(commands.Cog, name='Custom'):
 
         into = format(amount, ',')
         embed = discord.Embed(title='Heist', description=f'Amount: {into}', color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.add_field(name='Info', value=f"{msg} ", inline=False)
         embed.add_field(name='Server', value=f"[**{inviteinfo.guild.name}**]({inviteinfo.url})\nMembers: {inviteinfo.approximate_member_count}")
         await eventchannel.send(f"{eventping.mention} {invite}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[eventping]),  mention_author=False)
@@ -333,7 +317,7 @@ class CustomCog(commands.Cog, name='Custom'):
         human = format(int(valu), ',')
         
         embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator** : {user.mention}\n**Donation** : {quantity} {item}(s) worth {human} [Proof]({proof})", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_author(icon_url=ctx.author.avatar, name=f"Logged by: {ctx.author.name}")
         embed.add_field(name="Logging command", value=f"`,d a {user.id} {valu:.2e} {proof}`\nLog in <#814490036842004520>", inline=False)
         embed.add_field(name="Raw", value=f"||`{ctx.message.content}`||", inline=False)
@@ -384,7 +368,7 @@ class CustomCog(commands.Cog, name='Custom'):
                     #search
                     codes = [''.join(random.sample(code, len(code))), ''.join(random.sample(code, len(code))), code]
                     random.shuffle(codes)
-                    await ctx.author.send(f"""{' '.join(codes)}\n{f"Suspect will be available in {self.ongoing_bm_game['cd'] + 60 - round(datetime.datetime.utcnow().timestamp())} seconds." if self.ongoing_bm_game['cd'] + 60 > round(datetime.datetime.utcnow().timestamp()) else 'Suspect is ready.'}""")
+                    await ctx.author.send(f"""{' '.join(codes)}\n{f"Suspect will be available in {self.ongoing_bm_game['cd'] + 60 - round(discord.utils.utcnow().timestamp())} seconds." if self.ongoing_bm_game['cd'] + 60 > round(discord.utils.utcnow().timestamp()) else 'Suspect is ready.'}""")
                 elif target.upper() == code:
                     members = ctx.guild.get_role(888588301852893254).members
                     members.remove(ctx.author)
@@ -396,7 +380,7 @@ class CustomCog(commands.Cog, name='Custom'):
                         self.ongoing_bm_game = dict()
                 else: await ctx.author.send('Wrong code.')
         elif ctx.channel.id == surviver:
-            if round(datetime.datetime.utcnow().timestamp()) < self.ongoing_bm_game['cd'] + 60:
+            if round(discord.utils.utcnow().timestamp()) < self.ongoing_bm_game['cd'] + 60:
                 await ctx.message.add_reaction('⏳')
             elif target is None:
                 suspects = '\n'.join(m.mention for m in role.members)
@@ -407,7 +391,7 @@ class CustomCog(commands.Cog, name='Custom'):
                 self.ongoing_bm_game = dict()
             else:
                 await ctx.reply(f"Wrong Guess.")
-                self.ongoing_bm_game['cd'] = round(datetime.datetime.utcnow().timestamp())
+                self.ongoing_bm_game['cd'] = round(discord.utils.utcnow().timestamp())
 
     
     def iv_view(self, name, price, emoji, item_type:typing.Literal[1,2,3,4,5,6,7,8,9]):
@@ -427,18 +411,16 @@ class CustomCog(commands.Cog, name='Custom'):
             embed = discord.Embed(title="Item Value", description=classes, color=discord.Color.random())
             v = IvDropdownView(ctx)
             mes = await ctx.reply(embed=embed, view=v)
+            await v.wait()
             msgv = discord.ui.View.from_message(mes)
             for vd in msgv.children:
                 vd.disabled = True
-
-            await v.wait()
             if v.value is None:
                 await mes.edit(view=msgv)
             elif v.value:
                 items = '\n'.join([f"{i} ⏣ {ivlist[i]['v']}" for i in ivlist if ivlist[i]['t'] == v.value])
                 embed = discord.Embed(title=f"Item Value", description=items, color=discord.Color.random()).set_footer(text=f'{iv_classes[v.value]}')
                 await mes.edit(embed=embed, view=msgv)
-
             return
         else:
             #search mode

@@ -53,12 +53,12 @@ class MembersCog(commands.Cog, name='Members'):
                 status = f"\⚫ Offline"
             else:
                 status = ''
-            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.display_avatar})\n{status}\n", color=member.color, timestamp = datetime.datetime.utcnow())
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.display_avatar})\n{status}\n", color=member.color, timestamp = discord.utils.utcnow())
             if member.activity:
                 embed.description += f"{member.activity.name}"
             embed.set_author(name=f"{member.name}", icon_url=f'{member.display_avatar}')
-            embed.add_field(name="Joined", value=f"<t:{round(member.joined_at.timestamp())}:F>\n<t:{round(member.joined_at.timestamp())}:R>")
-            embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
+            embed.add_field(name="Joined", value=f"{discord.utils.format_dt(member.joined_at, style='F')}\n{discord.utils.format_dt(member.joined_at, style='R')}")
+            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
             if member.nick:
                 embed.description = f"`{member.nick}` " + embed.description
             results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
@@ -69,14 +69,14 @@ class MembersCog(commands.Cog, name='Members'):
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
             if member.premium_since:
-                embed.add_field(name="Server Boost", value=f"\nBoosting since: <t:{round(member.premium_since.timestamp())}:f> <t:{round(member.premium_since.timestamp())}:R>")
+                embed.add_field(name="Server Boost", value=f"\nBoosting since: {discord.utils.format_dt(member.premium_since, style='f')}\n{discord.utils.format_dt(member.premium_since, style='R')}")
             embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
             embed.set_thumbnail(url=member.display_avatar)
             embed.set_footer(text=f"ID: {member.id}")
         else:
-            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar})", color=member.color, timestamp = datetime.datetime.utcnow())
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar})", color=member.color, timestamp = discord.utils.utcnow())
             embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar}')
-            embed.add_field(name="Registered", value=f"<t:{round(member.created_at.timestamp())}:F>\n<t:{round(member.created_at.timestamp())}:R>")
+            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
             results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
@@ -164,7 +164,7 @@ class MembersCog(commands.Cog, name='Members'):
                 await ctx.reply("Failed")
             else:
                 embed = discord.Embed(title='User role remove', description=f"Removed {role.mention} from {member.mention}", color=role.color)
-                embed.timestamp=datetime.datetime.utcnow()
+                embed.timestamp=discord.utils.utcnow()
                 await ctx.reply(embed=embed, mention_author=False)
             return
         try:
@@ -173,7 +173,7 @@ class MembersCog(commands.Cog, name='Members'):
             await ctx.reply("Failed")
         else:
             embed = discord.Embed(title='User role add', description=f"Added {role.mention} to {member.mention}", color=role.color)
-            embed.timestamp=datetime.datetime.utcnow()
+            embed.timestamp=discord.utils.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
     
     @role.command(name='colour', aliases=['color', 'c'])
@@ -191,7 +191,7 @@ class MembersCog(commands.Cog, name='Members'):
 
         await role.edit(colour=discord.Colour.from_rgb(c[0], c[1], c[2]), reason="Changed by {ctx.author.name}.")
         embed = discord.Embed(title='Role Colour', description=f"{role.mention} colour edit.", color=discord.Colour.from_rgb(c[0], c[1], c[2]))
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
 
@@ -210,7 +210,7 @@ class MembersCog(commands.Cog, name='Members'):
         else:
             
             embed = discord.Embed(title='Role deletion', description=f"{role.name} deleted.", color=discord.Color.random())
-            embed.timestamp=datetime.datetime.utcnow()
+            embed.timestamp=discord.utils.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
     @role.command()
@@ -225,7 +225,7 @@ class MembersCog(commands.Cog, name='Members'):
         else:
             
             embed = discord.Embed(title='Role creation', description=f"{role.mention} created.", color=role.color)
-            embed.timestamp=datetime.datetime.utcnow()
+            embed.timestamp=discord.utils.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
     @role.command()
@@ -245,7 +245,7 @@ class MembersCog(commands.Cog, name='Members'):
             await ctx.reply("Failed")
         else:
             embed = discord.Embed(title='User role add', description=f"Added {role.mention} to {member.mention}", color=role.color)
-            embed.timestamp=datetime.datetime.utcnow()
+            embed.timestamp=discord.utils.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
     @role.command()
@@ -265,7 +265,7 @@ class MembersCog(commands.Cog, name='Members'):
             await ctx.reply("Failed")
         else:
             embed = discord.Embed(title='User role remove', description=f"Removed {role.mention} from {member.mention}", color=role.color)
-            embed.timestamp=datetime.datetime.utcnow()
+            embed.timestamp=discord.utils.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
 
     @role.command(aliases=['i'])
@@ -326,7 +326,7 @@ class MembersCog(commands.Cog, name='Members'):
         
         text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
         embed = discord.Embed(title='Member randomizer', description=f'{text}', color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         embed.set_footer(text=f'Drawn {len(winners)} winners.')
         await ctx.reply(embed=embed, mention_author=False)
 
@@ -343,7 +343,7 @@ class MembersCog(commands.Cog, name='Members'):
         roles.pop(0)
         await member.remove_roles(*tuple(roles), reason=f"`role clear` command by {ctx.author.name} ({ctx.author.id})")
         embed = discord.Embed(title='User role remove all', description=f"Removed **{len(roles)}** roles\n{' '.join([r.mention for r in roles])}", color=discord.Color.red())
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @role.command(name="all")

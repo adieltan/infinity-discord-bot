@@ -141,7 +141,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def timer(self, ctx, time=None, name:str="Timer"):
         """Ever heard of a timer countdown?"""
-        if time==None:
+        if time is None:
             await ctx.reply("Ever heard of a timer countdown?\nm=minutes\ns=seconds\nh=hours")
             return
         lower = time.lower()
@@ -152,7 +152,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             seconds = digit*60
         elif lower[-1] == "h":
             seconds = digit*60*60
-        elif digit == None:
+        elif digit is None:
             await ctx.reply("Do you speak numbers？")
             raise BaseException
         else:
@@ -161,17 +161,17 @@ class OwnerCog(commands.Cog, name='Owner'):
         if secondint < 0 or secondint == 0:
             await ctx.send("Do YoU SpEaK NuMbErS?")
             raise BaseException
-        
+
         embed = discord.Embed(title=f"{name}", description=f"{seconds} seconds remaining" ,color=discord.Color.random())
         message = await ctx.send(ctx.message.author.mention, embed=embed)
         while True:
-            secondint = secondint - 1
+            secondint -= 1
             if secondint == 0:
-                
+
                 embed = discord.Embed(title=f"{name}", description="Ended" ,color=discord.Color.random())
                 await message.edit(embed=embed)
                 break
-            
+
             embed = discord.Embed(title=f"{name}", description=f"{secondint} seconds remaining" ,color=discord.Color.random())
             await message.edit(embed=embed)
             await asyncio.sleep(1)
@@ -232,7 +232,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def remove(self, ctx):
         """Removes the referenced message."""
         ref = ctx.message.reference
-        if ref == None:
+        if ref is None:
             await ctx.reply("Eh you gotta reply to the message you wanna remove!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
@@ -244,7 +244,10 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def mutual(self, ctx, user:discord.User):
         """Returns the servers that are shared with the user."""
-        servers = '\n'.join([f"`{guild.id}` {guild.name}" for guild in user.mutual_guilds])
+        servers = '\n'.join(
+            f"`{guild.id}` {guild.name}" for guild in user.mutual_guilds
+        )
+
         embed=discord.Embed(title="Mutual servers", description=servers, color=discord.Color.random(), timestamp=discord.utils.utcnow())
         embed.set_author(name=user.name, icon_url=user.avatar)
         embed.set_footer(text=f"{len(user.mutual_guilds)} servers")
@@ -278,6 +281,7 @@ class OwnerCog(commands.Cog, name='Owner'):
 
 
     @commands.command(name='poststats')
+    @commands.is_owner()
     async def autostatsposting(self, ctx):
         """Post stats."""
         await self.bot.wait_until_ready()
@@ -288,12 +292,12 @@ class OwnerCog(commands.Cog, name='Owner'):
             async with cs.post(url=f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats", data=data, headers=header) as data:
                 json = await data.json()
                 text += f"DiscordBotList\n{json}"
-            #header={'Authorization':os.getenv('voidbots_token')}
-            #data = {'server_count':len(self.bot.guilds)}
-            #async with cs.post(url=f"https://api.voidbots.net/bot/stats/{self.bot.user.id}", json=data, headers=header) as data:
-                #json = await data.json()
-                #if json.get('message') != "Servercount updated!":
-                    #await reports.send(f"VoidBots\n{json}")
+            # header={'Authorization':os.getenv('voidbots_token')}
+            # data = {'server_count':len(self.bot.guilds)}
+            # async with cs.post(url=f"https://api.voidbots.net/bot/stats/{self.bot.user.id}", json=data, headers=header) as data:
+            #     json = await data.json()
+            #     if json.get('message') != "Servercount updated!":
+            #         await reports.send(f"VoidBots\n{json}")
             header={'Authorization':os.getenv('botlists_api')}
             data = {'status':'idle', 'guilds':len(self.bot.guilds), 'shards':1}
             async with cs.patch(url=f"https://api.botlists.com/bot/{self.bot.user.id}", json=data, headers=header) as data:
@@ -304,11 +308,11 @@ class OwnerCog(commands.Cog, name='Owner'):
             async with cs.post(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 text += f"Listcord\n{json}"
-            header={'Authorization':os.getenv('bladebot_token')}
-            data = {'servercount':len(self.bot.guilds)}
-            async with cs.post(url=f"https://bladebotlist.xyz/api/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
-                json = await data.json()
-                text += f"BladeBot\n{json}"
+            # header={'Authorization':os.getenv('bladebot_token')}
+            # data = {'servercount':len(self.bot.guilds)}
+            # async with cs.post(url=f"https://bladebotlist.xyz/api/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
+            #     json = await data.json()
+            #     text += f"BladeBot\n{json}"
             header={'Authorization':os.getenv('discordservices_token')}
             data = {'servers':len(self.bot.guilds), 'shards':0}
             async with cs.post(url=f"https://api.discordservices.net/bot/{self.bot.user.id}/stats", json=data, headers=header) as data:
@@ -323,6 +327,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await blist.Blist.post_bot_stats(self.blist)
         self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
         await self.topgg.post_guild_count(len(self.bot.guilds))
+        await ctx.send(text)
 
     @commands.Cog.listener()
     async def on_dbl_vote(self, data):

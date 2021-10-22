@@ -76,8 +76,6 @@ class IvDropdownView(discord.ui.View):
             vd.disabled = True
         await self.msg.edit(view=self)
 
-        
-    
     options = [discord.SelectOption(label=f'{i}', description=f'{iv_classes[i]}') for i in iv_classes]
     @discord.ui.select(placeholder="Choose the item's category", min_values=1, max_values=1, options=options)
     async def select(self, selectoption:discord.SelectOption, interaction:discord.Interaction):
@@ -89,9 +87,6 @@ class IvDropdownView(discord.ui.View):
             await self.msg.edit(embed=embed)
         except:
             pass
-        
-            
-        
 
 class CustomCog(commands.Cog, name='Custom'):
     """🔧 Custom commands for server."""
@@ -101,7 +96,7 @@ class CustomCog(commands.Cog, name='Custom'):
         self.ongoing_bm_game = dict()
 
     @commands.command(name="nitro")
-    @server([709711335436451901, 336642139381301249, 895176280813752330, 894628265963159622, 841654825456107530])
+    @server([709711335436451901, 336642139381301249, 895176280813752330, 894628265963159622, 841654825456107530, 746020135743127593])
     async def nitro(self, ctx):
         """Generates nitro codes."""
         letters = string.ascii_uppercase + string.ascii_lowercase + string.digits
@@ -287,9 +282,6 @@ class CustomCog(commands.Cog, name='Custom'):
         if message.channel.id == 848892659828916274:
             await self.self_role(message=message)
             return
-        else:
-            await self.treasure_mystery(message=message)
-            return
 
 
     @commands.Cog.listener()
@@ -358,20 +350,6 @@ class CustomCog(commands.Cog, name='Custom'):
         embed.set_footer(text=f"React with a ✅ after logged.")
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
-
-    async def treasure_mystery(self, message:discord.Message):
-        """Treasure Mystery"""
-        try:
-            if "732917262297595925" in message.content and message.guild.id == 888337006042689536:
-                channel = self.bot.get_channel(888337930379223060)
-                invite = await channel.create_invite(max_age=300, max_uses=1)
-                await message.author.send(f"You advanced to the next level! {str(invite)}")
-            elif "help" in message.content.lower() and message.guild.id == 888337125433569290:
-                channel = self.bot.get_channel(888344586680934430)
-                invite = await channel.create_invite(max_age=300, max_uses=1)
-                await message.author.send(f"You advanced to the next level! {str(invite)}")
-        except:
-            pass
 
     @commands.command(name='bm')
     @server([888587803812839424])

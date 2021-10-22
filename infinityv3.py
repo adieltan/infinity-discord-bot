@@ -102,7 +102,7 @@ async def on_ready():
 @bot.event
 async def on_error(event, *args, **kwargs):
     print('Ignoring exception in {}'.format(event), file=sys.stderr)
-    text = discord.utils.escape_markdown(traceback.format_exc())
+    text = traceback.format_exc()
     buffer = io.BytesIO(text.encode('utf-8'))
     await bot.errors.send(f"{discord.utils.format_dt(discord.utils.utcnow(), style='t')} Ignoring exception in {event}", file=discord.File(buffer, filename='traceback.txt'))
 
@@ -118,14 +118,11 @@ async def performance():
     #Report on performance every 30 mins.
     await bot.wait_until_ready()
     rawping = bot.latency
-    if rawping != float('inf'): 
-        pingvalue = round(rawping *1000 )
-    else:
-        pingvalue = "∞"
+    pingvalue = round(rawping *1000 ) if rawping != float('inf') else "∞"
     cpuvalue = psutil.cpu_percent()
     memoryvalue= psutil.virtual_memory().percent
     timenow = datetime.datetime.now().strftime('%M')
-    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {pingvalue}ms\n`CPU   :` {cpuvalue}%\n`Memory:` {memoryvalue}%", color=discord.Color.random())
+    embed=discord.Embed(title="Performance report", description=f"<:ping:901051623416152095> {pingvalue}ms\n<:cpu:901051865960181770> {cpuvalue}%\n<:memory:901049486242091049> {memoryvalue}%", color=discord.Color.random())
     embed.timestamp=discord.utils.utcnow()
     await bot.logs.send(embed=embed)
 

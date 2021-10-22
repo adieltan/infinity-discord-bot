@@ -11,6 +11,28 @@ def server(id:list):
         return ctx.guild.id in id or ctx.author.id in ctx.bot.owners
     return commands.check(predicate)
 
+class Confirm(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=10)
+        self.value = None
+        self.ctx = ctx
+    
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+
+    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.value = True
+        self.stop()
+
+    # This one is similar to the confirmation button except sets the inner value to `False`
+    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.value = False
+        self.stop()
+
 class NitroButtons(discord.ui.View):
     def __init__(self, msg, ctx):
         super().__init__(timeout=30)
@@ -39,22 +61,36 @@ iv_classes = {
     '9': 'Random Items'}
 
 class IvDropdownView(discord.ui.View):
-    def __init__(self, ctx):
-        super().__init__(timeout=60)
+    def __init__(self, ctx, message, ivlist):
+        super().__init__(timeout=20)
         self.ctx = ctx
-
-        #self.add_item(IvDropdown())
+        self.msg = message
+        self.ivlist = ivlist
 
     async def interaction_check(self, interaction:discord.Interaction):
         return interaction.user.id == self.ctx.author.id
+    
+    async def on_timeout(self):
+        v = self
+        for vd in self.children:
+            vd.disabled = True
+        await self.msg.edit(view=self)
+
+        
     
     options = [discord.SelectOption(label=f'{i}', description=f'{iv_classes[i]}') for i in iv_classes]
     @discord.ui.select(placeholder="Choose the item's category", min_values=1, max_values=1, options=options)
     async def select(self, selectoption:discord.SelectOption, interaction:discord.Interaction):
         await interaction.response.defer()
-        try:self.value = selectoption.values[0]
-        except:self.value = None
-        self.stop()
+        try:
+            value = selectoption.values[0]
+            items = '\n'.join([f"{i.title()}" for i in self.ivlist if self.ivlist[i]['t'] == value])
+            embed = discord.Embed(title=f"Item List", description=items + ('\n\n📝 DM Admin if donating Bolt / Karen / Odd Eye.' if value == '7' else '') + ('\n\n📝 DM Admin if donating Blob.' if value == '8' else ''), color=discord.Color.random()).set_footer(text=f'{iv_classes[value]}')
+            await self.msg.edit(embed=embed)
+        except:
+            pass
+        
+            
         
 
 class CustomCog(commands.Cog, name='Custom'):
@@ -65,7 +101,7 @@ class CustomCog(commands.Cog, name='Custom'):
         self.ongoing_bm_game = dict()
 
     @commands.command(name="nitro")
-    @server([709711335436451901, 336642139381301249, 895176280813752330])
+    @server([709711335436451901, 336642139381301249, 895176280813752330, 894628265963159622, 841654825456107530])
     async def nitro(self, ctx):
         """Generates nitro codes."""
         letters = string.ascii_uppercase + string.ascii_lowercase + string.digits
@@ -305,12 +341,9 @@ class CustomCog(commands.Cog, name='Custom'):
 
     @commands.command(name="donolog", aliases=["dl"], hidden=True)
     @server([841654825456107530])
+    @commands.has_role(841655266743418892)
     async def logging(self, ctx, user:discord.User, quantity:float, item:str, value_per:str, *, proof:str):
         """Logs the dono."""
-        guild = self.bot.get_guild(841654825456107530)
-        admin = guild.get_role(841655266743418892).members
-        if ctx.author not in admin:
-            return
         raw = float(value_per.replace(",", ""))
         channel = self.bot.get_channel(842738964385497108)
         valu = math.trunc(raw)*quantity
@@ -395,7 +428,9 @@ class CustomCog(commands.Cog, name='Custom'):
 
     
     def iv_view(self, name, price, emoji, item_type:typing.Literal[1,2,3,4,5,6,7,8,9]):
-        emoji = discord.Embed(title=f"Item Value", description=f"**{name.title()}**\nValue: ⏣ {'{:,}'.format(price)}", colour=discord.Colour.random()).set_footer(text=iv_classes[str(item_type)], icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+        emoji = discord.Embed(title=f"Item Value", description=f"**{name.title()}**\nValue: ⏣ {'{:,}'.format(price)}\n", colour=discord.Colour.green() if price >= 200000 else discord.Color.red()).set_footer(text=iv_classes[str(item_type)], icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+        if price < 200000:
+            emoji.description += f"```diff\n- Minimum donation is 200k.\n- 💸 You need another ⏣ {'{:,}'.format(round(2e5 - price))}\n```"
         return emoji
 
     @commands.group(name='iv', invoke_without_command=True)
@@ -409,19 +444,10 @@ class CustomCog(commands.Cog, name='Custom'):
         if items is None:
             classes = '\n'.join(f"{i}. {iv_classes[i]}" for i in iv_classes)
             embed = discord.Embed(title="Item Value", description=classes, color=discord.Color.random())
-            v = IvDropdownView(ctx)
-            mes = await ctx.reply(embed=embed, view=v)
-            await v.wait()
-            msgv = discord.ui.View.from_message(mes)
-            for vd in msgv.children:
-                vd.disabled = True
-            if v.value is None:
-                await mes.edit(view=msgv)
-            elif v.value:
-                items = '\n'.join([f"{i} ⏣ {ivlist[i]['v']}" for i in ivlist if ivlist[i]['t'] == v.value])
-                embed = discord.Embed(title=f"Item Value", description=items, color=discord.Color.random()).set_footer(text=f'{iv_classes[v.value]}')
-                await mes.edit(embed=embed, view=msgv)
-            return
+            
+            mes = await ctx.reply(embed=embed)
+            v = IvDropdownView(ctx, mes, ivlist)
+            await mes.edit(view=v)
         else:
             #search mode
             itemlist = items.split('+')
@@ -435,7 +461,7 @@ class CustomCog(commands.Cog, name='Custom'):
                 try: quantity = number[0]
                 except: quantity = 1
                 fuz = process.extractOne(itemname, ivlist.keys())
-                if fuz[1] < 50:
+                if fuz[1] < 75:
                     await ctx.reply(f"**{itemname}** Not Found")
                 else:
                     await ctx.reply(embed=self.iv_view(f"{quantity} {fuz[0]}", ivlist[fuz[0]]['v'] * int(quantity), ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']))
@@ -444,22 +470,22 @@ class CustomCog(commands.Cog, name='Custom'):
                 value_list = list()
                 for item in itemlist:
                     number = re.findall('\d+', item)
-                    itemname = re.sub(r'[0-9]', '', item)
+                    itemname = re.sub(r'[0-9]', '', item).replace(' ', '')
                     if itemname == '':
-                        invalids.append(item)
+                        value_list.append(int(number[0]))
                     else:
                         try: quantity = number[0]
                         except: quantity = 1
                         fuz = process.extractOne(itemname, ivlist.keys())
-                        if fuz[1] < 50:
+                        if fuz[1] < 75:
                             invalids.append(itemname)
                         else:
                             value = ivlist[fuz[0]]['v'] * int(quantity)
                             value_list.append(value)
-                e=discord.Embed(title='Item Value Calculator', description=f'```fix\n{items}\n```', color=discord.Color.random())
+                e=discord.Embed(title='Item Value Calculator', description=f'```fix\n{items}\n```', color=discord.Color.green() if sum(value_list) > 200000 else discord.Color.red())
                 if len(invalids) > 0:
                     e.add_field(name='Invalid Items', value=', '.join(invalids), inline=False)
-                e.add_field(name="Calculation", value='```fix\n'+' + '.join([str(value) for value in value_list]) + f'\n = ⏣ {sum(value_list)}\n```', inline=False)
+                e.add_field(name="Calculation", value='```fix\n'+' + '.join([str(value) for value in value_list]) + f"\n= ⏣ {sum(value_list)}\n```\n⏣ {'{:,}'.format(sum(value_list))}\n" + (f"```diff\n- Minimum donation is 200k.\n- 💸 You need another ⏣ {'{:,}'.format(round(2e5 - sum(value_list)))}\n```" if sum(value_list)<200000 else ''), inline=False)
                 await ctx.reply(embed=e)
 
     @iv.command(name='add')
@@ -487,13 +513,26 @@ class CustomCog(commands.Cog, name='Custom'):
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply(f"No items.")
-        fuzzy = process.extractOne(item_name.lower(), ivlist.keys())
-        if fuzzy[1] < 50:
+        fuz = process.extractOne(item_name.lower(), ivlist.keys())
+        if fuz[1] < 75:
             await ctx.reply(f"{item_name.title()} Not Found")
         else:
-            ivlist.pop(fuzzy[0])
-            await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-            await ctx.reply(f"**{fuzzy[0].title()}** removed.")
+            e=self.iv_view(f"{fuz[0]}", ivlist[fuz[0]]['v'], ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t'])
+            v = Confirm(ctx)
+            mes = await ctx.reply('Are you sure to delete this item?', embed=e, view=v)
+            msgv = discord.ui.View.from_message(mes)
+            for vd in msgv.children:
+                vd.disabled = True
+            await v.wait()
+            if v.value is None:
+                mes.edit('Timeout.', view=msgv)
+            elif v.value:
+                ivlist.pop(fuz[0])
+                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+                await mes.edit("Confirmed.", view=msgv)
+                await mes.reply(f"**{fuz[0].title()}** removed.")
+            else:
+                await mes.edit('Cancelled', view=msgv)
 
     @iv.command(name='edit')
     @server([894628265963159622])
@@ -506,7 +545,7 @@ class CustomCog(commands.Cog, name='Custom'):
         if len(ivlist) == 0:
             return await ctx.reply(f"No items.")
         fuzzy = process.extractOne(item_name.lower(), ivlist.keys())
-        if fuzzy[1] < 50:
+        if fuzzy[1] < 75:
             await ctx.reply(f"{item_name} Not Found")
         else:
             if type(new) is str:

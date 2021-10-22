@@ -411,7 +411,7 @@ class GoodHelp(commands.HelpCommand):
             self.paginator.add_cog(cog, filtered)
         await self.send_pages()
 
-class HelpCog(commands.Cog):
+class Help(commands.Cog):
     def __init__(self, bot):
        self.bot = bot
         
@@ -427,4 +427,4 @@ class HelpCog(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(HelpCog(bot))
+    bot.add_cog(Help(bot))

@@ -3,7 +3,6 @@ from discord.ext import commands, tasks
 
 
 import motor.motor_asyncio, motor.motor_tornado, traceback, pytz
-from pretty_help import PrettyHelp, DefaultMenu
 
 try:
     from dotenv import load_dotenv

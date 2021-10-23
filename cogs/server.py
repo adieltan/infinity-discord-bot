@@ -68,104 +68,53 @@ class ServerCog(commands.Cog, name='Server'):
     async def list_emojies(self, ctx):
         """Lists the emojies of the server."""
         emojies = await ctx.guild.fetch_emojis()
-        emlist = [f'{str(emoji)} {discord.utils.escape_markdown(emoji.name)} `{str(emoji)}`' for emoji in emojies]
+        emlist = [
+            f'{emoji} {discord.utils.escape_markdown(emoji.name)} `{emoji}`'
+            for emoji in emojies
+        ]
+
         pages = [emlist[i:i + 12] for i in range(0, len(emlist), 12)]
         for page in pages:
-            text = '\n'.join([emoji for emoji in page])
+            text = '\n'.join(page)
             await ctx.send(f"\u200b{text}")
 
     @commands.command(name='serverinfo', aliases=['guildinfo', 'si'])
     @commands.guild_only()
     async def serverinfo(self, ctx, *, guild_id: int = None):
         """Shows info about the current server."""
-
         if guild_id is not None and await self.bot.is_owner(ctx.author):
             guild = self.bot.get_guild(guild_id)
             if guild is None:
-                return await ctx.send(f'Invalid Guild ID given.')
+                return await ctx.send('Invalid Guild ID given.')
         else:
             guild = ctx.guild
-
-        roles = [role.name.replace('@', '@\u200b') for role in guild.roles]
 
         if not guild.chunked:
             async with ctx.typing():
                 await guild.chunk(cache=True)
 
-        # figure out what channels are 'secret'
-        everyone = guild.default_role
-        everyone_perms = everyone.permissions.value
-        secret = Counter()
-        totals = Counter()
-        for channel in guild.channels:
-            allow, deny = channel.overwrites_for(everyone).pair()
-            perms = discord.Permissions((everyone_perms & ~deny.value) | allow.value)
-            channel_type = type(channel)
-            totals[channel_type] += 1
-            if not perms.read_messages:
-                secret[channel_type] += 1
-            elif isinstance(channel, discord.VoiceChannel) and (not perms.connect or not perms.speak):
-                secret[channel_type] += 1
-
-        e = discord.Embed()
-        e.title = guild.name
-        e.description = f'**ID**: {guild.id}\n**Owner**: {guild.owner}'
+        e = discord.Embed(title=guild.name, description=f'**ID**: {guild.id}\n**Owner**: {guild.owner}', color=discord.Color.random())
         if guild.icon:
             e.set_thumbnail(url=guild.icon)
 
-        channel_info = []
-        key_to_emoji = {
-            discord.TextChannel: '<:text_channel:874547994584829982>',
-            discord.VoiceChannel: '<:voice_channel:874548222708826153>',
-        }
-        for key, total in totals.items():
-            secrets = secret[key]
-            try:
-                emoji = key_to_emoji[key]
-            except KeyError:
-                continue
-
-            if secrets:
-                channel_info.append(f'{emoji} {total} ({secrets} locked)')
-            else:
-                channel_info.append(f'{emoji} {total}')
-
-        info = []
-        features = set(guild.features)
-        all_features = {
-            'PARTNERED': 'Partnered',
-            'VERIFIED': 'Verified',
-            'DISCOVERABLE': 'Server Discovery',
-            'COMMUNITY': 'Community Server',
-            'FEATURABLE': 'Featured',
-            'WELCOME_SCREEN_ENABLED': 'Welcome Screen',
-            'INVITE_SPLASH': 'Invite Splash',
-            'VIP_REGIONS': 'VIP Voice Servers',
-            'VANITY_URL': 'Vanity Invite',
-            'COMMERCE': 'Commerce',
-            'LURKABLE': 'Lurkable',
-            'NEWS': 'News Channels',
-            'ANIMATED_ICON': 'Animated Icon',
-            'BANNER': 'Banner'
-        }
-
-        for feature, label in all_features.items():
-            if feature in features:
-                info.append(f'<a:verified:876075132114829342> {label}')
+        info = [f"<a:verified:876075132114829342> {feature.replace('_', ' ').lower().title()}" for feature in guild.features]
 
         if info:
-            e.add_field(name='Features', value='\n'.join(info))
+            e.add_field(name='Features', value='\n'.join(info), inline=False)
 
-        e.add_field(name='Channels', value='\n'.join(channel_info))
+        channels = [channel for channel in guild.channels if type(channel) is discord.TextChannel]
+        vc = [channel for channel in guild.channels if type(channel) is discord.VoiceChannel]
+        category = [channel for channel in guild.channels if type(channel) is discord.CategoryChannel]
+        e.add_field(name='Channels', value=f"<:text_channel:874547994584829982> {len(channels)}\n<:voice_channel:874548222708826153> {len(vc)}")
 
         if guild.premium_tier != 0:
             boosts = f'Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts'
-            e.add_field(name='Boosts', value=boosts, inline=False)
+            e.add_field(name='Boosts', value=boosts)
 
         bots = sum(m.bot for m in guild.members)
 
-        e.add_field(name='Members', value=f"Total: {guild.member_count} members\n{guild.member_count - bots} Humans\n{bots} Bots")
-        e.add_field(name='Roles', value=', '.join(roles) if len(roles) < 10 else f'{len(roles)} roles')
+        e.add_field(name='Members', value=f"{guild.member_count} members\n👤 {guild.member_count - bots} humans\n🤖 {bots} bots")
+        e.add_field(name='Roles', value=f'<:Role_Icon:882098706437001276> {len(guild.roles)} roles')
 
         emoji_stats = Counter()
         for emoji in guild.emojis:
@@ -177,8 +126,7 @@ class ServerCog(commands.Cog, name='Server'):
                 emoji_stats['disabled'] += not emoji.available
 
         fmt = f'Regular: {emoji_stats["regular"]}/{guild.emoji_limit}\n' \
-              f'Animated: {emoji_stats["animated"]}/{guild.emoji_limit}\n' \
-
+              f'Animated: {emoji_stats["animated"]}/{guild.emoji_limit}\n'
         if emoji_stats['disabled'] or emoji_stats['animated_disabled']:
             fmt = f'{fmt}Disabled: {emoji_stats["disabled"]} regular, {emoji_stats["animated_disabled"]} animated\n'
 
@@ -194,11 +142,11 @@ class ServerCog(commands.Cog, name='Server'):
         results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
         dic = results.get('leaveleaderboard')
         if dic is None:
-            await ctx.reply(f"No data.")
+            await ctx.reply('No data.')
             return
         sort = dict(sorted(dic.items(), key = lambda x: x[1], reverse = True))
-        text='\n'.join([f"<@{k}> {sort[k]}"for k in list(sort)])
-        
+        text = '\n'.join(f"<@{k}> {sort[k]}" for k in list(sort))
+
         buffer = io.BytesIO(text.encode('utf-8'))
         await ctx.reply('Leave Leaderboard', file=discord.File(buffer, filename=f'{ctx.guild.id}_leaveleaderboard.txt'))
 
@@ -278,7 +226,7 @@ class ServerCog(commands.Cog, name='Server'):
         results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
         try:dic = results['autoresponse']
         except:dic =  {}
-        text='\n'.join([f"{result} ➡ {dic[result]}"for result in dic])
+        text = '\n'.join(f"{result} ➡ {dic[result]}" for result in dic)
         await ctx.reply(embed=discord.Embed(title=f"{ctx.guild.name}'s Autoresponses", description=f"{text}"))
 
     @commands.Cog.listener()
@@ -415,7 +363,7 @@ class ServerCog(commands.Cog, name='Server'):
                     errors.append(channel.id)
                 else:
                     channels += 1
-            err = 'Errors:\n' + ' '.join([f'<#{id}>' for error in errors if error])
+            err = 'Errors:\n' + ' '.join(f'<#{id}>' for error in errors if error)
             await ctx.reply(f"Deleted {channels} channels.\n{err if errors else ''}")
         else:
             embed.description = 'Cancelled.'
@@ -452,15 +400,16 @@ class ServerCog(commands.Cog, name='Server'):
             channel = ctx.message.channel
         deletedmsg = self.bot.snipedb.get(f"{channel.id}")
         if deletedmsg is None:
-            await ctx.reply(f"No cached deleted message.")
+            await ctx.reply('No cached deleted message.')
         else:
             embed=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
-            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar)
+            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar or embed.Empty)
             await ctx.reply(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message:discord.Message):
-        self.bot.snipedb[f"{message.channel.id}"]= message
+        if message.content:
+            self.bot.snipedb[f"{message.channel.id}"]= message
 
     @commands.command(name="first", aliases=["firstmessage", "1"])
     @commands.cooldown(1,8)
@@ -484,9 +433,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role == None:
+        if role is None:
             role = ctx.guild.default_role
-        if channel == None:
+        if channel is None:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.view_channel=False
@@ -503,9 +452,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role == None:
+        if role is None:
             role = ctx.guild.default_role
-        if channel == None:
+        if channel is None:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.view_channel=True
@@ -522,9 +471,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role == None:
+        if role is None:
             role = ctx.guild.default_role
-        if channel == None:
+        if channel is None:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.send_messages=False
@@ -541,9 +490,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role == None:
+        if role is None:
             role = ctx.guild.default_role
-        if channel == None:
+        if channel is None:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.send_messages=True
@@ -553,7 +502,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.command(name="export")
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.has_permissions(administrator=True)
-    async def export(self, ctx, destination, first_message_id:typing.Optional[int]=None, limit:int=100):
+    async def export(self, ctx, destination, first_message_id:typing.Optional[int]=None, limit:typing.Optional[int]=100, mode:typing.Literal['clean']=None):
         """Exports chat messages to another channel.\n<first_message_id> is the id of the first message you wanna start exporting from.\n<limit> is the max number of messages to export."""
         destination_channel = self.bot.get_channel(int(re.sub("[^0-9]", "", destination)))
         if first_message_id is None:
@@ -586,29 +535,36 @@ class ServerCog(commands.Cog, name='Server'):
 
         async for m in ctx.channel.history(limit=limit, after=first_message_id, oldest_first=True):
             try:
-                if last_message is None:
+                if last_message is None or m.author.id != last_message.author.id:
                     raise
-                elif m.author.id == last_message.author.id:
-                    attachments = m.attachments
-                    for attachment in attachments:
-                        m.content += f"\n {str(attachment)}"
-                    content = f"{last_message.content}\n" + f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) {m.content if m.content else ''}"
-                    msg = await last_webhookmsg.edit(content=content, embeds=last_message.embeds + m.embeds, allowed_mentions=discord.AllowedMentions.none())
-                    last_webhookmsg = msg
-                    m.content = content
-                    last_message = m
-                else:
-                    raise
+                attachments = m.attachments
+                for attachment in attachments:
+                    m.content += f'\n {attachment}'
+                content = (f"{last_message.content}\n" + f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) " if mode is None else '') + m.content if m.content else '\u200b'
+                msg = await last_webhookmsg.edit(content=content, embeds=last_message.embeds + m.embeds, allowed_mentions=discord.AllowedMentions.none())
+                last_webhookmsg = msg
+                m.content = content
+                last_message = m
             except:
                 attachments = m.attachments
                 for attachment in attachments:
-                    m.content += f"\n {str(attachment)}"
-                content = f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) {m.content if m.content else ''}"
+                    m.content += f'\n {attachment}'
+                content = (
+                    (
+                        f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) "
+                        if mode is None
+                        else ''
+                    )
+                    + m.content
+                    if m.content
+                    else '\u200b'
+                )
+
                 msg = await webhook.send(content=content, wait=True, username=m.author.name, avatar_url=m.author.avatar, embeds=m.embeds, allowed_mentions=discord.AllowedMentions.none())
                 last_webhookmsg = msg
                 m.content = content
                 last_message = m
-            
+
         await ctx.reply("Done")
 
     @commands.group(invoke_without_command=True)
@@ -620,10 +576,7 @@ class ServerCog(commands.Cog, name='Server'):
             await ctx.reply(f"Purge commands: `user` `pins` `bot` `human`")
             return
         def pinc(msg):
-            if msg.pinned:
-                return False
-            else:
-                return True
+            return not msg.pinned
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
     
@@ -631,10 +584,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def user(self, ctx, user:discord.Member, no:int=100):
         """Purges messages from a user."""
         def pinc(msg):
-            if msg.author == user and msg.pinned is not True:
-                return True
-            else:
-                return False
+            return msg.author == user and msg.pinned is not True
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
@@ -642,10 +592,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def pins(self, ctx, no:int=100):
         """Purges a number of pinned messages."""
         def pinc(msg):
-            if msg.pinned:
-                return True
-            else:
-                return False
+            return bool(msg.pinned)
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
@@ -653,10 +600,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def bot(self, ctx, no:int=100):
         """Purges messages from bots."""
         def pinc(msg):
-            if msg.author.bot == True and msg.pinned is not True:
-                return True
-            else:
-                return False
+            return msg.author.bot == True and msg.pinned is not True
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
@@ -664,10 +608,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def human(self, ctx, no:int=100):
         """Purges messages from humans."""
         def pinc(msg):
-            if msg.author.bot is False and msg.pinned is not True:
-                return True
-            else:
-                return False
+            return msg.author.bot is False and msg.pinned is not True
         deleted = await ctx.channel.purge(limit=no+1, check=pinc)
         await ctx.send("Deleted *{}* message(s).".format(len(deleted)-1), delete_after=10)
 
@@ -677,7 +618,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def slowmode(self,ctx,seconds:int=0):
         """Sets the slowmode for the channel."""
         if seconds < 0:
-            seconds = seconds *-1
+            seconds *= -1
         await ctx.channel.edit(slowmode_delay=seconds)
         await ctx.reply(f"The slowmode delay for this channel is now {seconds} seconds!")
 
@@ -688,12 +629,13 @@ class ServerCog(commands.Cog, name='Server'):
         msg = None
         if channelid_or_messageid is None and ref is not None:
             msg = await ctx.channel.fetch_message(ref.message_id)
-        elif channelid_or_messageid is None and ref is None:
-            await ctx.reply(f"You have to reply to or provide the message id to the message.")
+        elif channelid_or_messageid is None:
+            await ctx.reply('You have to reply to or provide the message id to the message.')
+
         else:
             ids = re.findall("\d{18}", channelid_or_messageid)
             if len(ids) < 1:
-                await ctx.reply(f"Can't find id.")
+                await ctx.reply("Can't find id.")
             elif len(ids) < 2:
                 msg = await ctx.channel.fetch_message(int(ids[0]))
             elif len(ids) < 3:

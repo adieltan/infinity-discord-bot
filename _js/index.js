@@ -13,10 +13,16 @@ const emoji = require('./emoji.js');
 const logger = require('./utils/logger');
 const MongoClient = require('mongodb').MongoClient;
 require('./error');
-require('./handlers/console')
 const bot = require('./utils/botData')
 const mongoose = require('mongoose');
-//require('./deploycmd')
+require('./deploycmd')
+
+try {
+	require('./handlers/console')
+	logger.log('Loaded Console handler')
+} catch (error) {
+	console.error(error)
+}
 
 main().catch(err => console.log(err));
 
@@ -33,7 +39,7 @@ const client = new Client({
 		Intents.FLAGS.GUILD_WEBHOOKS,
 		Intents.FLAGS.GUILD_INVITES,
 		Intents.FLAGS.GUILD_VOICE_STATES,
-		Intents.FLAGS.GUILD_PRESENCES,
+		// Intents.FLAGS.GUILD_PRESENCES,
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 		Intents.FLAGS.DIRECT_MESSAGES,
@@ -67,6 +73,5 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
-
 
 client.login(process.env.DISCORD_TOKEN);

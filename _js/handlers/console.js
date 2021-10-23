@@ -1,5 +1,7 @@
 const { inspect } = require("util");
+const { execute } = require("../commands/server");
 const logger = require("../utils/logger"); //better console logging
+const process = require('process')
 let sending = false;
 
 logger.log("Note: If you want to exit the bot, type exit into the console.");
@@ -10,7 +12,7 @@ module.exports = (bot) => {
     prompt.addListener("data", res => {
         let x = res.toString().trim().split(/ +/g)
         let args = res.toString().split(" ");
-        x = x.join(" ");
+         x = x.join(" ");
         //x = whatever user types into console
 
         if (sending == true && !x.startsWith("send")) { 

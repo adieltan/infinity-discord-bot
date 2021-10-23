@@ -1,9 +1,6 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+from discord import permissions
 from discord.ext import commands, tasks
-
-
- 
-
  
 from psutil._common import bytes2human
 
@@ -13,40 +10,23 @@ class InfoCog(commands.Cog, name='Info'):
         self.bot = bot
         self.bot_info.start()
 
-    @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite', 'appeal'])
+    @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite', 'appeal', 'info', 'botinfo', 'ping', 'servers'])
     async def links(self, ctx):
         """Gets the links related to the bot."""
         
-        embed=discord.Embed(title = "Infinity" , url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", description="Invite link: [Admin](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)  [~~Admin~~](https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=0&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot)", color=discord.Color.random())
-        embed.add_field(name="Support Server", value="[Typical Pandas](https://discord.gg/dHGqUZNqCu)\nAppeal <:up:876079229748539393> [<a:infinity:874548940610097163>](https://discord.gg/dHGqUZNqCu) <#865148589381517342>")
-        embed.add_field(name="Website", value="[Tynxen](https://tynxen.netlify.app/)")
-        embed.timestamp=datetime.datetime.utcnow()
-        
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name='servers')
-    @commands.cooldown(1,5)
-    async def servs(self, ctx):
-        """Shows the number of servers that the bot is in."""
-        await ctx.reply(f"I am connected to {len(self.bot.guilds)} server(s).", mention_author=False)
-
-    @commands.command(name='info', aliases=['botinfo', 'ping'])
-    @commands.cooldown(1,4)
-    async def info(self, ctx):
-        """Info about the bot."""
-        app = await self.bot.application_info()
-        embed=discord.Embed(title="Bot Info", description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
-        embed.set_author(name=self.bot.user, icon_url=self.bot.user.avatar)
+        embed=discord.Embed(title = "Infinity Bot Info" , url=discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.all(), scopes=('bot','applications.commands')), description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", color=discord.Color.random(), timestamp=discord.utils.utcnow()).set_author(name=self.bot.user, icon_url=self.bot.user.avatar)
         embed.add_field(name="Owner", value=f"""{' '.join([f"<@{owner}>" for owner in self.bot.owners])}""")
-        embed.add_field(name="Ping", value=f'{round (self.bot.latency * 1000)}ms ')
-        embed.add_field(name="CPU", value=f'Count: {psutil.cpu_count()}\nUsage: {psutil.cpu_percent()}%')
-        memory = psutil.virtual_memory()
-        embed.add_field(name="Memory", value=f"{bytes2human(memory.used)} / {bytes2human(memory.total)} ({memory.percent}% Used)")
-        d = datetime.datetime.utcnow() -self.bot.startuptime
-        embed.add_field(name="Uptime", value=f"{round(d.seconds/60/60,2)} hours")
-        embed.add_field(name="Connected", value=f"To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
-        await ctx.reply(embed=embed, mention_author=False)
+        embed.add_field(name="Ping", value=f'<:ping:901051623416152095> {round (self.bot.latency * 1000)}ms ')
+        d = discord.utils.utcnow() -self.bot.startuptime
+        embed.add_field(name="Uptime", value=f"<a:timer:890234490100793404> {round(d.seconds/60/60,2)} hours")
+        embed.add_field(name="Connected", value=f"<:discovery:894391371635499048> To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
+        v = discord.ui.View()
+        v.add_item(discord.ui.Button(label="Bot Invite (No perms)", url=f"{discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.none(), scopes=('bot','applications.commands'))}"))
+        v.add_item(discord.ui.Button(label="Bot Invite (All perms)", url=f"{discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.all(), scopes=('bot','applications.commands'))}"))
+        v.add_item(discord.ui.Button(label="Support Server (Typical Pandas)", url='https://discord.gg/dHGqUZNqCu'))
+        v.add_item(discord.ui.Button(label="Website", url='https://tynxen.netlify.app/'))
+        await ctx.reply(embed=embed, mention_author=False, view=v)
+
         
     @commands.group(name='vote', aliases=['v'], invoke_without_command=True)
     @commands.cooldown(1, 4, commands.BucketType.user)
@@ -90,7 +70,10 @@ class InfoCog(commands.Cog, name='Info'):
         await cs.close()
         lists = '\n'.join([f"""{'🚫'if bl[item]['vote'] is False else ''}{'<:neutral:875345584805003295>'if bl[item]['vote'] is None else ''}{'✅'if bl[item]['vote'] else ''} [{item}]({bl[item]['website']}) {f"<t:{bl[item].get('nextvote')}:R>"if bl[item].get('nextvote') else ''}""" for item in bl])
         embed=discord.Embed(title="Vote for Infinity", description=f"{lists}\n\n✅ = Voted\n<:neutral:875345584805003295> = Available / Unable to get vote data\n🚫 = Not Available for Voting\n", color=discord.Color.gold())
-        await ctx.reply(embed=embed)
+        v = discord.ui.View()
+        for val in bl:
+            v.add_item(discord.ui.Button(label=val, url=bl[val]['website']))
+        await ctx.reply(embed=embed, view=v)
 
     @vote.command(name='topgg')
     async def topggvotes(self, ctx):
@@ -120,7 +103,9 @@ class InfoCog(commands.Cog, name='Info'):
         suggestchannel = self.bot.get_channel(827896302008139806)
         embed=discord.Embed(title="Suggestion", description=f"{suggestion}", color=discord.Color.blue())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
-        await suggestchannel.send(embed=embed)
+        msg = await suggestchannel.send(embed=embed)
+        await msg.add_reaction('✅')
+        await msg.add_reaction('❌')
         await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @suggest.command(name='accept', aliases=['a'])
@@ -177,9 +162,9 @@ class InfoCog(commands.Cog, name='Info'):
                 embed = discord.Embed(title="Bot Info", color=discord.Color.gold())
                 embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar)
                 embed.set_footer(text="Last updated on")
-                embed.timestamp = datetime.datetime.utcnow()
+                embed.timestamp = discord.utils.utcnow()
                 embed.add_field(name="System", value=f"Ping: {round (self.bot.latency * 1000)}ms\nCPU: {psutil.cpu_count()} core {psutil.cpu_percent()}%\nMemory: {psutil.virtual_memory().percent}%", inline=False)
-                embed.add_field(name="Connection", value=f"Uptime: {round((datetime.datetime.utcnow()-self.bot.startuptime).seconds/60/60,2)} hours\nMembers: {format(len(self.bot.users),',')}\nServers: {len(self.bot.guilds)}", inline=False)
+                embed.add_field(name="Connection", value=f"Uptime: {round((discord.utils.utcnow()-self.bot.startuptime).seconds/60/60,2)} hours\nMembers: {format(len(self.bot.users),',')}\nServers: {len(self.bot.guilds)}", inline=False)
                 embed.add_field(name="Processed Messages", value=f"{self.bot.processed_messages}")
                 embed.add_field(name="Invoked Commands", value=f"{self.bot.commands_invoked}")
             else:
@@ -187,9 +172,9 @@ class InfoCog(commands.Cog, name='Info'):
                 embed = discord.Embed(title="Bot Info", color=discord.Color.gold())
                 embed.set_author(name=f"{self.bot.user.name}", url="https://discord.com/api/oauth2/authorize?client_id=732917262297595925&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2FRJFfFHH&scope=bot", icon_url=self.bot.user.avatar)
                 embed.set_footer(text="Last updated on")
-                embed.timestamp = datetime.datetime.utcnow()
+                embed.timestamp = discord.utils.utcnow()
                 embed.add_field(name="System", value=f"Ping: {round (self.bot.latency * 1000)}ms\nCPU: {psutil.cpu_count()} core {psutil.cpu_percent()}%\nMemory: {psutil.virtual_memory().percent}%", inline=False)
-                embed.add_field(name="Connection", value=f"Uptime: {round((datetime.datetime.utcnow()-self.bot.startuptime).seconds/60/60,2)} hours\nMembers: {format(len(self.bot.users),',')}\nServers: {len(self.bot.guilds)}", inline=False)
+                embed.add_field(name="Connection", value=f"Uptime: {round((discord.utils.utcnow()-self.bot.startuptime).seconds/60/60,2)} hours\nMembers: {format(len(self.bot.users),',')}\nServers: {len(self.bot.guilds)}", inline=False)
                 try: proc = int(oldembed.fields[2].value)
                 except: proc = 0
                 try: invo = int(oldembed.fields[3].value)

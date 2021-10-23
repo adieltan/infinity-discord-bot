@@ -22,7 +22,7 @@ class FunCog(commands.Cog, name='Fun'):
         
         embed = discord.Embed(title=f"{ctx.author}'s Rolling Game", color=discord.Color.random())
         embed.set_author(icon_url=ctx.author.avatar, name=str(ctx.author))
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         for _ in range(number_of_dice):
             embed.add_field(name='\uFEFF', value=f'{random.choice(range(1,number_of_sides + 1))}', inline=True)
         await ctx.reply(embed=embed, mention_author=False)
@@ -63,7 +63,7 @@ class FunCog(commands.Cog, name='Fun'):
                     winners.append(win)
                     users.remove(win)
                 embed=discord.Embed(title="Draw results", description=f"[Jump]({message.jump_url})\n{message.content}", color=discord.Color.random())
-                embed.timestamp=datetime.datetime.utcnow()
+                embed.timestamp=discord.utils.utcnow()
                 embed.set_author(icon_url=ctx.author.avatar, name=ctx.author)
                 text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
                 embed.add_field(name="Winners", value=text)
@@ -102,7 +102,7 @@ class FunCog(commands.Cog, name='Fun'):
         embed = discord.Embed(title="8 Corners Game",
                               description=f"React to the message to join.\nTimer: 5 minutes\n`=8cg` to learn more about the game.",
                               color=discord.Color.random())
-        embed.timestamp = datetime.datetime.utcnow()
+        embed.timestamp = discord.utils.utcnow()
         players = []
         alive = []
         dead = []
@@ -389,7 +389,7 @@ class FunCog(commands.Cog, name='Fun'):
         embed.add_field(name="Winners", value=winningtxt, inline=False)
         embed.set_footer(text="Credits: Mixel, Rh, A Typical Beggar")
         embed.set_image(url="attachment://image.png")
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(file=f, embed=embed)
         await cs.close()
 
@@ -403,7 +403,7 @@ class FunCog(commands.Cog, name='Fun'):
         embed.add_field(name="Colour selection", value="At the start of each round, all players who are alive are able to choose a corner. While users that are eliminated or dead will not be allowed to select.\nIf a player is afk and does not select a corner, they will be out.", inline=False)
         embed.add_field(name="Gameplay", value="When the round starts, there will be a wheel of fate that spins all the colours. Whatever colour it lands on, all users that picked that colour is eliminated. After that, the colour cannot be chosen anymore.\nIf your colour is chosen, there will be a redemption round among the people in the corner unless there is less than 3 people.", inline=False)
         embed.add_field(name="Redemption round", value="When the redemption round starts, the bot will randomly select a mini game. It ranges from a ban battle, to the fastest reaction time, deciphering codes and even doing nothing and just seeing your luck as a wheel of redemption gets spun and the player it lands on, gets revived.", inline=False)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name='ttt', aliases=['tictactoe'])

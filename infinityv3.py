@@ -3,7 +3,6 @@ from discord.ext import commands, tasks
 
 
 import motor.motor_asyncio, motor.motor_tornado, traceback, pytz
-from pretty_help import PrettyHelp, DefaultMenu
 
 try:
     from dotenv import load_dotenv
@@ -51,7 +50,7 @@ bot.managers = set({})
 bot.infinityemoji = "<a:infinity:874548940610097163>"
 bot.serverdb = None
 bot.snipedb = dict({})
-bot.startuptime = datetime.datetime.utcnow()
+bot.startuptime = discord.utils.utcnow()
 
 bot.errors = bot.get_channel(825900714013360199)
 bot.logs = bot.get_channel(874461656938340402)
@@ -74,10 +73,6 @@ for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cog
 def blacklisted(ctx) -> bool:
     return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
 
-#menu = DefaultMenu(page_left="<:left:876079229769482300>", page_right="<:right:876079229710762005>", remove=bot.infinityemoji, active_time=20)
-#ending_note = "{ctx.bot.user.name}\n{help.clean_prefix}{help.invoked_with}"
-#bot.help_command = PrettyHelp(menu=menu, ending_note=ending_note, color=discord.Color.random(), no_category='Others')
-
 @bot.event
 async def on_ready():
     await bot.wait_until_ready()
@@ -95,21 +90,21 @@ async def on_ready():
     bot.changes = bot.get_channel(859779506038505532)
     status.start()
     performance.start()
-    login = f"\n{bot.user} ~ UTC: {datetime.datetime.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}"
+    login = f"\n{bot.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}"
     print(login)
-    bot.startuptime = datetime.datetime.utcnow()
+    bot.startuptime = discord.utils.utcnow()
 
 @bot.event
 async def on_error(event, *args, **kwargs):
     print('Ignoring exception in {}'.format(event), file=sys.stderr)
-    text = discord.utils.escape_markdown(traceback.format_exc())
+    text = traceback.format_exc()
     buffer = io.BytesIO(text.encode('utf-8'))
-    await bot.errors.send(f'<t:{round(datetime.datetime.utcnow().timestamp())}> Ignoring exception in {event}', file=discord.File(buffer, filename='traceback.txt'))
+    await bot.errors.send(f"{discord.utils.format_dt(discord.utils.utcnow(), style='t')} Ignoring exception in {event}", file=discord.File(buffer, filename='traceback.txt'))
 
 @tasks.loop(minutes=5, reconnect=True)
 async def status():
     await bot.wait_until_ready()
-    timenow = datetime.datetime.utcnow()
+    timenow = discord.utils.utcnow()
     d = timenow-bot.startuptime
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
 
@@ -118,15 +113,12 @@ async def performance():
     #Report on performance every 30 mins.
     await bot.wait_until_ready()
     rawping = bot.latency
-    if rawping != float('inf'): 
-        pingvalue = round(rawping *1000 )
-    else:
-        pingvalue = "∞"
+    pingvalue = round(rawping *1000 ) if rawping != float('inf') else "∞"
     cpuvalue = psutil.cpu_percent()
     memoryvalue= psutil.virtual_memory().percent
     timenow = datetime.datetime.now().strftime('%M')
-    embed=discord.Embed(title="Performance report", description=f"`Ping  :` {pingvalue}ms\n`CPU   :` {cpuvalue}%\n`Memory:` {memoryvalue}%", color=discord.Color.random())
-    embed.timestamp=datetime.datetime.utcnow()
+    embed=discord.Embed(title="Performance report", description=f"<:ping:901051623416152095> {pingvalue}ms\n<:cpu:901051865960181770> {cpuvalue}%\n<:memory:901049486242091049> {memoryvalue}%", color=discord.Color.random())
+    embed.timestamp=discord.utils.utcnow()
     await bot.logs.send(embed=embed)
 
 bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)

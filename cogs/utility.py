@@ -60,7 +60,7 @@ class UtilityCog(commands.Cog, name='Utility'):
                 try:m.clean_content
                 except:content = None
                 else:content = m.clean_content
-                embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on <t:{round(m.created_at.timestamp())}>\nAt {message_channel.mention} in {m.guild.name}", timestamp=datetime.datetime.utcnow(), color=discord.Color.from_rgb(0,255,255))
+                embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on {discord.utils.format_dt(m.created_at)}\nAt {message_channel.mention} in {m.guild.name}", timestamp=discord.utils.utcnow(), color=discord.Color.from_rgb(0,255,255))
                 embed.set_author(name=m.author.name, icon_url=m.author.avatar)
                 embed.set_footer(text=m.guild.name, icon=m.guild.icon_url)
                 embed.add_field(name="Remark", value="Reply to this message with `remark <remark>` to add your remark.", inline=False)
@@ -125,15 +125,8 @@ class UtilityCog(commands.Cog, name='Utility'):
         time = discord.utils.snowflake_time(arg)
         embed=discord.Embed(title="Creation Date Checker", description=argument)
         embed.timestamp=time
-        try:
-            ts = time.timestamp()
-        except:
-            pass
-        try:
-            embed.set_footer(text=ts)
-        except:
-            pass
-        await ctx.reply(f"{time} <t:{round(time.timestamp())}>",embed=embed)
+        embed.set_footer(text=round(time.timestamp()))
+        await ctx.reply(discord.utils.format_dt(time),embed=embed)
 
     @commands.command(name="weather", aliases=['w', 'temperature', 'climate', 'windspeed', 'rain', 'snow', 'humidity'])
     @commands.cooldown(1,5)
@@ -252,7 +245,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         
         embed=discord.Embed(title="Qr Generator", description=f"{text}", color=discord.Color.random())
         embed.set_image(url="attachment://qr.png")
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(file=discord.File(buffer, filename="qr.png"), embed=embed, mention_author=True)
 
     @commands.group(name='morse', invoke_without_command=True)
@@ -279,7 +272,7 @@ class UtilityCog(commands.Cog, name='Utility'):
             cipher += morse[letter] + ' '
         embed=discord.Embed(title=text, description=cipher, color=discord.Color.random())
         embed.set_footer(text="Morse Encoder")
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=True)
 
     @morse.command(name='decode', aliases=['de'])
@@ -323,7 +316,7 @@ class UtilityCog(commands.Cog, name='Utility'):
                     decipher += list(morse.keys())[list(morse.values()).index(citext)] 
                     citext = '' 
         embed=discord.Embed(title="Morse Decoder", description=decipher, color=discord.Color.random())
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=True)
 
 
@@ -338,7 +331,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         
         embed=discord.Embed(title="Binary converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @bin.command(name= 'decode', aliases=['de'])
@@ -353,7 +346,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         
         embed=discord.Embed(title="Binary converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.group(name= 'hexadecimal', aliases=['hex'], invoke_without_command=True)
@@ -367,7 +360,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         
         embed=discord.Embed(title="Hexadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @hex.command(name= 'decode', aliases=['de'])
@@ -382,7 +375,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         
         embed=discord.Embed(title="Hexadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.group(name= 'octadecimal', aliases=['oct'], invoke_without_command=True)
@@ -396,7 +389,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         
         embed=discord.Embed(title="Octadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @oct.command(name= 'decode', aliases=['de'])
@@ -411,7 +404,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         
         embed=discord.Embed(title="Octadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
-        embed.timestamp=datetime.datetime.utcnow()
+        embed.timestamp=discord.utils.utcnow()
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name='calc', aliases=['c', '='])

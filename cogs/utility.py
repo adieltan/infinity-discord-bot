@@ -1,10 +1,7 @@
 import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 
-
- 
-import dateparser, pytz, amari
-from discord.http import Route
+import dateparser, pytz
 import qrcode
 
 from py_expression_eval import Parser
@@ -431,8 +428,6 @@ class UtilityCog(commands.Cog, name='Utility'):
     @commands.group(name='amari', aliases=['am'], invoke_without_command=True)
     async def amari(self, ctx):
         """Amari Api."""
-        #client = amari.AmariClient(os.getenv('amari'), session=aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)))
-        #await client.close()
         pass
 
     @amari.command(name='reward', aliases=['role', 'r'])

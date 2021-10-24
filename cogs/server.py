@@ -539,7 +539,7 @@ class ServerCog(commands.Cog, name='Server'):
                 attachments = m.attachments
                 for attachment in attachments:
                     m.content += f'\n {attachment}'
-                content = (f"{last_message.content}\n" + f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) " if mode is None else '') + m.content if m.content else '\u200b'
+                content = f"{last_message.content}\n" + (f"[{discord.utils.format_dt(m.created_at, style='d')}]({m.jump_url}) " if mode is None else '') + m.content if m.content else '\u200b'
                 msg = await last_webhookmsg.edit(content=content, embeds=last_message.embeds + m.embeds, allowed_mentions=discord.AllowedMentions.none())
                 last_webhookmsg = msg
                 m.content = content

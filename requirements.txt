@@ -13,3 +13,4 @@ tornado
 pycountry
 thefuzz[speedup]
 pytz
+dnspython

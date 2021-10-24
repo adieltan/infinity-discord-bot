@@ -56,9 +56,6 @@ bot.errors = bot.get_channel(825900714013360199)
 bot.logs = bot.get_channel(874461656938340402)
 bot.changes = bot.get_channel(859779506038505532)
 
-bot.processed_messages = 0
-bot.commands_invoked = 0
-
 bot.load_extension('jishaku')
 print(f"{os.path.dirname(os.path.abspath(__file__))}")
 if '\\' in os.path.dirname(os.path.abspath(__file__)):

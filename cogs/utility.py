@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 
 
  
-import dateparser, pytz
+import dateparser, pytz, amari
 from discord.http import Route
 import qrcode
 
@@ -33,7 +33,7 @@ class UtilityCog(commands.Cog, name='Utility'):
     async def remark(self, ctx, *, remark:str):
         """Adds a remark to the referenced bookmark."""
         ref = ctx.message.reference
-        if ref == None:
+        if ref is None:
             await ctx.reply("Eh you gotta reply to the message you wanna add a remark!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
@@ -53,29 +53,32 @@ class UtilityCog(commands.Cog, name='Utility'):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
-        if payload.event_type == "REACTION_ADD" and payload.emoji.name == "🔖" and payload.member is not None:
-            try:
-                message_channel = self.bot.get_channel(payload.channel_id)
-                m = await message_channel.fetch_message(payload.message_id)
-                try:m.clean_content
-                except:content = None
-                else:content = m.clean_content
-                embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on {discord.utils.format_dt(m.created_at)}\nAt {message_channel.mention} in {m.guild.name}", timestamp=discord.utils.utcnow(), color=discord.Color.from_rgb(0,255,255))
-                embed.set_author(name=m.author.name, icon_url=m.author.avatar)
-                embed.set_footer(text=m.guild.name, icon=m.guild.icon_url)
-                embed.add_field(name="Remark", value="Reply to this message with `remark <remark>` to add your remark.", inline=False)
-                message = await payload.member.send(content=content, embed=embed)
-                pins = await payload.member.dm_channel.pins()
-                if len(pins)>=50:
-                    pins.reverse()
-                    await pins[0].unpin()
-                    await pins[0].reply("This message has been unpinned due to the pin limit in this channel.")
-                await message.pin()
-                history = await payload.member.dm_channel.history(limit=1).flatten()
-                await history[0].delete()
-            except:pass
-        else:
-            pass
+        if (
+            payload.event_type != "REACTION_ADD"
+            or payload.emoji.name != "🔖"
+            or payload.member is None
+        ):
+            return
+        try:
+            message_channel = self.bot.get_channel(payload.channel_id)
+            m = await message_channel.fetch_message(payload.message_id)
+            try:m.clean_content
+            except:content = None
+            else:content = m.clean_content
+            embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on {discord.utils.format_dt(m.created_at)}\nAt {message_channel.mention} in {m.guild.name}", timestamp=discord.utils.utcnow(), color=discord.Color.from_rgb(0,255,255))
+            embed.set_author(name=m.author.name, icon_url=m.author.avatar)
+            embed.set_footer(text=m.guild.name, icon=m.guild.icon_url)
+            embed.add_field(name="Remark", value="Reply to this message with `remark <remark>` to add your remark.", inline=False)
+            message = await payload.member.send(content=content, embed=embed)
+            pins = await payload.member.dm_channel.pins()
+            if len(pins)>=50:
+                pins.reverse()
+                await pins[0].unpin()
+                await pins[0].reply("This message has been unpinned due to the pin limit in this channel.")
+            await message.pin()
+            history = await payload.member.dm_channel.history(limit=1).flatten()
+            await history[0].delete()
+        except:pass
 
     @commands.command(name='time')
     @commands.cooldown(1,2)
@@ -137,35 +140,19 @@ class UtilityCog(commands.Cog, name='Utility'):
                 x = await w.json()
         if x["cod"] != "404":
             y = x["main"]
-            try:current_temperature = y["temp"]
-            except:current_temperature=None
-            try:current_pressure = y["pressure"]
-            except:current_pressure=None
-            try:current_humidity = y["humidity"]
-            except:current_humidity=None
             z = x["weather"]
-            weather_description = z[0]["description"]
             sys = x['sys']
             embed = discord.Embed(title=f"Weather in {x['name']}",description=f"**Country**: {sys['country']}\n**Coordinates:** {x['coord']['lon']}, {x['coord']['lat']}", color=discord.Colour.random(),timestamp=datetime.datetime.fromtimestamp(x['dt'], pytz.timezone("UTC")))
             embed.set_footer(text="Updated on")
-            embed.add_field(name="Description", value=f"{weather_description}", inline=False)
-            embed.add_field(name="Temperature", value=f"{current_temperature}°C", inline=True)
-            embed.add_field(name="Humidity(%)", value=f"{current_humidity}%", inline=True)
-            embed.add_field(name="Atmospheric Pressure(hPa)", value=f"{current_pressure} hPa", inline=False)
-            try:windspeed = x['wind']['speed']
-            except:windspeed = None
-            try:windheading = x['wind']['deg']
-            except:windheading = None
-            try:windgust = x['wind']['gust']
-            except: windgust= None
-            embed.add_field(name="Wind", value=f"Speed: {windspeed} m/s\nHeading: {windheading}°\nGust: {windgust} m/s", inline=False)
+            embed.add_field(name="Description", value=f"{z[0].get('description').title()}", inline=False)
+            embed.add_field(name="Temperature", value=f"{y.get('temp')}°C", inline=True)
+            embed.add_field(name="Humidity(%)", value=f"{y.get('humidity')}%", inline=True)
+            embed.add_field(name="Atmospheric Pressure(hPa)", value=f"{y.get('pressure')} hPa", inline=False)
+            embed.add_field(name="Wind", value=f"Speed: {x.get('wind', {}).get('speed')} m/s\nHeading: {x.get('wind', {}).get('deg')}°\nGust: {x.get('wind', {}).get('gust')} m/s", inline=False)
             embed.set_thumbnail(url=f"http://openweathermap.org/img/wn/{z[0]['icon']}@2x.png")
-            {"coord":{"lon":101.9381,"lat":2.7297},"weather":[{"id":501,"main":"Rain","description":"moderate rain","icon":"10d"}],"base":"stations","main":{"temp":303.66,"feels_like":310.66,"temp_min":302.81,"temp_max":304.9,"pressure":1007,"humidity":78,"sea_level":1007,"grnd_level":1001},"visibility":10000,"wind":{"speed":1.52,"deg":229,"gust":2.94},"rain":{"1h":2.37},"clouds":{"all":94},"dt":1624614690,"sys":{"type":2,"id":131486,"country":"MY","sunrise":1624575985,"sunset":1624620187},"timezone":28800,"id":1734810,"name":"Seremban","cod":200}
         else:
             embed=discord.Embed(title="City Not Found", description=f"{city_name} is not found.", color=discord.Colour.red())
         await ctx.reply(embed=embed, mention_author=False)
-        await cs.close()
-
 
     @commands.group(name="poll", invoke_without_command=True)
     @commands.bot_has_permissions(add_reactions=True)
@@ -267,9 +254,7 @@ class UtilityCog(commands.Cog, name='Utility'):
                     '?':'..--..', '/':'-..-.', '-':'-....-', 
                     '(':'-.--.', ')':'-.--.-', ' ':' '}
         txt = text.upper()
-        cipher = '' 
-        for letter in txt: 
-            cipher += morse[letter] + ' '
+        cipher = ''.join(morse[letter] + ' ' for letter in txt)
         embed=discord.Embed(title=text, description=cipher, color=discord.Color.random())
         embed.set_footer(text="Morse Encoder")
         embed.timestamp=discord.utils.utcnow()
@@ -336,14 +321,14 @@ class UtilityCog(commands.Cog, name='Utility'):
 
     @bin.command(name= 'decode', aliases=['de'])
     @commands.cooldown(1,3)
-    async def binde (self, ctx, *, input:str):
+    async def binde(self, ctx, *, input:str):
         """Find the binary form of a text reversed"""
         binlist = input.split(' ')
         text = ''
         for b in binlist:
             b = int(b, 2)
-            text = text + chr(b)
-        
+            text += chr(b)
+
         embed=discord.Embed(title="Binary converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=discord.utils.utcnow()
@@ -365,14 +350,14 @@ class UtilityCog(commands.Cog, name='Utility'):
 
     @hex.command(name= 'decode', aliases=['de'])
     @commands.cooldown(1,3)
-    async def hexde (self, ctx, *, input:str):
+    async def hexde(self, ctx, *, input:str):
         """Find the hexadecimal form of a text reversed"""
         binlist = input.split(' ')
         text = ''
         for b in binlist:
             b = int(b, 16)
-            text = text + chr(b)
-        
+            text += chr(b)
+
         embed=discord.Embed(title="Hexadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=discord.utils.utcnow()
@@ -394,14 +379,14 @@ class UtilityCog(commands.Cog, name='Utility'):
 
     @oct.command(name= 'decode', aliases=['de'])
     @commands.cooldown(1,3)
-    async def octde (self, ctx, *, input:str):
+    async def octde(self, ctx, *, input:str):
         """Find the octadecimal form of a text reversed"""
         binlist = input.split(' ')
         text = ''
         for b in binlist:
             b = int(b, 8)
-            text = text + chr(b)
-        
+            text += chr(b)
+
         embed=discord.Embed(title="Octadecimal converter", description=f"{input}", color=discord.Color.random())
         embed.add_field(name="Converted", value=text)
         embed.timestamp=discord.utils.utcnow()
@@ -441,7 +426,65 @@ class UtilityCog(commands.Cog, name='Utility'):
                 embed.set_footer(text="Google API")
                 await ctx.reply(embed=embed)
             except:
-                await ctx.reply(f"Error.\nCommon causes: Invalid channel id")
+                await ctx.reply('Error.\nCommon causes: Invalid channel id')
+
+    @commands.group(name='amari', aliases=['am'], invoke_without_command=True)
+    async def amari(self, ctx):
+        """Amari Api."""
+        #client = amari.AmariClient(os.getenv('amari'), session=aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)))
+        #await client.close()
+        pass
+
+    @amari.command(name='reward', aliases=['role', 'r'])
+    @commands.cooldown(10, 1, commands.BucketType.member)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def amari_reward(self, ctx, target:discord.Member=None):
+        """Add and remove roles according to the member's rank in Amari's xp system."""
+        if target is None:
+            target = ctx.author
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as cs:
+            async with cs.get(url=f'https://amaribot.com/api/v1/guild/rewards/{ctx.guild.id}', headers={'Authorization':os.getenv('amari')}) as data:
+                json = await data.json()
+            async with cs.get(url=f"https://amaribot.com/api/v1/guild/{ctx.guild.id}/member/{target.id}", headers={'Authorization':os.getenv('amari')}) as data:
+                user = await data.json()
+        if json.get('data') is None:
+            return await ctx.reply("Guild has no Amari Reward Roles.")
+        add = []
+        remove = []
+        for r in json['data']:
+            role = ctx.guild.get_role(int(r['roleID']))
+            if role > ctx.me.top_role:
+                return await ctx.reply(f"Bot highest role below {role.mention}.", allowed_mentions=discord.AllowedMentions.none())
+            if r['level'] < user['level'] and role not in target.roles:
+                add.append(role)
+            elif r['level'] > user['level'] and role in target.roles:
+                remove.append(role)
+        await target.add_roles(*add)
+        await target.remove_roles(*remove)
+        await ctx.reply(embed=discord.Embed(title="Amari Reward Roles", description=f"{target.mention}\nLevel {user['level']}", color=discord.Color.random()).add_field(name='Roles Added', value='\u200b' + '\n'.join(r.mention for r in add)).add_field(name='Roles Removed', value='\u200b' + '\n'.join(r.mention for r in remove)).set_thumbnail(url='https://amaribot.com/images/Logo.png'))
+
+    @commands.group(name='space', invoke_without_command=True)
+    async def space(self, ctx):
+        """Returns the current number of people in space. """
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as cs:
+            async with cs.get(url='http://api.open-notify.org/astros.json') as data:
+                json = await data.json()
+            async with cs.get(url='http://api.open-notify.org/iss-now.json') as data:
+                iss = await data.json()
+            async with cs.get(url=f"https://api.nasa.gov/planetary/apod?api_key={os.getenv('nasa')}") as data:
+                img = await data.json()
+        astraunauts = ''
+        for astraunaut in json.get('people'):
+            current = json.get('people').index(astraunaut)
+            if json.get('people')[current-1]['craft'] == astraunaut['craft']:
+                astraunauts += f"\n\u2800\u2800\u2800 {astraunaut['name']}"
+            else:
+                astraunauts += f"""\n**{astraunaut['craft']}**:{f" Position {iss.get('iss_position')['latitude']}, {iss.get('iss_position')['longitude']}"if astraunaut['craft'] == 'ISS' else ''}\n\u2800\u2800\u2800 {astraunaut['name']}"""
+                
+        e = discord.Embed(title='Space', description=f"**People in Space Right Now:**\nNumber of people: {json.get('number')}\n{astraunauts}\n\n**Astronomy Picture of the Day**:\n{img.get('explanation', '')}\n{img.get('title', '')} [<:down:876079229744316456>]({img.get('hdurl')})", color=discord.Color.random())
+        e.set_image(url=img.get('hdurl'))
+        await ctx.reply(embed=e)
+
 
 def setup(bot):
     bot.add_cog(UtilityCog(bot))

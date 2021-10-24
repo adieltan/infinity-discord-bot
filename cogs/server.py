@@ -231,7 +231,6 @@ class ServerCog(commands.Cog, name='Server'):
 
     @commands.Cog.listener()
     async def on_message (self, message: discord.Message):
-        self.bot.processed_messages += 1
         if ('732917262297595925') in message.clean_content.lower():
             await message.add_reaction("\U0000267e")
         elif message.author.bot is True:

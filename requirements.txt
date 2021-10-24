@@ -27,3 +27,4 @@ topggpy
 thefuzz[speedup]
 pytz
 dnspython
+amari.py

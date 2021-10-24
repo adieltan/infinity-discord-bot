@@ -21,7 +21,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
         try:
             embed.set_author(
-                name=guild.name, icon_url=guild.icon or discord.embeds.MaybeEmpty
+                name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif'
             )
 
             embed.set_thumbnail(url=f"{guild.icon}")
@@ -36,7 +36,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
         try:
             embed.set_author(
-                name=guild.name, icon_url=guild.icon or discord.embeds.MaybeEmpty
+                name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif'
             )
 
             embed.set_thumbnail(url=f"{guild.icon}")

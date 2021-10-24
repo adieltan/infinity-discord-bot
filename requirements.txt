@@ -25,4 +25,3 @@ motionbotlist
 topggpy
 thefuzz[speedup]
 pytz
-dnspython

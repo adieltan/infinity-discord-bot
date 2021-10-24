@@ -1,5 +1,5 @@
 from operator import matmul
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.channel import DMChannel
 from discord.ext import commands, tasks
 

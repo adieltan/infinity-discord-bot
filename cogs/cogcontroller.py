@@ -1,4 +1,4 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing, traceback
+import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, io, PIL, re, aiohttp, typing, traceback
 from discord.ext import commands, tasks
 
 class CogControllerCog(commands.Cog, name='CogController'):

@@ -16,7 +16,6 @@ pillow
 numpy
 tornado
 matplotlib
-lxml
 discord-together
 udpy
 translate

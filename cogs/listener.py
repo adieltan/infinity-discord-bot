@@ -1,4 +1,4 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext.commands.errors import PrivateMessageOnly
 from discord.ext import commands, tasks
 

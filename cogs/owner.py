@@ -1,10 +1,9 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 
 
 
 from PIL import Image, ImageDraw, ImageFont
-import blist, MotionBotList, topgg
 
 def is_manager():
     def predicate(ctx):
@@ -15,9 +14,6 @@ class OwnerCog(commands.Cog, name='Owner'):
     """🔐 Only owner/managers can use this."""
     def __init__(self, bot):
         self.bot = bot
-        self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))
-        self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
-        self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)
 
     @commands.command(name='dm', aliases=['adm'])
     @is_manager()
@@ -323,10 +319,6 @@ class OwnerCog(commands.Cog, name='Owner'):
             async with cs.post(url=f"https://api.botlist.me/api/v1/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 text += f"Botlist\n{json}"
-        await cs.close()
-        await blist.Blist.post_bot_stats(self.blist)
-        self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
-        await self.topgg.post_guild_count(len(self.bot.guilds))
         await ctx.send(text)
 
     @commands.Cog.listener()

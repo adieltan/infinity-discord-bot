@@ -14,7 +14,7 @@ class InfoCog(commands.Cog, name='Info'):
         """Gets the links related to the bot."""
         
         embed=discord.Embed(title = "Infinity Bot Info" , url=discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.all(), scopes=('bot','applications.commands')), description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", color=discord.Color.random(), timestamp=discord.utils.utcnow()).set_author(name=self.bot.user, icon_url=self.bot.user.avatar)
-        embed.add_field(name="Owner", value=f"""{' '.join([f"<@{owner}>" for owner in self.bot.owners])}""")
+        embed.add_field(name="Owner", value=f"<a:crown:902048071343538176> {' '.join([f'<@{owner}>' for owner in self.bot.owners])}")
         embed.add_field(name="Ping", value=f'<:ping:901051623416152095> {round (self.bot.latency * 1000)}ms ')
         d = discord.utils.utcnow() -self.bot.startuptime
         embed.add_field(name="Uptime", value=f"<a:timer:890234490100793404> {round(d.seconds/60/60,2)} hours")

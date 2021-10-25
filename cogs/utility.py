@@ -103,14 +103,13 @@ class UtilityCog(commands.Cog, name='Utility'):
             raise commands.BadArgument('Provided time is invalid')
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
-        embed=discord.Embed(title="Time", description=expression)
+        embed=discord.Embed(title="Time", description=f"{time[0]} {expression}")
         embed.timestamp=time[0]
-        try:
-            ts = time[0].timestamp()
-            embed.set_footer(text=ts)
-        except:
-            pass
-        await ctx.reply(f"{time[0]}",embed=embed)
+        embed.set_footer(text=f"{round(time[0].timestamp())}")
+        styles = ['t', 'T', 'd', 'D', 'f', 'F', 'R']
+        text = '\n'.join(discord.utils.format_dt(time[0], style=style) for style in styles)
+        embed.add_field(name='Text Formatting', value=f"{text}\n```\n{text}\n```")
+        await ctx.reply(embed=embed)
 
     @commands.command(name='creationdate', aliases=['createdate', 'created'])
     @commands.cooldown(1,2)

@@ -504,14 +504,11 @@ class ServerCog(commands.Cog, name='Server'):
     async def export(self, ctx, destination, first_message_id:typing.Optional[int]=None, limit:typing.Optional[int]=100, mode:typing.Literal['clean']=None):
         """Exports chat messages to another channel.\n<first_message_id> is the id of the first message you wanna start exporting from.\n<limit> is the max number of messages to export."""
         destination_channel = self.bot.get_channel(int(re.sub("[^0-9]", "", destination)))
-        if not first_message_id:
-            try:
-                first_message_id = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-            except:
-                pass
-        elif len(f"{first_message_id}") < 18:
+        if len(f"{first_message_id}") < 18:
             limit = first_message_id
             first_message_id = None
+        if not first_message_id and ctx.message.reference:
+            first_message_id = await ctx.channel.fetch_message(ctx.message.reference.message_id)
         else:
             first_message_id = await ctx.channel.fetch_message(first_message_id)
 
@@ -558,11 +555,14 @@ class ServerCog(commands.Cog, name='Server'):
                     if m.content
                     else '\u200b'
                 )
-
-                msg = await webhook.send(content=content, wait=True, username=m.author.name, avatar_url=m.author.avatar, embeds=m.embeds, allowed_mentions=discord.AllowedMentions.none())
-                last_webhookmsg = msg
-                m.content = content
-                last_message = m
+                if len(content) > 2000:
+                    buffer = io.BytesIO(content.encode('utf-8'))
+                    msg = await webhook.send(file=discord.File(buffer, filename='export.txt'), wait=True, username=m.author.name, avatar_url=m.author.avatar, embeds=last_message.embeds + m.embeds, allowed_mentions=discord.AllowedMentions.none())
+                else:
+                    msg = await webhook.send(content=content, wait=True, username=m.author.name, avatar_url=m.author.avatar, embeds=m.embeds, allowed_mentions=discord.AllowedMentions.none())
+                    last_webhookmsg = msg
+                    m.content = content
+                    last_message = m
 
         await ctx.reply("Done")
 

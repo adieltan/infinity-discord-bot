@@ -14,7 +14,7 @@ class ProfileCog(commands.Cog, name='Profile'):
     @commands.group()
     async def set(self,ctx):
         """Sets up your own profile."""
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             await ctx.reply("Available subcommands are `weight` , `height` , `country` & `birthday` .")
 
     @set.command(name='delete')
@@ -67,7 +67,7 @@ class ProfileCog(commands.Cog, name='Profile'):
             out = dateparser.parse(used, settings=settings)
             if out is not None:
                 break
-        if out is None:
+        if not out:
             raise commands.BadArgument('Provided time is invalid')
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
@@ -80,61 +80,54 @@ class ProfileCog(commands.Cog, name='Profile'):
     @commands.command(name="profile", aliases=['bmi'])
     async def profile(self, ctx, member:discord.User=None):
         """Gets the profile of a member."""
-        if member is None:
+        if not member:
             member = ctx.author
         results= await self.bot.dba['profile'].find_one({"_id":member.id})
-        if results is None:
-            await ctx.reply(f"This user does not have a profile.")
+        if not results:
+            return await ctx.reply('This user does not have a profile.')
+        weight = results.get('weight', 0)
+        height = results.get('height', 0)
+        bd = results.get('bd', 0)
+
+        try:
+            bmi = weight / (height/100)**2
+        except:
+            bmi = 0
+        if bmi == 0:
+            status = "None"
+        elif bmi <= 18.4:
+            status="underweight"
+        elif bmi <= 24.9:
+            status="healthy"
+        elif bmi <= 29.9:
+            status="overweight"
+        elif bmi <= 34.9:
+            status="severely overweight"
+        elif bmi <= 39.9:
+            status="obese"
         else:
-            weight = results.get('weight')
-            height = results.get('height') 
-            bd = results.get('bd')
-            if weight is None:
-                weight = 0
-            if height is None:
-                height = 0
-            if bd is None:
-                bd = 0
+            status="severely obese"
 
-            try:
-                bmi = weight / (height/100)**2
-            except:
-                bmi = 0
-            if bmi == 0:
-                status = "None"
-            elif bmi <= 18.4:
-                status="underweight"
-            elif bmi <= 24.9:
-                status="healthy"
-            elif bmi <= 29.9:
-                status="overweight"
-            elif bmi <= 34.9:
-                status="severely overweight"
-            elif bmi <= 39.9:
-                status="obese"
-            else:
-                status="severely obese"
+        birthday = datetime.datetime.fromtimestamp(bd)
 
-            birthday = datetime.datetime.fromtimestamp(bd)
+        desc = "\u200b"
+        loca = "\u200b"
+        if results.get('bl'):
+            desc += '<:exclamation:876077084986966016> **Blacklisted**' + '\n'
+        if results.get('manager'):
+            desc += '<a:infinity:874548940610097163> **Infinity Managers**' + '\n'
+        if results.get('country'):
+            fuzzy = pycountry.countries.search_fuzzy(results.get('country'))
+            loca += f":flag_{fuzzy[0].alpha_2.lower()}: {fuzzy[0].name}" + '\n'
 
-            desc = "\u200b"
-            loca = "\u200b"
-            if results.get('bl'):
-                desc += '<:exclamation:876077084986966016> **Blacklisted**' + '\n'
-            if results.get('manager'):
-                desc += '<a:infinity:874548940610097163> **Infinity Managers**' + '\n'
-            if results.get('country'):
-                fuzzy = pycountry.countries.search_fuzzy(results.get('country'))
-                loca += f":flag_{fuzzy[0].alpha_2.lower()}: {fuzzy[0].name}" + '\n'
-            
-            embed=discord.Embed(title="Profile", description=desc, color=discord.Color.random())
-            embed.set_author(icon_url=member.avatar, name=member.display_name)
-            embed.set_thumbnail(url=member.avatar)
-            embed.add_field(name="BMI", value=f"Height: {height} cm\nWeight: {weight} kg\n**BMI: {round(bmi, 2)} ({status})**")
-            embed.add_field(name="Location", value=loca)
-            embed.set_footer(text="Birthday: ")
-            embed.timestamp=birthday
-            await ctx.reply(embed=embed, mention_author=True)
+        embed=discord.Embed(title="Profile", description=desc, color=discord.Color.random())
+        embed.set_author(icon_url=member.avatar, name=member.display_name)
+        embed.set_thumbnail(url=member.avatar)
+        embed.add_field(name="BMI", value=f"Height: {height} cm\nWeight: {weight} kg\n**BMI: {round(bmi, 2)} ({status})**")
+        embed.add_field(name="Location", value=loca)
+        embed.set_footer(text="Birthday: ")
+        embed.timestamp=birthday
+        await ctx.reply(embed=embed, mention_author=True)
 
     
 def setup(bot):

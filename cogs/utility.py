@@ -30,7 +30,7 @@ class UtilityCog(commands.Cog, name='Utility'):
     async def remark(self, ctx, *, remark:str):
         """Adds a remark to the referenced bookmark."""
         ref = ctx.message.reference
-        if ref is None:
+        if not ref:
             await ctx.reply("Eh you gotta reply to the message you wanna add a remark!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
@@ -99,19 +99,14 @@ class UtilityCog(commands.Cog, name='Utility'):
             out = dateparser.parse(used, settings=settings)
             if out is not None:
                 break
-
-        if out is None:
+        if not out:
             raise commands.BadArgument('Provided time is invalid')
-
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
         embed=discord.Embed(title="Time", description=expression)
         embed.timestamp=time[0]
         try:
             ts = time[0].timestamp()
-        except:
-            pass
-        try:
             embed.set_footer(text=ts)
         except:
             pass
@@ -190,7 +185,7 @@ class UtilityCog(commands.Cog, name='Utility'):
             for defi in json.get('definitions'):
                 if defi.get('image_url') is not None:
                     embed.set_thumbnail(url=defi.get('image_url'))
-                if defi.get('emoji') is None:
+                if not defi.get('emoji'):
                     defi['emoji'] = ''
                 text = ""
                 if defi.get('definition') is not None:
@@ -435,14 +430,14 @@ class UtilityCog(commands.Cog, name='Utility'):
     @commands.bot_has_permissions(manage_roles=True)
     async def amari_reward(self, ctx, target:discord.Member=None):
         """Add and remove roles according to the member's rank in Amari's xp system."""
-        if target is None:
+        if not target:
             target = ctx.author
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as cs:
             async with cs.get(url=f'https://amaribot.com/api/v1/guild/rewards/{ctx.guild.id}', headers={'Authorization':os.getenv('amari')}) as data:
                 json = await data.json()
             async with cs.get(url=f"https://amaribot.com/api/v1/guild/{ctx.guild.id}/member/{target.id}", headers={'Authorization':os.getenv('amari')}) as data:
                 user = await data.json()
-        if json.get('data') is None:
+        if not json.get('data'):
             return await ctx.reply("Guild has no Amari Reward Roles.")
         add = []
         remove = []

@@ -137,7 +137,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def timer(self, ctx, time=None, name:str="Timer"):
         """Ever heard of a timer countdown?"""
-        if time is None:
+        if not time:
             await ctx.reply("Ever heard of a timer countdown?\nm=minutes\ns=seconds\nh=hours")
             return
         lower = time.lower()
@@ -148,7 +148,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             seconds = digit*60
         elif lower[-1] == "h":
             seconds = digit*60*60
-        elif digit is None:
+        elif not digit:
             await ctx.reply("Do you speak numbers？")
             raise BaseException
         else:
@@ -228,7 +228,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def remove(self, ctx):
         """Removes the referenced message."""
         ref = ctx.message.reference
-        if ref is None:
+        if not ref:
             await ctx.reply("Eh you gotta reply to the message you wanna remove!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)

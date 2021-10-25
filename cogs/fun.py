@@ -568,7 +568,7 @@ class FunCog(commands.Cog, name='Fun'):
         if ctx.channel.id in self.ongoing_mm_games.keys():
             await ctx.reply(f"There is an ongoing game in this channel.")
             return
-        if seconds is None:
+        if not seconds:
             seconds = 390
         overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
         overwrite.send_messages=True

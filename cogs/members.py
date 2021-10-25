@@ -40,7 +40,7 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.command(name='userinfo', aliases=['ui', 'user', 'whois', 'i'])
     async def userinfo(self, ctx, *, member: typing.Union[discord.Member, discord.User]=None):
         """Gets info about the user."""
-        if member is None:
+        if not member:
             member = ctx.author
         if type(member) == discord.Member:
             if member.status == discord.Status.online:
@@ -94,7 +94,7 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.has_permissions(manage_roles=True)
     async def check_permissions(self, ctx, object:typing.Union[discord.Member, discord.Role]=None):
         """Checks member's or role's permissions."""
-        if object is None:
+        if not object:
             object = ctx.author
         if type(object) == discord.Role:
             perms = "```"
@@ -135,7 +135,7 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.command(name="selfharm", aliases=["suicide", 'die'])
     async def selfharm(self, ctx, victim:discord.Member=None):
         """Gives you awareness about selfharm and useful contacts."""
-        if victim is None:
+        if not victim:
             victim = ctx.author
         embed=discord.Embed(title="Suicide & Selfharm Prevention", url="https://www.who.int/health-topics/suicide", description="You are not alone. Everyone is special in their own ways and thats why you shouldn't give up.", color=discord.Color.blurple())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
@@ -180,7 +180,7 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.has_permissions(manage_roles=True)
     async def role_colour(self, ctx, role:discord.Role, colour_hex:str=None):
         "Changes/views the role colour."
-        if colour_hex is None:
+        if not colour_hex:
             embed=discord.Embed(description=f"{role.mention}\nRGB: {role.colour.to_rgb()}\nInt: {role.colour.value}\nHex: {str(hex(role.colour.value))[2:]}", color=role.color)
             await ctx.reply(embed=embed, mention_author=False)
             return
@@ -273,7 +273,7 @@ class MembersCog(commands.Cog, name='Members'):
     @commands.has_permissions(manage_roles=True)
     async def info(self,ctx, *, role:discord.Role=None):
         """Shows infomation about a role."""
-        if role is None:
+        if not role:
             role = ctx.guild.default_role
         embed = discord.Embed(title="Role Info", description=f"{role.mention} Pos: {role.position} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
         embed.add_field(name="Permissions", value='\u200b'+'\n'.join(perm.replace('_',' ').title() for perm, value in role.permissions if value))

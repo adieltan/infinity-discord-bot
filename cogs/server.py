@@ -37,7 +37,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.has_permissions(administrator=True)
     async def prefix(self, ctx, prefix:str=None):
         """Changes the prefix for the bot in the server."""
-        if prefix is None:
+        if not prefix:
             results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
             pref = results.get('prefix')
             await ctx.reply(f"The prefix for {ctx.guild.name} is `{pref}`", mention_author=False)
@@ -84,7 +84,7 @@ class ServerCog(commands.Cog, name='Server'):
         """Shows info about the current server."""
         if guild_id is not None and await self.bot.is_owner(ctx.author):
             guild = self.bot.get_guild(guild_id)
-            if guild is None:
+            if not guild:
                 return await ctx.send('Invalid Guild ID given.')
         else:
             guild = ctx.guild
@@ -141,7 +141,7 @@ class ServerCog(commands.Cog, name='Server'):
         """Sees who left the server the most."""
         results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
         dic = results.get('leaveleaderboard')
-        if dic is None:
+        if not dic:
             await ctx.reply('No data.')
             return
         sort = dict(sorted(dic.items(), key = lambda x: x[1], reverse = True))
@@ -163,10 +163,10 @@ class ServerCog(commands.Cog, name='Server'):
             return
         results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
         dic = results.get('leaveleaderboard')
-        if dic is None:
+        if not dic:
             dic = dict()
         mem = dic.get(f"{member.id}")
-        if mem is None:
+        if not mem:
             mem = 0
         dic[f"{member.id}"] = mem + 1
         await self.bot.dba['server'].update_one({'_id':member.guild.id}, {'$set':{'leaveleaderboard':dic}})
@@ -176,7 +176,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.has_guild_permissions(kick_members=True)
     async def ar(self,ctx):
         """Autoresponse commands for the server."""
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             await ctx.reply("Autoresponse commands: `add` `remove` `list`")
 
     @ar.command(name="add")
@@ -261,7 +261,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.has_guild_permissions(administrator=True)
     async def delete(self, ctx):
         """Warning: This might affect the server's structure."""
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             await ctx.reply("Subcommands: `category` `channel` `allchannel`")
 
     @delete.command(name="category", aliases=['cat'])
@@ -276,7 +276,7 @@ class ServerCog(commands.Cog, name='Server'):
         for v in msgv.children:
             v.disabled = True
         await view.wait()
-        if view.value is None:
+        if not view.value:
             embed.description = 'Timeout.'
             await msg.edit(embed=embed, view=msgv)
         elif view.value:
@@ -311,7 +311,7 @@ class ServerCog(commands.Cog, name='Server'):
         for v in msgv.children:
             v.disabled = True
         await view.wait()
-        if view.value is None:
+        if not view.value:
             embed.description = 'Timeout.'
             await msg.edit(embed=embed, view=msgv)
         elif view.value:
@@ -348,7 +348,7 @@ class ServerCog(commands.Cog, name='Server'):
         for v in msgv.children:
             v.disabled = True
         await view.wait()
-        if view.value is None:
+        if not view.value:
             embed.description = 'Timeout.'
             await msg.edit(embed=embed, view=msgv)
         elif view.value:
@@ -395,10 +395,10 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.cooldown(1,4)
     async def snipe(self, ctx, channel:discord.TextChannel=None):
         """Snipes the last deleted message of the channel."""
-        if channel is None:
+        if not channel:
             channel = ctx.message.channel
         deletedmsg = self.bot.snipedb.get(f"{channel.id}")
-        if deletedmsg is None:
+        if not deletedmsg:
             await ctx.reply('No cached deleted message.')
         else:
             embed=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
@@ -432,9 +432,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role is None:
+        if not role:
             role = ctx.guild.default_role
-        if channel is None:
+        if not channel:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.view_channel=False
@@ -451,9 +451,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role is None:
+        if not role:
             role = ctx.guild.default_role
-        if channel is None:
+        if not channel:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.view_channel=True
@@ -470,9 +470,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role is None:
+        if not role:
             role = ctx.guild.default_role
-        if channel is None:
+        if not channel:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.send_messages=False
@@ -489,9 +489,9 @@ class ServerCog(commands.Cog, name='Server'):
         except:   argid=0
         role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
         channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if role is None:
+        if not role:
             role = ctx.guild.default_role
-        if channel is None:
+        if not channel:
             channel = ctx.channel
         overwrite = channel.overwrites_for(role)
         overwrite.send_messages=True
@@ -504,7 +504,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def export(self, ctx, destination, first_message_id:typing.Optional[int]=None, limit:typing.Optional[int]=100, mode:typing.Literal['clean']=None):
         """Exports chat messages to another channel.\n<first_message_id> is the id of the first message you wanna start exporting from.\n<limit> is the max number of messages to export."""
         destination_channel = self.bot.get_channel(int(re.sub("[^0-9]", "", destination)))
-        if first_message_id is None:
+        if not first_message_id:
             try:
                 first_message_id = await ctx.channel.fetch_message(ctx.message.reference.message_id)
             except:
@@ -571,7 +571,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.bot_has_permissions(manage_messages=True)
     async def purge(self,ctx, no:int=None):
         """Purges a number of messages."""
-        if no is None:
+        if not no:
             await ctx.reply(f"Purge commands: `user` `pins` `bot` `human`")
             return
         def pinc(msg):
@@ -628,7 +628,7 @@ class ServerCog(commands.Cog, name='Server'):
         msg = None
         if channelid_or_messageid is None and ref is not None:
             msg = await ctx.channel.fetch_message(ref.message_id)
-        elif channelid_or_messageid is None:
+        elif not channelid_or_messageid:
             await ctx.reply('You have to reply to or provide the message id to the message.')
 
         else:

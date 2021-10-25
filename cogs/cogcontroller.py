@@ -32,7 +32,7 @@ class CogControllerCog(commands.Cog, name='CogController'):
                         except:
                             return f"<:exclamation:876077084986966016> Error while loading `{cog}`\n```\n{traceback.format_exc()}\n```"
 
-        if cog is None:
+        if not cog:
             cogs = []
             load_reload('jishaku')
             if '\\' in os.path.dirname(os.path.abspath(__file__)):

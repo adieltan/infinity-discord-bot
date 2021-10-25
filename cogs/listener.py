@@ -18,38 +18,28 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild:discord.Guild):
-        await self.bot.wait_until_ready()
+        if not guild.owner:
+            return
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
-        try:
-            embed.set_author(
-                name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif'
-            )
-
-            embed.set_thumbnail(url=f"{guild.icon}")
-        except Exception as e:
-            await self.bot.changes.send(f'Error\n{e}')
+        embed.set_author(name=guild.name, icon_url=guild.icon.url or 'https://tenor.com/bjHxN.gif')
+        embed.set_thumbnail(url=f"{guild.icon.url}")
         if guild.banner is not None:
             embed.set_image(url=f"{guild.banner}")
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild:discord.Guild):
-        await self.bot.wait_until_ready()
+        if not guild.owner:
+            return
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
-        try:
-            embed.set_author(
-                name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif'
-            )
-
-            embed.set_thumbnail(url=f"{guild.icon}")
-        except Exception as e:
-            await self.bot.changes.send(f'Error\n{e}')
+        embed.set_author(name=guild.name, icon_url=guild.icon.url or 'https://tenor.com/bjHxN.gif')
+        embed.set_thumbnail(url=f"{guild.icon.url}")
         if guild.banner is not None:
-            embed.set_image(url=f"{guild.banner}")
+            embed.set_image(url=f"{guild.banner.url}")
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx, error):  # sourcery no-metrics
         await self.bot.wait_until_ready()
         """The event triggered when an error is raised while invoking a command.
         Parameters

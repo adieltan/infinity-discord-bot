@@ -4,6 +4,37 @@ from discord.ext import commands, tasks
 from collections import Counter, OrderedDict
 from PIL import Image
 
+class Menu(discord.ui.View):
+    def __init__(self, ctx, pages:list[discord.Embed]) -> None:
+        super().__init__(timeout=60)
+        self.current_page = 0
+        self.pages = pages
+        self.ctx = ctx
+        self.value = None
+
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+
+    @discord.ui.button(emoji='<:rewind:899651431294967908>', style=discord.ButtonStyle.blurple)
+    async def first_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[0])
+        self.current_page = 0
+
+    @discord.ui.button(emoji='<:left:876079229769482300>', style=discord.ButtonStyle.blurple)
+    async def before_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[(self.current_page - 1) % len(self.pages)])
+        self.current_page = (self.current_page - 1) % len(self.pages)
+
+    @discord.ui.button(emoji='<:right:876079229710762005>', style=discord.ButtonStyle.blurple)
+    async def next_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[(self.current_page + 1) % len(self.pages)])
+        self.current_page = (self.current_page + 1) % len(self.pages)
+
+    @discord.ui.button(emoji='<:forward:899651567869906994>', style=discord.ButtonStyle.blurple)
+    async def last_page(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.edit_message(embed=self.pages[len(self.pages) -1 ])
+        self.current_page = len(self.pages) - 1
+
 class Confirm(discord.ui.View):
     def __init__(self, ctx):
         super().__init__(timeout=10)
@@ -19,7 +50,6 @@ class Confirm(discord.ui.View):
         self.value = True
         self.stop()
 
-    # This one is similar to the confirmation button except sets the inner value to `False`
     @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -39,16 +69,13 @@ class ServerCog(commands.Cog, name='Server'):
         """Changes the prefix for the bot in the server."""
         if not prefix:
             results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
-            pref = results.get('prefix')
-            await ctx.reply(f"The prefix for {ctx.guild.name} is `{pref}`", mention_author=False)
+            await ctx.reply(f"The prefix for {ctx.guild.name} is `{results.get('prefix', '=')}`", mention_author=False)
         elif len(prefix) > 5:
-            await ctx.reply("You can't have such a long prefix.", mention_author=False)
+            await ctx.reply("You can't have such a long prefix.")
         else:
             await self.bot.dba['server'].update_one({"_id":ctx.guild.id}, {"$set": {'prefix':prefix}}, True)
             await ctx.reply(f'Prefix changed to: `{prefix}`', mention_author=False)
-            name=f'[{prefix}] Infinity'
-            bot=ctx.guild.get_member(self.bot.user.id)
-            await bot.edit(nick=name)
+            await ctx.me.edit(nick=f'[{prefix}] Infinity')
 
     @commands.group(name='emoji', invoke_without_command=True)
     async def emoji(self, ctx, emoji:discord.PartialEmoji):
@@ -259,12 +286,12 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.guild_only()
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.has_guild_permissions(administrator=True)
-    async def delete(self, ctx):
+    async def deletechannels(self, ctx):
         """Warning: This might affect the server's structure."""
         if not ctx.invoked_subcommand:
             await ctx.reply("Subcommands: `category` `channel` `allchannel`")
 
-    @delete.command(name="category", aliases=['cat'])
+    @deletechannels.command(name="category", aliases=['cat'])
     async def catdel(self,ctx, categorys:commands.Greedy[discord.CategoryChannel]):
         """Deletes all the channels in the category."""
         view = Confirm(ctx)
@@ -299,7 +326,7 @@ class ServerCog(commands.Cog, name='Server'):
             embed.color = discord.Color.red()
             await msg.edit(embed=embed, view=msgv)
 
-    @delete.command(name="channel", aliases=['chan'])
+    @deletechannels.command(name="channel", aliases=['chan'])
     async def chandel(self,ctx, channels:commands.Greedy[discord.TextChannel]):
         """Deletes the channel."""
         view = Confirm(ctx)
@@ -332,7 +359,7 @@ class ServerCog(commands.Cog, name='Server'):
             embed.color = discord.Color.red()
             await msg.edit(embed=embed, view=msgv)
 
-    @delete.command(name="allchannel")
+    @deletechannels.command(name="allchannel")
     async def purgeallchannel(self,ctx):
         """Deletes all the channels."""
         if ctx.author != ctx.guild.owner:
@@ -340,8 +367,6 @@ class ServerCog(commands.Cog, name='Server'):
             return
         """Deletes the channel."""
         view = Confirm(ctx)
-        channels = 0
-        errors = []
         embed = discord.Embed(title="Guild Channel Deletion", description=f"Deleting {len(ctx.guild.channels)} channels.\nClick Confirm.", color=discord.Color.brand_red())
         msg = await ctx.reply(embed=embed, view=view)
         msgv = discord.ui.View.from_message(msg)
@@ -351,10 +376,12 @@ class ServerCog(commands.Cog, name='Server'):
         if not view.value:
             embed.description = 'Timeout.'
             await msg.edit(embed=embed, view=msgv)
-        elif view.value:
+        else:
             embed.description += '\nConfirmed.'
             embed.color = discord.Color.green()
             await msg.edit(embed=embed, view=msgv)
+            channels = 0
+            errors = []
             for channel in ctx.guild.channels:
                 try:
                     await channel.delete(reason=f"Deleted by {ctx.author.name}.")
@@ -364,32 +391,6 @@ class ServerCog(commands.Cog, name='Server'):
                     channels += 1
             err = 'Errors:\n' + ' '.join(f'<#{id}>' for error in errors if error)
             await ctx.reply(f"Deleted {channels} channels.\n{err if errors else ''}")
-        else:
-            embed.description = 'Cancelled.'
-            embed.color = discord.Color.red()
-            await msg.edit(embed=embed, view=msgv)
-
-    @commands.command(name="muteoverwrites")
-    @commands.cooldown(1,6)
-    @commands.has_permissions(administrator=True)
-    async def mo(self, ctx, muterole:discord.Role):
-        """Updates mute role's perms for the whole server.."""
-        overwrite = ctx.channel.overwrites_for(muterole)
-        overwrite.send_messages=False
-        channels = ctx.guild.channels
-        categories = ctx.guild.categories
-        for channel in channels:
-            try:
-                await channel.set_permissions(muterole, overwrite=overwrite)
-            except:
-                pass
-        for category in categories:
-            try:
-                await category.set_permissions(muterole, overwrite=overwrite)
-            except:
-                pass
-        await ctx.send("`DONE`")
-        
         
     @commands.command(name="snipe", aliases=["sn"])
     @commands.cooldown(1,4)
@@ -426,77 +427,105 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
-    async def Hides(self, ctx, *, arg:str=None):
-        """Hides a channel for a certain role / channel / user."""
-        try:    argid = int(re.sub("[^0-9]", "", arg))
-        except:   argid=0
-        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
-        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if not role:
-            role = ctx.guild.default_role
-        if not channel:
-            channel = ctx.channel
-        overwrite = channel.overwrites_for(role)
-        overwrite.view_channel=False
-        await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** hidden {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+    async def hide(self, ctx, channels:commands.Greedy[typing.Union[discord.CategoryChannel, discord.TextChannel, discord.VoiceChannel, discord.StageChannel]]=[], target:typing.Union[discord.Role, discord.Member]=None):
+        """Hides a channel for a certain role / channel / member."""
+        async def overwrite(channel):
+            o = channel.overwrites_for(target)
+            if not o.view_channel:
+                return
+            o.view_channel=False
+            await channel.set_permissions(target, overwrite=o)
+            channels.append(channel)
+        if not target:
+            target = ctx.guild.default_role
+        if not channels:
+            channels.append(ctx.channel)
+        for c in channels:
+            if type(c) is discord.CategoryChannel:
+                for cc in c.channels:
+                    await overwrite(cc)
+            await overwrite(c)
+        c = '\n'.join([c.mention for c in channels])
+        e = discord.Embed(title='Channel Hide', description=f"Hidden {len(channels)} channel(s):\n{c}\nfor {target.mention}", color=discord.Color.random())
+        await ctx.reply(embed=e)
 
     @commands.command(name="unhide", aliases=['uh'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
     @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
-    async def unHide(self, ctx, *, arg:str=None):
-        """Unhides a channel for a certain role / channel / user."""
-        try:    argid = int(re.sub("[^0-9]", "", arg))
-        except:   argid=0
-        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
-        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if not role:
-            role = ctx.guild.default_role
-        if not channel:
-            channel = ctx.channel
-        overwrite = channel.overwrites_for(role)
-        overwrite.view_channel=True
-        await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** unhidden {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+    async def unhide(self, ctx, channels:commands.Greedy[typing.Union[discord.CategoryChannel, discord.TextChannel, discord.VoiceChannel, discord.StageChannel]]=[], target:typing.Union[discord.Role, discord.Member]=None):
+        """Unhides a channel for a certain role / channel / member."""
+        async def overwrite(channel):
+            o = channel.overwrites_for(target)
+            if o.view_channel:
+                return
+            o.view_channel=True
+            await channel.set_permissions(target, overwrite=o)
+            channels.append(channel)
+        if not target:
+            target = ctx.guild.default_role
+        if not channels:
+            channels.append(ctx.channel)
+        for c in channels:
+            if type(c) is discord.CategoryChannel:
+                for cc in c.channels:
+                    await overwrite(cc)
+            await overwrite(c)
+        c = '\n'.join([c.mention for c in channels])
+        e = discord.Embed(title='Channel Unide', description=f"Unhidden {len(channels)} channel(s):\n{c}\nfor {target.mention}", color=discord.Color.random())
+        await ctx.reply(embed=e)
 
     @commands.command(name="lock", aliases=['l'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
     @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
-    async def lock(self, ctx, *, arg:str=None):
-        """Locks a channel for a certain role / channel / user."""
-        try:    argid = int(re.sub("[^0-9]", "", arg))
-        except:   argid=0
-        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
-        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if not role:
-            role = ctx.guild.default_role
-        if not channel:
-            channel = ctx.channel
-        overwrite = channel.overwrites_for(role)
-        overwrite.send_messages=False
-        await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** locked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+    async def lock(self, ctx, channels:commands.Greedy[typing.Union[discord.CategoryChannel, discord.TextChannel, discord.VoiceChannel, discord.StageChannel]]=[], target:typing.Union[discord.Role, discord.Member]=None):
+        """Locks a channel for a certain role / channel / member."""
+        async def overwrite(channel):
+            o = channel.overwrites_for(target)
+            if not o.send_messages:
+                return
+            o.send_messages=False
+            await channel.set_permissions(target, overwrite=o)
+            channels.append(channel)
+        if not target:
+            target = ctx.guild.default_role
+        if not channels:
+            channels.append(ctx.channel)
+        for c in channels:
+            if type(c) is discord.CategoryChannel:
+                for cc in c.channels:
+                    await overwrite(cc)
+            await overwrite(c)
+        c = '\n'.join([c.mention for c in channels])
+        e = discord.Embed(title='Channel Lock', description=f"Locked {len(channels)} channel(s):\n{c}\nfor {target.mention}", color=discord.Color.random())
+        await ctx.reply(embed=e)
 
     @commands.command(name="unlock", aliases=['ul'])
     @commands.cooldown(1,2)
     @commands.has_permissions(manage_permissions=True)
     @commands.bot_has_permissions(manage_permissions=True, manage_channels=True)
-    async def unlock(self, ctx, *, arg:str=None):
-        """Unhides a channel for a certain role / channel / user."""
-        try:    argid = int(re.sub("[^0-9]", "", arg))
-        except:   argid=0
-        role = discord.utils.get(ctx.guild.roles, name=arg) or discord.utils.get(ctx.guild.roles, id=argid) or discord.utils.get(ctx.guild.members, name=arg) or discord.utils.get(ctx.guild.members, id=argid)
-        channel = discord.utils.get(ctx.guild.channels, name=arg) or discord.utils.get(ctx.guild.channels, id=arg)
-        if not role:
-            role = ctx.guild.default_role
-        if not channel:
-            channel = ctx.channel
-        overwrite = channel.overwrites_for(role)
-        overwrite.send_messages=True
-        await ctx.channel.set_permissions(role, overwrite=overwrite)
-        await ctx.reply(f'**`SUCCESSFULLY`** unlocked {channel.mention} for {role.mention}', mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+    async def unlock(self, ctx, channels:commands.Greedy[typing.Union[discord.CategoryChannel, discord.TextChannel, discord.VoiceChannel, discord.StageChannel]]=[], target:typing.Union[discord.Role, discord.Member]=None):
+        """Unlocks a channel for a certain role / channel / member."""
+        async def overwrite(channel):
+            o = channel.overwrites_for(target)
+            if o.send_messages:
+                return
+            o.send_messages=True
+            await channel.set_permissions(target, overwrite=o)
+            channels.append(channel)
+        if not target:
+            target = ctx.guild.default_role
+        if not channels:
+            channels.append(ctx.channel)
+        for c in channels:
+            if type(c) is discord.CategoryChannel:
+                for cc in c.channels:
+                    await overwrite(cc)
+            await overwrite(c)
+        c = '\n'.join([c.mention for c in channels])
+        e = discord.Embed(title='Channel Unlock', description=f"Unlocked {len(channels)} channel(s):\n{c}\nfor {target.mention}", color=discord.Color.random())
+        await ctx.reply(embed=e)
 
     @commands.command(name="export")
     @commands.max_concurrency(1, commands.BucketType.channel)
@@ -702,6 +731,402 @@ class ServerCog(commands.Cog, name='Server'):
             embed.description=f"Session Ended\nResult: {result.jump_url}"
             await msg.edit(embed=embed)
             await msg.clear_reactions()
+
+
+    @commands.command(name='userinfo', aliases=['ui', 'user', 'whois', 'i'])
+    async def userinfo(self, ctx, *, member: typing.Union[discord.Member, discord.User]=None):
+        """Gets info about the user."""
+        if not member:
+            member = ctx.author
+        if type(member) == discord.Member:
+            if member.status == discord.Status.online:
+                status = "🟢 Online"
+            elif member.status == discord.Status.idle:
+                status = "🟡 Idle"
+            elif member.status == discord.Status.dnd:
+                status = "🔴 DND"
+            elif member.status == discord.Status.offline:
+                status = "⚫ Offline"
+            else:
+                status = ''
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.display_avatar})\n{status}\n", color=member.color, timestamp = discord.utils.utcnow())
+            if member.activity:
+                embed.description += f"{member.activity.name}"
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.display_avatar}')
+            embed.add_field(name="Joined", value=f"{discord.utils.format_dt(member.joined_at, style='F')}\n{discord.utils.format_dt(member.joined_at, style='R')}")
+            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
+            if member.nick:
+                embed.description = f"`{member.nick}` " + embed.description
+            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
+            dic = results.get('leaveleaderboard') or {}
+            leavetimes = dic.get(f"{member.id}")
+            if leavetimes is not None:
+                embed.description += f"\nLeft the server {leavetimes} times."
+            if member.bot:
+                embed.description += f"\n🤖 Bot Account"
+            if member.premium_since:
+                embed.add_field(name="Server Boost", value=f"\nBoosting since: {discord.utils.format_dt(member.premium_since, style='f')}\n{discord.utils.format_dt(member.premium_since, style='R')}")
+            embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
+            embed.set_thumbnail(url=member.display_avatar)
+            embed.set_footer(text=f"ID: {member.id}")
+        else:
+            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar})", color=member.color, timestamp = discord.utils.utcnow())
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar}')
+            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
+            if member.bot:
+                embed.description += f"\n🤖 Bot Account"
+            results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
+            dic = results.get('leaveleaderboard')
+            leavetimes = dic.get(f"{member.id}")
+            if leavetimes is not None:
+                embed.description += f"\nLeft the server {leavetimes} times."
+            embed.set_thumbnail(url=member.avatar)
+            embed.set_footer(text=f"ID: {member.id}")
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.command(name='perms', aliases=['permissions', 'perm'])
+    @commands.cooldown(1,5)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def check_permissions(self, ctx, object:typing.Union[discord.Member, discord.Role]=None):
+        """Checks member's or role's permissions."""
+        if not object:
+            object = ctx.author
+        if type(object) == discord.Role:
+            perms = "```"
+            for perm, value in object.permissions:
+                emoji = '✅' if value is True else '❌'
+                perms += f" {emoji} - {perm.replace('_',' ').title()}\n"
+            perms += '```'
+        elif type(object) == discord.Member:
+            perms = '```\nServer - 🛑 \nCurrent Channel - 💬 \n'
+            perms += ' 🛑 | 💬 \n'
+            channel_perms = dict(iter(ctx.channel.permissions_for(object)))
+            for perm, value in object.guild_permissions:
+                if value is not False or channel_perms[perm] is not False:
+                    emoji = '✅' if value is True else '❌'
+                    cemoji = '✅' if channel_perms[perm] is True else '❌'
+                    perms += f" {emoji} | {cemoji} - {perm.replace('_',' ').title()}\n"
+            for perm, value in ctx.channel.permissions_for(object):
+                if value is True and perm not in dict(iter(object.guild_permissions)):
+                    perms += f" ❌ | ✅ - {perm.replace('_',' ').title()}\n"
+            perms += '```'
+
+        embed = discord.Embed(title='Permissions for:', description=object.mention+'\n'+perms, color=discord.Color.random())
+        if object is discord.Member:
+            embed.set_author(icon_url=object.avatar, name=str(object))
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.group(aliases=['r'], invoke_without_command=True)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def role(self,ctx, member:discord.Member, *,  role:discord.Role):
+        """Role Utilities."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        if role in member.roles:
+            try:
+                await member.remove_roles(role)
+            except:
+                await ctx.reply("Failed")
+            else:
+                embed = discord.Embed(title='User role remove', description=f"Removed {role.mention} from {member.mention}", color=role.color)
+                embed.timestamp=discord.utils.utcnow()
+                await ctx.reply(embed=embed, mention_author=False)
+            return
+        try:
+            await member.add_roles(role)
+        except:
+            await ctx.reply("Failed")
+        else:
+            embed = discord.Embed(title='User role add', description=f"Added {role.mention} to {member.mention}", color=role.color)
+            embed.timestamp=discord.utils.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
+    
+    @role.command(name='colour', aliases=['color', 'c'])
+    @commands.has_permissions(manage_roles=True)
+    async def role_colour(self, ctx, role:discord.Role, colour_hex:str=None):
+        "Changes/views the role colour."
+        if not colour_hex:
+            embed=discord.Embed(description=f"{role.mention}\nRGB: {role.colour.to_rgb()}\nInt: {role.colour.value}\nHex: {str(hex(role.colour.value))[2:]}", color=role.color)
+            await ctx.reply(embed=embed, mention_author=False)
+            return
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        c = tuple(int(colour_hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+
+        await role.edit(colour=discord.Colour.from_rgb(c[0], c[1], c[2]), reason="Changed by {ctx.author.name}.")
+        embed = discord.Embed(title='Role Colour', description=f"{role.mention} colour edit.", color=discord.Colour.from_rgb(c[0], c[1], c[2]))
+        embed.timestamp=discord.utils.utcnow()
+        await ctx.reply(embed=embed, mention_author=False)
+
+
+    @role.command()
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def delete(self,ctx, role:discord.Role, *, reason:str=None):
+        """Deletes the role."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        try:
+            await role.delete(reason=f"Deleted by {ctx.author.name} for {reason}.")
+        except:
+            await ctx.reply("Failed")
+        else:
+            
+            embed = discord.Embed(title='Role deletion', description=f"{role.name} deleted.", color=discord.Color.random())
+            embed.timestamp=discord.utils.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command()
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def create(self,ctx, rolename:str):
+        """Creates the role."""
+        try:
+            role = await ctx.guild.create_role(name=rolename)
+        except:
+            await ctx.reply("Failed")
+        else:
+            
+            embed = discord.Embed(title='Role creation', description=f"{role.mention} created.", color=role.color)
+            embed.timestamp=discord.utils.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command()
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def add(self,ctx, member:discord.Member, *,  role:discord.Role):
+        """Adds a role to a person."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        if role in member.roles:
+            await ctx.reply("User already has role.")
+            return
+        try:
+            await member.add_roles(role)
+        except:
+            await ctx.reply("Failed")
+        else:
+            embed = discord.Embed(title='User role add', description=f"Added {role.mention} to {member.mention}", color=role.color)
+            embed.timestamp=discord.utils.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command()
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def remove(self,ctx, member:discord.Member, *, role:discord.Role):
+        """Removes a role from a person."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        if role not in member.roles:
+            await ctx.reply("User dosen't have the role.")
+            return
+        try:
+            await member.remove_roles(role)
+        except:
+            await ctx.reply("Failed")
+        else:
+            embed = discord.Embed(title='User role remove', description=f"Removed {role.mention} from {member.mention}", color=role.color)
+            embed.timestamp=discord.utils.utcnow()
+            await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command(aliases=['i'])
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def info(self,ctx, *, role:discord.Role=None):
+        """Shows infomation about a role."""
+        if not role:
+            role = ctx.guild.default_role
+        embed = discord.Embed(title="Role Info", description=f"{role.mention} Pos: {role.position} `{role.id}`\nMembers: {len(role.members)}" , color=role.color)
+        embed.add_field(name="Permissions", value='\u200b'+'\n'.join(perm.replace('_',' ').title() for perm, value in role.permissions if value))
+        embed.set_footer(text="Role created at")
+        embed.timestamp = role.created_at
+        await ctx.reply(embed=embed, mention_author=True)
+
+    @role.command(aliases=['d'])
+    @commands.cooldown(1,4)
+    @commands.has_permissions(manage_roles=True)
+    async def dump(self,ctx, *, role:discord.Role):
+        """Dumps members from the role."""
+        people = role.members
+        text ="```css\n" + '\n'.join((f'{m.name} ({m.id})')for m in people) + "```"
+        await ctx.reply(text)
+
+    @role.command(name="list", aliases=['l'])
+    @commands.cooldown(1,7,commands.BucketType.channel)
+    @commands.has_permissions(manage_roles=True)
+    async def list(self, ctx):
+        """Lists all the roles of the guild in a paginated way."""
+        roles = ctx.guild.roles
+        roles.reverse()
+        n = 10
+        pages = [roles[i:i + n] for i in range(0, len(roles), n)]
+        pagess = [discord.Embed(title=f"{ctx.guild.name}'s Roles", description='\n'.join([f'{r.mention} `{r.id}`' for r in page]), color=discord.Color.random()).set_footer(text=f"{pages.index(page) + 1} / {len(pages)} pages").set_thumbnail(url=ctx.guild.icon) for page in pages]
+        v = Menu(ctx, pagess)
+        msg = await ctx.reply(embed=pagess[0], view=v)
+        vd = discord.ui.View.from_message(msg)
+        for item in vd.children:
+            item.disabled = True
+        await v.wait()
+        await msg.edit(view=vd)
+
+    @role.command(name='random', aliases=['randommember'])
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    async def random(self, ctx, role:discord.Role=None, howmany:int=1):
+        """Finds random peoples from the whole server or from roles."""
+        if role == None:
+            role = ctx.guild.default_role
+        people = role.members
+        winners = []
+        if howmany > len(people):
+            howmany = len(people)
+        while len(winners) < howmany:
+            win = random.choice(people)
+            winners.append(win)
+            people.remove(win)
+        
+        text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
+        embed = discord.Embed(title='Member randomizer', description=f'{text}', color=discord.Color.random())
+        embed.timestamp=discord.utils.utcnow()
+        embed.set_footer(text=f'Drawn {len(winners)} winners.')
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command(name="clear")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def clear(self,ctx,*, member:discord.Member):
+        """Removes all role from a member."""
+        if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        roles = member.roles
+        roles.pop(0)
+        await member.remove_roles(*tuple(roles), reason=f"`role clear` command by {ctx.author.name} ({ctx.author.id})")
+        embed = discord.Embed(title='User role remove all', description=f"Removed **{len(roles)}** roles\n{' '.join([r.mention for r in roles])}", color=discord.Color.red())
+        embed.timestamp=discord.utils.utcnow()
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @role.command(name="all")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def roleall(self, ctx,*, role:discord.Role):
+        """Adds a role to all members in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to add `{role.name}` to {len(members)} members.")
+        success = 0
+        for m in members:
+            if role not in m.roles:
+                try:    await m.add_roles(role, reason=f"`role all` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role all command", description=f"Sucessfully added {role.mention} to **{success}** members out of {len(members)} members.", color=discord.Color.green()))
+
+    @role.command(name="bots")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolebots(self, ctx,*, role:discord.Role):
+        """Adds a role to all bots in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to add `{role.name}` to bots in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is True and role not in m.roles:
+                try:    await m.add_roles(role, reason=f"`role bots` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role bots command", description=f"Sucessfully added {role.mention} to **{success}** bots out of {len(members)} members.", color=discord.Color.green()))
+
+    @role.command(name="humans")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolehumans(self, ctx,*, role:discord.Role):
+        """Adds a role to all humans in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to add `{role.name}` to humans in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is False and role not in m.roles:
+                try:    await m.add_roles(role, reason=f"`role humans` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role humans command", description=f"Sucessfully added {role.mention} to **{success}** humans out of {len(members)} members.", color=discord.Color.green()))
+
+    @role.command(name="rall")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolerall(self, ctx,*, role:discord.Role):
+        """Removes a role from all members in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = ctx.guild.members
+        await ctx.reply(f"Trying to remove `{role.name}` from {len(members)} members.")
+        success = 0
+        for m in members:
+            if role in m.roles:
+                try:    await m.remove_roles(role, reason=f"`role rall` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role rall command", description=f"Sucessfully removed {role.mention} from **{success}** members out of {len(members)} members.", color=discord.Color.red()))
+
+    @role.command(name="rbots")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolerbots(self, ctx,*, role:discord.Role):
+        """Removes a role from all bots in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = role.members
+        await ctx.reply(f"Trying to remove `{role.name}` from bots in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is True and role in m.roles:
+                try:    await m.remove_roles(role, reason=f"`role rbots` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role rbots command", description=f"Sucessfully removed {role.mention} from **{success}** bots out of {len(members)} members.", color=discord.Color.red()))
+
+    @role.command(name="rhumans")
+    @commands.cooldown(1,2)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def rolerhumans(self, ctx,*, role:discord.Role):
+        """Removes a role from all humans in the server."""
+        if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        members = role.members
+        await ctx.reply(f"Trying to remove `{role.name}` from humans in {len(members)} members.")
+        success = 0
+        for m in members:
+            if m.bot is False and role in m.roles:
+                try:    await m.remove_roles(role, reason=f"`role rhumans` command by {ctx.author.name} ({ctx.author.id})")
+                except: pass
+                else:   success += 1
+        await ctx.reply(embed=discord.Embed(title="Role rhumans command", description=f"Sucessfully removed {role.mention} from **{success}** humans out of {len(members)} members.", color=discord.Color.green()))
 
 def setup(bot):
     bot.add_cog(ServerCog(bot))

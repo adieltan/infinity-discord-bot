@@ -83,11 +83,68 @@ class IvDropdownView(discord.ui.View):
         try:
             value = selectoption.values[0]
             items = '\n'.join([f"{i.title()}" for i in self.ivlist if self.ivlist[i]['t'] == value])
-            embed = discord.Embed(title=f"Item List", description=items + ('\n\n📝 DM Admin if donating Bolt / Karen / Odd Eye.' if value == '7' else '') + ('\n\n📝 DM Admin if donating Blob.' if value == '8' else ''), color=discord.Color.random()).set_footer(text=f'{iv_classes[value]}')
+            embed = discord.Embed(title="Item List", description=items + ('\n\n📝 DM Admin if donating Bolt / Karen / Odd Eye.' if value == '7' else '') + ('\n\n📝 DM Admin if donating Blob.' if value == '8' else ''), color=discord.Color.random()).set_footer(text=f'{iv_classes[value]}')
             await self.msg.edit(embed=embed)
         except:
             pass
 
+class IvEdit(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=10)
+        self.view = None
+        self.value = None
+        self.interaction = None
+        self.ctx = ctx
+    
+    async def on_timeout(self):
+        self.value = False
+
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+
+    @discord.ui.button(emoji='🏷️', label='Name', style=discord.ButtonStyle.green)
+    async def name(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = 'name'
+        self.stop()
+
+    @discord.ui.button(emoji='💰', label='Value', style=discord.ButtonStyle.green)
+    async def value(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = 'value'
+        self.stop()
+
+    @discord.ui.button(emoji='✅', label='Confirm', style=discord.ButtonStyle.green)
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = True
+        self.stop()
+
+    @discord.ui.button(emoji='❌', label='Cancel', style=discord.ButtonStyle.gray)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = False
+        self.stop()
 class CustomCog(commands.Cog, name='Custom'):
     """🔧 Custom commands for server."""
     def __init__(self, bot):
@@ -351,8 +408,6 @@ class CustomCog(commands.Cog, name='Custom'):
         await ctx.reply("Logged in <#842738964385497108>")
 
 
-
-    
     def iv_view(self, name, price, emoji, item_type:typing.Literal[1,2,3,4,5,6,7,8,9]):
         emoji = (
             discord.Embed(
@@ -440,7 +495,6 @@ class CustomCog(commands.Cog, name='Custom'):
 
     @iv.command(name='add')
     @server([894628265963159622])
-    #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
     async def iv_add(self, ctx, item_type:typing.Literal[1,2,3,4,5,6,7,8,9], value:float, emoji:typing.Union[discord.PartialEmoji, str], *, item_name:str):
         value = round(value)
@@ -473,38 +527,101 @@ class CustomCog(commands.Cog, name='Custom'):
             for vd in msgv.children:
                 vd.disabled = True
             await v.wait()
-            if not v.value:
-                mes.edit('Timeout.', view=msgv)
-            elif v.value:
+            if v.value is False:
+                await mes.edit('Cancelled', view=msgv)
+            elif not v.value:
+                await mes.edit('Timeout.', view=msgv)
+            else:
                 ivlist.pop(fuz[0])
                 await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
                 await mes.edit("Confirmed.", view=msgv)
                 await mes.reply(f"**{fuz[0].title()}** removed.")
-            else:
-                await mes.edit('Cancelled', view=msgv)
+            
+
+    @iv.command(name='edit')
     @server([894628265963159622])
-    #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
-    async def iv_edit(self, ctx, new:typing.Union[float, str], *, item_name:str):
+    async def iv_edit(self, ctx, item_name:str):
         """Edits name/value for an item."""
         server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply(f"No items.")
-        fuzzy = process.extractOne(item_name.lower(), ivlist.keys())
-        if fuzzy[1] < 75:
+        fuz = process.extractOne(item_name.lower(), ivlist.keys())
+        if fuz[1] < 75:
             await ctx.reply(f"{item_name} Not Found")
         else:
-            if type(new) is str:
-                ivlist[new.lower()] = ivlist[fuzzy[0]]
-                ivlist.pop(fuzzy[0])
-                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-                await ctx.reply(f"{item_name} renamed to {new}.")
-            elif type(new) is float:
-                val = round(new)
-                ivlist[fuzzy[0]]['v'] = val
-                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-                await ctx.reply(f"{fuzzy[0].title()}'s value is now {'{:,}'.format(val)}.")
+            v = IvEdit(ctx)
+            msg = await ctx.reply(f"Click the button to edit.", embed=self.iv_view(f"{fuz[0]}", ivlist[fuz[0]]['v'], ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']), view=v)
+            dv = discord.ui.View.from_message(msg)
+            for db in dv.children:
+                db.disabled = True
+            name = fuz[0]
+            value = ivlist[fuz[0]]['v']
+            while v.value not in (True, False):
+                await v.wait()
+                def author(m):
+                    return m.author == ctx.author and m.channel.id == ctx.channel.id
+                if v.value == 'name':
+                    m = await v.interaction.followup.send(f'Send the new name for **{fuz[0]}** in 20 seconds.')
+                    await msg.edit(view=v.view)
+                    try:
+                        message = await self.bot.wait_for('message', check=author, timeout=20)
+                        name = message.content.lower()
+                        v = IvEdit(ctx)
+                        await msg.edit("Click Confirm to update.", embed=self.iv_view(name, value, ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']), view=v)
+                    except asyncio.TimeoutError:
+                        await v.interaction.followup.edit_message(m.id, 'Timeout.')
+                        await msg.edit('Timeout.', view=dv)
+                        v.value = False
+                    except:
+                        v = IvEdit(ctx)
+                        await msg.edit("Name Invalid.", view=v)
+                elif v.value == 'value':
+                    m = await v.interaction.followup.send(f'Send the new value for **{fuz[0]}** in 20 seconds.')
+                    await msg.edit(view=v.view)
+                    try:
+                        message = await self.bot.wait_for('message', check=author, timeout=20)
+                        value = round(float(message.content.lower()))
+                        v = IvEdit(ctx)
+                        await msg.edit("Click Confirm to update.", embed=self.iv_view(name, value, ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']), view=v)
+                    except asyncio.TimeoutError:
+                        await v.interaction.followup.edit_message(m.id, 'Timeout.')
+                        await msg.edit('Timeout.', view=dv)
+                    except:
+                        v = IvEdit(ctx)
+                        await msg.edit("Number Invalid.", view=v)
+                elif v.value is True:
+                    await v.interaction.followup.send('Confirmed')
+                    ivlist[name] = ivlist.pop(fuz[0])
+                    ivlist[name]['v'] = value
+                    await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+                    await msg.edit(view=dv, embed=self.iv_view(name, value, ivlist[name]['e'], ivlist[name]['t']))
+                else:
+                    try:
+                        await v.interaction.followup.send(content='Cancelled')
+                        await msg.edit('Cancelled', view=dv)
+                    except: 
+                        pass
+                    return
+            # def author(m):
+            #     return m.author == ctx.author and m.channel.id == ctx.channel.id
+            # try:
+            #     message = await self.bot.wait_for('message', check=author, timeout=20)
+            #     try:
+            #         val = round(float(message.content.lower()))
+            #         ivlist[fuz[0]]['v'] = val
+            #         await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+            #         await message.add_reaction("<a:verified:876075132114829342>")
+            #         await msg.edit(f"{fuz[0].title()}'s value is now {'{:,}'.format(val)}.", embed=self.iv_view(f"{fuz[0]}", val, ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']))
+            #     except:
+            #         ivlist[message.content.lower()] = ivlist[fuz[0]]
+            #         ivlist.pop(fuz[0])
+            #         await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+            #         await message.add_reaction("<a:verified:876075132114829342>")
+            #         await msg.edit(f"{item_name} renamed to {message.content.lower().title()}.", embed=self.iv_view(f"{message.content.lower().title()}", ivlist[message.content.lower()]['v'], ivlist[message.content.lower()]['e'], ivlist[message.content.lower()]['t']))
+            # except asyncio.TimeoutError:
+            #     await msg.edit(f'Timeout.')
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

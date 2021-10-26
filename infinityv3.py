@@ -1,15 +1,11 @@
 import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 
-
-import motor.motor_asyncio, motor.motor_tornado, traceback, pytz
-
+import motor.motor_asyncio, motor.motor_tornado, traceback, pytz, ssl
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except:pass
-
-import ssl
 
 os.environ['JISHAKU_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
@@ -19,13 +15,9 @@ os.environ['JISHAKU_NO_UNDERSCORE']= 'True'
 async def get_prefix(bot, message):
     if not message.guild:
         return ('')
-    results= await bot.dba['server'].find_one({"_id":message.guild.id})
-    if results is not None:
-        pref = results.get("prefix")
-        return commands.when_mentioned_or(pref)(bot, message)
-    else:
-        await bot.dba['server'].update_one({"_id":message.guild.id}, {"$set": {'prefix':'='}}, True)
-        return commands.when_mentioned_or("=")(bot, message)
+    results = await bot.dba['server'].find_one({"_id":message.guild.id}) or {}
+    pref = results.get("prefix", '=')
+    return commands.when_mentioned_or(pref)(bot, message)
 
 class Infinity(commands.AutoShardedBot):
     def __init__(self, *args, **kwargs):
@@ -64,31 +56,45 @@ elif '/' in os.path.dirname(os.path.abspath(__file__)):
     slash = '/'
 for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cogs'):
     if filename.endswith(".py"):
-        bot.load_extension(f"cogs.{filename[:-3]}")
+        try:
+            bot.load_extension(f"cogs.{filename[:-3]}")
+        except Exception as e:
+            print(e)
 
 @bot.check
 def blacklisted(ctx) -> bool:
     return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
 
+async def cache_bl():
+    b = set({})
+    async for doc in bot.dba['profile'].find({'bl':True}):
+        b.add(doc['_id'])
+    bot.bled = b
+
+async def cache_managers():
+    managers = []
+    async for doc in bot.dba['profile'].find({'manager':True}):
+        managers.append(doc['_id'])
+    bot.managers = managers
+
+bot.cbl = cache_bl
+bot.cmanager = cache_managers
+
 @bot.event
 async def on_ready():
     await bot.wait_until_ready()
-    bls = set({})
-    async for doc in bot.dba['profile'].find({'bl':True}):
-        bls.add(doc['_id'])
-    bot.bled = bls
-    manag = set({})
+    await cache_bl()
+    m = set({})
     async for doc in bot.dba['profile'].find({'manager':True}):
-        manag.add(doc['_id'])
-    bot.managers = manag
-
+        m.add(doc['_id'])
+    bot.managers = m
     bot.errors = bot.get_channel(825900714013360199)
     bot.logs = bot.get_channel(874461656938340402)
     bot.changes = bot.get_channel(859779506038505532)
     status.start()
     performance.start()
-    login = f"\n{bot.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}"
-    print(login)
+    delete_snipecache.start()
+    print(f"\n{bot.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}")
     bot.startuptime = discord.utils.utcnow()
 
 @bot.event
@@ -117,5 +123,12 @@ async def performance():
     embed=discord.Embed(title="Performance report", description=f"<:ping:901051623416152095> {pingvalue}ms\n<:cpu:901051865960181770> {cpuvalue}%\n<:memory:901049486242091049> {memoryvalue}%", color=discord.Color.random())
     embed.timestamp=discord.utils.utcnow()
     await bot.logs.send(embed=embed)
+
+@tasks.loop(minutes=3, reconnect=True)
+async def delete_snipecache():
+        for i in bot.snipedb.copy():
+            if round(bot.snipedb[i].created_at.timestamp() + 60) < round(discord.utils.utcnow().timestamp()):
+                bot.snipedb.pop(i)
+
 
 bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)

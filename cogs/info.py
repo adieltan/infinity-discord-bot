@@ -12,7 +12,6 @@ class InfoCog(commands.Cog, name='Info'):
     @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite', 'appeal', 'info', 'botinfo', 'ping', 'servers'])
     async def links(self, ctx):
         """Gets the links related to the bot."""
-        
         embed=discord.Embed(title = "Infinity Bot Info" , url=discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.all(), scopes=('bot','applications.commands')), description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.", color=discord.Color.random(), timestamp=discord.utils.utcnow()).set_author(name=self.bot.user, icon_url=self.bot.user.avatar)
         embed.add_field(name="Owner", value=f"<a:crown:902048071343538176> {' '.join([f'<@{owner}>' for owner in self.bot.owners])}")
         embed.add_field(name="Ping", value=f'<:ping:901051623416152095> {round (self.bot.latency * 1000)}ms ')
@@ -20,13 +19,14 @@ class InfoCog(commands.Cog, name='Info'):
         embed.add_field(name="Uptime", value=f"<a:timer:890234490100793404> {round(d.seconds/60/60,2)} hours")
         embed.add_field(name="Connected", value=f"<:discovery:894391371635499048> To **{format(len(self.bot.users),',')}** members in **{len(self.bot.guilds)}** guilds.", inline=False)
         v = discord.ui.View()
-        v.add_item(discord.ui.Button(label="Bot Invite (No perms)", url=f"{discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.none(), scopes=('bot','applications.commands'))}"))
-        v.add_item(discord.ui.Button(label="Bot Invite (All perms)", url=f"{discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.all(), scopes=('bot','applications.commands'))}"))
-        v.add_item(discord.ui.Button(label="Support Server (Typical Pandas)", url='https://discord.gg/dHGqUZNqCu'))
-        v.add_item(discord.ui.Button(label="Website", url='https://tynxen.netlify.app/'))
+        v.add_item(discord.ui.Button(emoji='🤖', label="Bot Invite (No perms)", url=f"{discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.none(), scopes=('bot','applications.commands'))}"))
+        v.add_item(discord.ui.Button(emoji='👾', label="Bot Invite (All perms)", url=f"{discord.utils.oauth_url(ctx.bot.application_id, permissions=discord.Permissions.all(), scopes=('bot','applications.commands'))}"))
+        v.add_item(discord.ui.Button(emoji='<:tp_panda:839699254951804948>', label="Support Server (Typical Pandas)", url='https://discord.gg/dHGqUZNqCu'))
+        v.add_item(discord.ui.Button(emoji='🌐', label="Website", url='https://tynxen.netlify.app/'))
+        v.add_item(discord.ui.Button(emoji='<a:infinity:874548940610097163>', label='Emoji Server 1', url='https://discord.gg/hM67fpgM3y'))
+        v.add_item(discord.ui.Button(emoji='<a:infinity:874548940610097163>', label='Emoji Server 2', url='https://discord.gg/T6dJHppueq'))
         await ctx.reply(embed=embed, mention_author=False, view=v)
 
-        
     @commands.group(name='vote', aliases=['v'], invoke_without_command=True)
     @commands.cooldown(1, 4, commands.BucketType.user)
     async def vote(self, ctx):
@@ -89,7 +89,6 @@ class InfoCog(commands.Cog, name='Info'):
         embed=discord.Embed(title="Vote for Infinity", description=f"{voted}\n\n{f'Yet to vote in {len(v.children)} sites. <:down:876079229744316456>' if len(v.children) > 0 else ''}", color=discord.Color.gold())
         await ctx.reply(embed=embed, view=v)
 
-
     @vote.command(name='topgg')
     async def topggvotes(self, ctx):
         """Shows last 1000 voters for the bot via top.gg"""
@@ -123,12 +122,50 @@ class InfoCog(commands.Cog, name='Info'):
         buffer = io.BytesIO(text.encode('utf-8'))
         await ctx.reply(file=discord.File(buffer, filename='blistvotes.txt'))
 
-    @commands.command(name="managers", aliases=["staff"])
+    @commands.group(name="managers", aliases=["staff", 'manager'], invoke_without_command=True)
     async def managers(self, ctx):
         """Shows the managers of the bot."""
         managers = self.bot.managers
         embed=discord.Embed(title="Infinity Managers", description='\n'.join([f'<@{manag}>' for manag in managers]), color=discord.Color.random())
         await ctx.reply(embed=embed)
+
+    @managers.command(name='add', aliases=['a', 'promote'])
+    @commands.is_owner()
+    async def manager_add(self, ctx, user:discord.User):
+        """Promotes a user to Manager."""
+        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results['manager'] = True
+        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        await self.bot.cmanager()
+        await ctx.reply(f"Added {user.mention} as Infinity Managers.")
+        guild = self.bot.get_guild(709711335436451901)
+        member = await guild.fetch_member(user.id)
+        await member.add_roles(guild.get_role(843375370627055637))
+        embed=discord.Embed(title="Promoted to manager", description=f"{user.mention}", color=discord.Color.blurple())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
+        await self.bot.changes.send(embed=embed)
+
+    @managers.command(name='remove', aliases=['r', 'demote'])
+    @commands.is_owner()
+    async def manager_remove(self, ctx, user:discord.User):
+        """Demotes a Manager."""
+        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        try:
+            results.pop('manager')
+        except:pass
+        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        await self.bot.cmanager()
+        await ctx.reply(f"Removed {user.mention} as Infinity Managers.")
+        try:
+            guild = self.bot.get_guild(709711335436451901)
+            member = await guild.fetch_member(user.id)
+            role = guild.get_role(843375370627055637)
+            await member.remove_roles(role)
+        except:
+            pass
+        embed=discord.Embed(title="Demoted from manager", description=f"{user.mention}", color=discord.Color.dark_orange())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
+        await self.bot.changes.send(embed=embed)
 
     @commands.group(name="suggest", invoke_without_command=True)
     async def suggest(self, ctx, *, suggestion:str):
@@ -181,10 +218,14 @@ class InfoCog(commands.Cog, name='Info'):
             embed.add_field(name="Denied", value=f"{text}", inline=False)
             await message.edit(embed=embed)
 
-    @commands.command(name="emojiservers")
-    async def emojiservers(self, ctx):
-        """Gets the invite links to the bot's emoji servers."""
-        await ctx.reply(embed=discord.Embed(title="Infinity Emoji Servers", description=f"[1](https://discord.gg/hM67fpgM3y) [2](https://discord.gg/T6dJHppueq)", color=discord.Color.random()))
+    @commands.command(name='premium')
+    async def premium(self, ctx):
+        e = discord.Embed(title="Infinity Premium 👑", description=f"Suprise!\nIn development.", color=5479679)
+        e.set_author(name=ctx.me, icon_url=ctx.me.avatar)
+        e.set_thumbnail(url=ctx.me.avatar)
+        e.add_field(name="Perks", value=f"Quicker Cooldowns.\nPremium commands/functions.")
+        e.set_footer(text="Support us today.")
+        await ctx.reply(embed=e)
 
 def setup(bot):
     bot.add_cog(InfoCog(bot))

@@ -32,7 +32,7 @@ class UsersCog(commands.Cog, name='User'):
         results= await self.bot.dba['profile'].find_one({"_id":member.id})
         if not results:
             return await ctx.reply('This user does not have a profile.')
-        embed=discord.Embed(title="Profile", description="\u200b", color=discord.Color.random())
+        embed=discord.Embed(title="Profile", description=f"{results.get('bio', '')}\n", color=discord.Color.random())
         embed.set_author(icon_url=member.avatar, name=member.display_name)
         embed.set_thumbnail(url=member.avatar)
         weight = results.get('weight')
@@ -59,19 +59,16 @@ class UsersCog(commands.Cog, name='User'):
             fuz = pycountry.countries.search_fuzzy(results.get('country'))
             embed.add_field(name="Location", value=f":flag_{fuz[0].alpha_2.lower()}: {fuz[0].name}" + '\n')
         if bd:
-            embed.add_field(name='Birthday', value=f"{discord.utils.format_dt(datetime.datetime.fromtimestamp(bd), style='D')}")
+            embed.add_field(name='Birthday', value=f"<t:{round(bd)}:D>")
         if member.id in self.bot.owner_ids:
             embed.description += '<a:crown:902048071343538176> **Bot Owner**\n'
         if results.get('bl'):
             embed.description += '<:exclamation:876077084986966016> **Blacklisted**\n'
         if results.get('manager'):
             embed.description += '<a:infinity:874548940610097163> **Infinity Managers**\n'
-        premium = results.get('premium')
-        if premium:
-            if type(premium) is float and premium < round(discord.utils.utcnow().timestamp()):
-                return
+        premium = results.get('premium', False)
+        if premium is True or premium > round(discord.utils.utcnow().timestamp()):
             embed.description += f"<:infinity_coin:874548715338227722> **Premium User** {f'until <t:{premium}:d>'if type(premium) is int else ''}"
-
         await ctx.reply(embed=embed)
 
     @profile.command(name='delete')
@@ -102,6 +99,13 @@ class UsersCog(commands.Cog, name='User'):
         profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
         await ctx.reply(f"Your country has been set to {profile.get('country')}")
 
+    @profile.command(name='biography', aliases=['bio'])
+    async def setbiography(self, ctx, *, bio:str):
+        """Sets your biography."""
+        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bio':discord.utils.remove_markdown(bio)}}, True)
+        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        await ctx.reply(f"Your bio has been set to ```\n{profile['bio']}\n```")
+
     @profile.command(name="birthday", aliases=['b', 'bd', 'bday'])
     async def setbd(self, ctx, *, birthday:str):
         """Sets your own birthday."""
@@ -126,7 +130,7 @@ class UsersCog(commands.Cog, name='User'):
             raise commands.BadArgument('Provided time is invalid')
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
-        timestamp=time[0].timestamp()
+        timestamp=round(time[0].timestamp())
         await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bd':timestamp}}, True)
         profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
         bd = datetime.datetime.fromtimestamp(profile.get('bd'))

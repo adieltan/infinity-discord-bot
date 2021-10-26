@@ -254,7 +254,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             expiry = round(time[0].timestamp())
         else:
             expiry = True
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'premium':expiry}}, True)
+        await self.bot.dba['profile'].update_one({"_id":user.id}, {"$set": {'premium':expiry}}, True)
         e = discord.Embed(title="Infinity Premium 👑", description=f"{user.mention} received {'Lifetime Premium.' if expiry is True else f'Premium that expires on <t:{expiry}:D>'}", color=discord.Color.gold())
         await ctx.reply(embed=e)
         await self.bot.changes.send(embed=e)

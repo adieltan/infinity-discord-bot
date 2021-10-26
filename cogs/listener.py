@@ -39,6 +39,22 @@ class ListenerCog(commands.Cog, name='Listener'):
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
+    async def on_message(self, msg):
+        # try:
+        await self.bot.wait_until_ready()
+        if type(msg.channel) != discord.Thread or msg.author.bot:
+            return
+        if msg.channel.parent_id != 900699395639623711:
+            return
+        user = self.bot.get_user(int(msg.channel.name))
+        e = discord.Embed(title="Support Reply", description=msg.content).set_author(name=msg.author.name, icon_url=msg.author.avatar)
+        await user.send(embed=e)
+        await msg.add_reaction('<a:verified:876075132114829342>')
+        # except:
+        #     pass
+        
+
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):  # sourcery no-metrics
         await self.bot.wait_until_ready()
         """The event triggered when an error is raised while invoking a command.
@@ -88,6 +104,17 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.NotOwner):
             embed = discord.Embed(title="Owner only command", description='Imagine using this.').set_image(url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652")
             return await ctx.reply(embed=embed)
+        elif isinstance(error, commands.CommandNotFound) and type(ctx.channel) is discord.DMChannel:
+            channel = ctx.bot.get_channel(900699395639623711)
+            tchannel = channel.threads
+            tnames = [tc.name for tc in tchannel]
+            e = discord.Embed(title="Support Ticket", description=ctx.message.content).set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
+            if str(ctx.author.id) in tnames:
+                await tchannel[tnames.index(str(ctx.author.id))].send(embed=e)
+            else:
+                msg = await channel.send(embed=e)
+                await channel.create_thread(name=f"{ctx.author.id}", message=msg)
+            return await ctx.message.add_reaction('<a:verified:876075132114829342>')
         elif isinstance(error, commands.CommandNotFound):
             try:
                 return await ctx.message.add_reaction("<:exclamation:876077084986966016>")
@@ -97,7 +124,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             codes = {10003}
             if error.code in codes:
                 return
-        
+
         embed = discord.Embed(
                 title=f"{type(error).__name__}",
                 description=f'{error}',

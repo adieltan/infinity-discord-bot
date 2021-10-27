@@ -21,7 +21,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         if not guild.owner:
             return
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
-        embed.set_author(name=guild.name, icon_url=guild.icon.url or 'https://tenor.com/bjHxN.gif')
+        embed.set_author(name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif')
         embed.set_thumbnail(url=f"{guild.icon.url}")
         if guild.banner is not None:
             embed.set_image(url=f"{guild.banner}")
@@ -32,7 +32,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         if not guild.owner:
             return
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
-        embed.set_author(name=guild.name, icon_url=guild.icon.url or 'https://tenor.com/bjHxN.gif')
+        embed.set_author(name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif')
         embed.set_thumbnail(url=f"{guild.icon.url}")
         if guild.banner is not None:
             embed.set_image(url=f"{guild.banner.url}")

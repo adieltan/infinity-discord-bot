@@ -345,16 +345,15 @@ class CustomCog(commands.Cog, name='Custom'):
     async def on_member_join(self, member:discord.Member):
         if member.guild.id != 709711335436451901 or member.bot is True:
             return
-        else:
-            bamboo_chat = self.bot.get_channel(717962272093372556)
-            bots = sum(m.bot for m in member.guild.members)
-            embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar)
-            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
-            dic = results.get('leaveleaderboard')
-            leavetimes = dic.get(f"{member.id}")
-            if leavetimes is not None:
-                embed.description += f"\nLeft the server {leavetimes} times."
-            await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
+        bamboo_chat = self.bot.get_channel(717962272093372556)
+        bots = sum(m.bot for m in member.guild.members)
+        embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar or None)
+        results = await self.bot.db['server'].find_one({'_id':member.guild.id}) or {}
+        dic = results.get('leaveleaderboard')
+        leavetimes = dic.get(f"{member.id}")
+        if leavetimes is not None:
+            embed.description += f"\nLeft the server {leavetimes} times."
+        await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -432,7 +431,7 @@ class CustomCog(commands.Cog, name='Custom'):
     @server([894628265963159622])
     async def iv(self, ctx, *, items:str=None):
         """Item Value calculation tool. This command returns the list of items, lookup of single item or calculation of multiple items if invoked without subcommand."""
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await self.bot.db['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply("No items.")
@@ -498,21 +497,21 @@ class CustomCog(commands.Cog, name='Custom'):
     @commands.is_owner()
     async def iv_add(self, ctx, item_type:typing.Literal[1,2,3,4,5,6,7,8,9], value:float, emoji:typing.Union[discord.PartialEmoji, str], *, item_name:str):
         value = round(value)
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await self.bot.db['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
         item_name = re.sub(r'[0-9]', '', item_name)
         if item_name.lower() in ivlist.keys():
             return await ctx.reply(f"{item_name.title()} already exists.", embed=self.iv_view(item_name, round(value), ivlist[item_name]['e'], ivlist[item_name]['t']))
         emoji = emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', '')
         ivlist[item_name.lower()] = {'v':value, 'e':emoji, 't':str(item_type)}
-        await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+        await self.bot.db['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
         await ctx.reply(f"**{item_name.title()}** added with value ⏣ {'{:,}'.format(value)}.", embed=self.iv_view(item_name, value, emoji,   item_type))
 
     @iv.command(name='remove', aliases=['delete', 'del'])
     @server([894628265963159622])
     @commands.is_owner()
     async def iv_remove(self, ctx, *, item_name):
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await self.bot.db['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply('No items.')
@@ -533,17 +532,16 @@ class CustomCog(commands.Cog, name='Custom'):
                 await mes.edit('Timeout.', view=msgv)
             else:
                 ivlist.pop(fuz[0])
-                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+                await self.bot.db['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
                 await mes.edit("Confirmed.", view=msgv)
                 await mes.reply(f"**{fuz[0].title()}** removed.")
-            
 
     @iv.command(name='edit')
     @server([894628265963159622])
     @commands.is_owner()
     async def iv_edit(self, ctx, item_name:str):
         """Edits name/value for an item."""
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await self.bot.db['server'].find_one({'_id':894628265963159622}) or {}
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply(f"No items.")
@@ -595,7 +593,7 @@ class CustomCog(commands.Cog, name='Custom'):
                     await v.interaction.followup.send('Confirmed')
                     ivlist[name] = ivlist.pop(fuz[0])
                     ivlist[name]['v'] = value
-                    await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+                    await self.bot.db['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
                     await msg.edit(view=dv, embed=self.iv_view(name, value, ivlist[name]['e'], ivlist[name]['t']))
                 else:
                     try:
@@ -604,24 +602,6 @@ class CustomCog(commands.Cog, name='Custom'):
                     except: 
                         pass
                     return
-            # def author(m):
-            #     return m.author == ctx.author and m.channel.id == ctx.channel.id
-            # try:
-            #     message = await self.bot.wait_for('message', check=author, timeout=20)
-            #     try:
-            #         val = round(float(message.content.lower()))
-            #         ivlist[fuz[0]]['v'] = val
-            #         await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-            #         await message.add_reaction("<a:verified:876075132114829342>")
-            #         await msg.edit(f"{fuz[0].title()}'s value is now {'{:,}'.format(val)}.", embed=self.iv_view(f"{fuz[0]}", val, ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']))
-            #     except:
-            #         ivlist[message.content.lower()] = ivlist[fuz[0]]
-            #         ivlist.pop(fuz[0])
-            #         await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-            #         await message.add_reaction("<a:verified:876075132114829342>")
-            #         await msg.edit(f"{item_name} renamed to {message.content.lower().title()}.", embed=self.iv_view(f"{message.content.lower().title()}", ivlist[message.content.lower()]['v'], ivlist[message.content.lower()]['e'], ivlist[message.content.lower()]['t']))
-            # except asyncio.TimeoutError:
-            #     await msg.edit(f'Timeout.')
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

@@ -40,18 +40,23 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_message(self, msg):
-        # try:
         await self.bot.wait_until_ready()
-        if type(msg.channel) != discord.Thread or msg.author.bot:
+        if type(msg.channel) != discord.Thread:
             return
-        if msg.channel.parent_id != 900699395639623711:
+        if msg.channel.parent_id != 900699395639623711 or msg.author.id == self.bot.user.id or msg.content.startswith('=') or str(msg.author.id) == msg.channel.name:
             return
-        user = self.bot.get_user(int(msg.channel.name))
-        e = discord.Embed(title="Support Reply", description=msg.content).set_author(name=msg.author.name, icon_url=msg.author.avatar)
-        await user.send(embed=e)
-        await msg.add_reaction('<a:verified:876075132114829342>')
-        # except:
-        #     pass
+        try:
+            supportuser = self.bot.get_user(int(msg.channel.name))
+            e = discord.Embed(title="Support Reply", description=msg.content).set_author(name=msg.author.name, icon_url=msg.author.avatar)
+            await msg.add_reaction('<a:verified:876075132114829342>')
+            def check(reaction, user):
+                return str(reaction.emoji) == '<a:verified:876075132114829342>'
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=10, check=check)
+            await supportuser.send(embeds = [e]+msg.embeds)
+            await msg.clear_reactions()
+        except:
+            await msg.add_reaction('<:exclamation:876077084986966016>')
+        
         
 
     @commands.Cog.listener()
@@ -81,7 +86,8 @@ class ListenerCog(commands.Cog, name='Listener'):
         # Anything in ignored will return and prevent anything happening.
         if isinstance(error, ignored):
             return
-
+        if type(ctx.channel) is discord.Thread and ctx.channel.parent_id == 900699395639623711:
+            return
         if isinstance(error, commands.NoPrivateMessage):
             try:
                 return await ctx.author.send(f'`{ctx.command}` can not be used in Private Messages.')
@@ -113,7 +119,8 @@ class ListenerCog(commands.Cog, name='Listener'):
                 await tchannel[tnames.index(str(ctx.author.id))].send(embed=e)
             else:
                 msg = await channel.send(embed=e)
-                await channel.create_thread(name=f"{ctx.author.id}", message=msg)
+                thread = await channel.create_thread(name=f"{ctx.author.id}", message=msg)
+                await thread.send(f'<@&843375370627055637>\n{ctx.author.mention} opened a support ticket.\nDO NOT SPAM\nReact with <a:verified:876075132114829342> after the bot reacts to send your message.', allowed_mentions=discord.AllowedMentions.all())
             return await ctx.message.add_reaction('<a:verified:876075132114829342>')
         elif isinstance(error, commands.CommandNotFound):
             try:

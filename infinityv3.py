@@ -15,7 +15,7 @@ os.environ['JISHAKU_NO_UNDERSCORE']= 'True'
 async def get_prefix(bot, message):
     if not message.guild:
         return ('')
-    results = await bot.dba['server'].find_one({"_id":message.guild.id}) or {}
+    results = await bot.db['server'].find_one({"_id":message.guild.id}) or {}
     pref = results.get("prefix", '=')
     return commands.when_mentioned_or(pref)(bot, message)
 
@@ -35,18 +35,13 @@ bot = Infinity(
 command_prefix=get_prefix, description='**__Infinity__**', case_insensitive=True, strip_after_prefix=True, intents=intents, allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
 bot.owner_ids = set({701009836938231849,703135131459911740,708233854640455740})
 bot._BotBase__cogs = commands.core._CaseInsensitiveDict()
-bot.dba = motor.motor_tornado.MotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE)['infinity']
+bot.db = motor.motor_asyncio.AsyncIOMotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE).infinity
 bot.bled = set({})
 bot.owners = bot.owner_ids
 bot.managers = set({})
-bot.infinityemoji = "<a:infinity:874548940610097163>"
 bot.serverdb = None
 bot.snipedb = dict({})
 bot.startuptime = discord.utils.utcnow()
-
-bot.errors = bot.get_channel(825900714013360199)
-bot.logs = bot.get_channel(874461656938340402)
-bot.changes = bot.get_channel(859779506038505532)
 
 bot.load_extension('jishaku')
 print(f"{os.path.dirname(os.path.abspath(__file__))}")
@@ -66,14 +61,14 @@ def blacklisted(ctx) -> bool:
     return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
 
 async def cache_bl():
-    b = set({})
-    async for doc in bot.dba['profile'].find({'bl':True}):
+    b = set()
+    async for doc in bot.db['profile'].find({'bl':True}):
         b.add(doc['_id'])
     bot.bled = b
 
 async def cache_managers():
     managers = []
-    async for doc in bot.dba['profile'].find({'manager':True}):
+    async for doc in bot.db['profile'].find({'manager':True}):
         managers.append(doc['_id'])
     bot.managers = managers
 
@@ -84,10 +79,7 @@ bot.cmanager = cache_managers
 async def on_ready():
     await bot.wait_until_ready()
     await cache_bl()
-    m = set({})
-    async for doc in bot.dba['profile'].find({'manager':True}):
-        m.add(doc['_id'])
-    bot.managers = m
+    await cache_managers()
     bot.errors = bot.get_channel(825900714013360199)
     bot.logs = bot.get_channel(874461656938340402)
     bot.changes = bot.get_channel(859779506038505532)

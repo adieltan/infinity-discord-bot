@@ -68,12 +68,12 @@ class ServerCog(commands.Cog, name='Server'):
     async def prefix(self, ctx, prefix:str=None):
         """Changes the prefix for the bot in the server."""
         if not prefix:
-            results = await self.bot.dba['server'].find_one({"_id":ctx.guild.id})
+            results = await self.bot.db['server'].find_one({"_id":ctx.guild.id})
             await ctx.reply(f"The prefix for {ctx.guild.name} is `{results.get('prefix', '=')}`", mention_author=False)
         elif len(prefix) > 5:
             await ctx.reply("You can't have such a long prefix.")
         else:
-            await self.bot.dba['server'].update_one({"_id":ctx.guild.id}, {"$set": {'prefix':prefix}}, True)
+            await self.bot.db['server'].update_one({"_id":ctx.guild.id}, {"$set": {'prefix':prefix}}, True)
             await ctx.reply(f'Prefix changed to: `{prefix}`', mention_author=False)
             await ctx.me.edit(nick=f'[{prefix}] Infinity')
 
@@ -166,7 +166,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.guild_only()
     async def ll(self, ctx):
         """Sees who left the server the most."""
-        results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
+        results = await self.bot.db['server'].find_one({'_id':ctx.guild.id}) or {}
         dic = results.get('leaveleaderboard')
         if not dic:
             await ctx.reply('No data.')
@@ -181,14 +181,14 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.has_guild_permissions(kick_members=True)
     async def llreset(self, ctx):
         """Resets the leave leaderboard."""
-        await self.bot.dba['server'].update_one({'_id':ctx.guild.id}, {'$set':{'leaveleaderboard':dict()}})
+        await self.bot.db['server'].update_one({'_id':ctx.guild.id}, {'$set':{'leaveleaderboard':dict()}})
         await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member:discord.Member):
         if member.bot is True:
             return
-        results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
+        results = await self.bot.db['server'].find_one({'_id':member.guild.id}) or {}
         dic = results.get('leaveleaderboard')
         if not dic:
             dic = dict()
@@ -196,7 +196,7 @@ class ServerCog(commands.Cog, name='Server'):
         if not mem:
             mem = 0
         dic[f"{member.id}"] = mem + 1
-        await self.bot.dba['server'].update_one({'_id':member.guild.id}, {'$set':{'leaveleaderboard':dic}})
+        await self.bot.db['server'].update_one({'_id':member.guild.id}, {'$set':{'leaveleaderboard':dic}})
 
     @commands.group(name="autoresponse", aliases=["ar"])
     @commands.guild_only()
@@ -210,7 +210,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def add_ar(self, ctx, *,trigger:str):
         """Adds a text response for the trigger."""
         trigger = trigger.lower()
-        results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
+        results= await self.bot.db['server'].find_one({"_id":ctx.guild.id}) or {}
         try:results['autoresponse']
         except:results['autoresponse'] = {}
         if len(list(results['autoresponse'].keys())) >= 10:
@@ -227,30 +227,30 @@ class ServerCog(commands.Cog, name='Server'):
             await ctx.reply("You can't have such a long text response.")
         else:
             results['autoresponse'][trigger] = f"{response.clean_content}"
-            await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
+            await self.bot.db['server'].replace_one({"_id":ctx.guild.id}, results, True)
             await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response.clean_content}`"))
-            results = self.bot.dba['server']
+            results = self.bot.db['server']
             self.bot.serverdb = results
 
     @ar.command(name="remove")
     async def remove_ar(self, ctx, *,trigger:str):
         """Removes the trigger."""
         trigger = trigger.lower()
-        results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
+        results= await self.bot.db['server'].find_one({"_id":ctx.guild.id}) or {}
         try:results['autoresponse']
         except:results['autoresponse'] = {}
         try:
             results['autoresponse'].pop(f'{trigger}')
-            await self.bot.dba['server'].replace_one({"_id":ctx.guild.id}, results, True)
+            await self.bot.db['server'].replace_one({"_id":ctx.guild.id}, results, True)
             await ctx.reply(embed=discord.Embed(title="Removed Autoresponse", description=f"Removed response for `{trigger}`."))
-            results = self.bot.dba['server']
+            results = self.bot.db['server']
             self.bot.serverdb = results
         except:await ctx.reply("Error")
 
     @ar.command(name="list")
     async def list_ar(self, ctx):
         """Lists the autoresponses that are registered in the guild."""
-        results= await self.bot.dba['server'].find_one({"_id":ctx.guild.id}) or {}
+        results= await self.bot.db['server'].find_one({"_id":ctx.guild.id}) or {}
         try:dic = results['autoresponse']
         except:dic =  {}
         text = '\n'.join(f"{result} ➡ {dic[result]}" for result in dic)
@@ -264,14 +264,14 @@ class ServerCog(commands.Cog, name='Server'):
             return
         else:
             try:
-                server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
+                server = await self.bot.db['server'].find_one({"_id":message.guild.id})
                 try:keys = list(server['autoresponse'].keys())
                 except:return
                 clean = message.content.lower()
                 if any(key in clean for key in keys):
                     for key in keys:
                         if key in clean:
-                            server = await self.bot.dba['server'].find_one({"_id":message.guild.id})
+                            server = await self.bot.db['server'].find_one({"_id":message.guild.id})
                             response = server['autoresponse'][f'{key}']
                             try:
                                 await message.reply(response, allowed_mentions=discord.AllowedMentions.none(), mention_author=False, delete_after=100)
@@ -282,7 +282,7 @@ class ServerCog(commands.Cog, name='Server'):
                 await message.add_reaction("\U0000267e")
             except:pass
 
-    @commands.group(name="delete")
+    @commands.group(name="delete", aliases=['del'])
     @commands.guild_only()
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
     @commands.has_guild_permissions(administrator=True)
@@ -327,11 +327,13 @@ class ServerCog(commands.Cog, name='Server'):
             await msg.edit(embed=embed, view=msgv)
 
     @deletechannels.command(name="channel", aliases=['chan'])
-    async def chandel(self,ctx, channels:commands.Greedy[discord.TextChannel]):
+    async def chandel(self,ctx, channels:commands.Greedy[typing.Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Thread]]=[]):
         """Deletes the channel."""
         view = Confirm(ctx)
         channelno = 0
         errors = []
+        if len(channels) == 0:
+            channels.append(ctx.channel)
         embed = discord.Embed(title="Channel Deletion", description=f"Deleting {len(channels)} channels.\n{' '.join([chan.mention for chan in channels])}\nClick Confirm.", color=discord.Color.brand_red())
         msg = await ctx.reply(embed=embed, view=view)
         msgv = discord.ui.View.from_message(msg)
@@ -347,7 +349,7 @@ class ServerCog(commands.Cog, name='Server'):
             await msg.edit(embed=embed, view=msgv)
             for channel in channels:
                 try:
-                    await channel.delete(reason=f"Deleted by {ctx.author.name}.")
+                    await channel.delete()
                 except:
                     errors.append(channel.id)
                 else:
@@ -391,25 +393,6 @@ class ServerCog(commands.Cog, name='Server'):
                     channels += 1
             err = 'Errors:\n' + ' '.join(f'<#{id}>' for error in errors if error)
             await ctx.reply(f"Deleted {channels} channels.\n{err if errors else ''}")
-        
-    @commands.command(name="snipe", aliases=["sn"])
-    @commands.cooldown(1,4)
-    async def snipe(self, ctx, channel:discord.TextChannel=None):
-        """Snipes the last deleted message of the channel."""
-        if not channel:
-            channel = ctx.message.channel
-        deletedmsg = self.bot.snipedb.get(f"{channel.id}")
-        if not deletedmsg:
-            await ctx.reply('No cached deleted message.')
-        else:
-            embed=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
-            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar or embed.Empty)
-            await ctx.reply(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_message_delete(self, message:discord.Message):
-        if message.content:
-            self.bot.snipedb[f"{message.channel.id}"]= message
 
     @commands.command(name="first", aliases=["firstmessage", "1"])
     @commands.cooldown(1,8)
@@ -757,7 +740,7 @@ class ServerCog(commands.Cog, name='Server'):
             embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
             if member.nick:
                 embed.description = f"`{member.nick}` " + embed.description
-            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
+            results = await self.bot.db['server'].find_one({'_id':member.guild.id}) or {}
             dic = results.get('leaveleaderboard') or {}
             leavetimes = dic.get(f"{member.id}")
             if leavetimes is not None:
@@ -775,7 +758,7 @@ class ServerCog(commands.Cog, name='Server'):
             embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
             if member.bot:
                 embed.description += f"\n🤖 Bot Account"
-            results = await self.bot.dba['server'].find_one({'_id':ctx.guild.id}) or {}
+            results = await self.bot.db['server'].find_one({'_id':ctx.guild.id}) or {}
             dic = results.get('leaveleaderboard')
             leavetimes = dic.get(f"{member.id}")
             if leavetimes is not None:

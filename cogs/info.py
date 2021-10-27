@@ -1,9 +1,8 @@
 import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord import permissions
 from discord.ext import commands, tasks
- 
-from psutil._common import bytes2human
 
+from psutil._common import bytes2human
 class InfoCog(commands.Cog, name='Info'):
     """❕ Info about bot and related servers."""
     def __init__(self, bot):
@@ -133,9 +132,9 @@ class InfoCog(commands.Cog, name='Info'):
     @commands.is_owner()
     async def manager_add(self, ctx, user:discord.User):
         """Promotes a user to Manager."""
-        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results = await self.bot.db['profile'].find_one({"_id":user.id}) or {}
         results['manager'] = True
-        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        await self.bot.db['profile'].replace_one({"_id":user.id}, results, True)
         await self.bot.cmanager()
         await ctx.reply(f"Added {user.mention} as Infinity Managers.")
         guild = self.bot.get_guild(709711335436451901)
@@ -149,11 +148,11 @@ class InfoCog(commands.Cog, name='Info'):
     @commands.is_owner()
     async def manager_remove(self, ctx, user:discord.User):
         """Demotes a Manager."""
-        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results = await self.bot.db['profile'].find_one({"_id":user.id}) or {}
         try:
             results.pop('manager')
         except:pass
-        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
+        await self.bot.db['profile'].replace_one({"_id":user.id}, results, True)
         await self.bot.cmanager()
         await ctx.reply(f"Removed {user.mention} as Infinity Managers.")
         try:

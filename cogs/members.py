@@ -29,10 +29,10 @@ class UsersCog(commands.Cog, name='User'):
         """Gets the profile of yourself / another user."""
         if not member:
             member = ctx.author
-        results= await self.bot.dba['profile'].find_one({"_id":member.id})
+        results= await self.bot.db['profile'].find_one({"_id":member.id})
         if not results:
             return await ctx.reply('This user does not have a profile.')
-        embed=discord.Embed(title="Profile", description=f"{results.get('bio', '')}\n", color=discord.Color.random())
+        embed=discord.Embed(title="Profile", description="", color=discord.Color.random())
         embed.set_author(icon_url=member.avatar, name=member.display_name)
         embed.set_thumbnail(url=member.avatar)
         weight = results.get('weight')
@@ -69,41 +69,45 @@ class UsersCog(commands.Cog, name='User'):
         premium = results.get('premium', False)
         if premium is True or premium > round(discord.utils.utcnow().timestamp()):
             embed.description += f"<:infinity_coin:874548715338227722> **Premium User** {f'until <t:{premium}:d>'if type(premium) is int else ''}"
+        if results.get('bio'):
+            embed.add_field(name="Bio", value=f"{results.get('bio')}\n", inline=False)
         await ctx.reply(embed=embed)
 
     @profile.command(name='delete')
     async def setdelete(self, ctx):
         """Deletes your profile data."""
-        await self.bot.dba['profile'].delete_one({'_id':ctx.author.id})
+        await self.bot.db['profile'].delete_one({'_id':ctx.author.id})
         await ctx.reply('Profile deleted.')
 
     @profile.command(name="weight", aliases=['w'])
     async def setweight(self, ctx, kilograms:float):
         """Sets your own weight."""
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'weight':round(kilograms)}}, True)
-        profile = await self.bot.dba['profile'].find_one({'_id':ctx.author.id}) or {}
+        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'weight':round(kilograms)}}, True)
+        profile = await self.bot.db['profile'].find_one({'_id':ctx.author.id}) or {}
         await ctx.reply(f"Your weight has been set to {profile.get('weight')} kg.")
 
     @profile.command(name="height", aliases=['h'])
     async def setheight(self, ctx, centimeters:float):
         """Sets your own height."""
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'height':round(centimeters)}}, True)
-        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'height':round(centimeters)}}, True)
+        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
         await ctx.reply(f"Your height has been set to {profile.get('height')} cm.")
     
     @profile.command(name="country", aliases=['c'])
     async def setcountry(self, ctx, *, country:str):
         """Sets your country."""
         fuzzy = pycountry.countries.search_fuzzy(country)
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'country':fuzzy[0].name}}, True)
-        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'country':fuzzy[0].name}}, True)
+        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
         await ctx.reply(f"Your country has been set to {profile.get('country')}")
 
     @profile.command(name='biography', aliases=['bio'])
     async def setbiography(self, ctx, *, bio:str):
         """Sets your biography."""
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bio':discord.utils.remove_markdown(bio)}}, True)
-        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        if len(bio) > 200:
+            return await ctx.reply(f"You bio is too long. ({len(bio)}/200 characters)")
+        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bio':discord.utils.remove_markdown(bio)}}, True)
+        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
         await ctx.reply(f"Your bio has been set to ```\n{profile['bio']}\n```")
 
     @profile.command(name="birthday", aliases=['b', 'bd', 'bday'])
@@ -131,8 +135,8 @@ class UsersCog(commands.Cog, name='User'):
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
         timestamp=round(time[0].timestamp())
-        await self.bot.dba['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bd':timestamp}}, True)
-        profile = await self.bot.dba['profile'].find_one({"_id":ctx.author.id}) or {}
+        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bd':timestamp}}, True)
+        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
         bd = datetime.datetime.fromtimestamp(profile.get('bd'))
         await ctx.reply(f"Your birthday has been set to {bd}.")
 

@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 
 from PIL import Image, ImageDraw, ImageFont
 import dateparser
+from ._utils import Database
 
 def is_manager():
     def predicate(ctx):
@@ -32,10 +33,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         if user.id in self.bot.managers:
             await ctx.reply("You can't blacklist them.")
             return
-        results = await self.bot.db['profile'].find_one({"_id":user.id}) or {}
-        results['bl'] = True
-        results['blreason'] = reason + f"\nResponsible manager: {ctx.author.id}"
-        await self.bot.db['profile'].replace_one({"_id":user.id}, results, True)
+        await Database.edit_user(self, user.id, {'bl':True, 'blreason':reason + f"\nResponsible manager: {ctx.author.id}"})
         await self.bot.cbl()
         await ctx.reply(embed=discord.Embed(title="Blacklist",description=f"Blacklisted {user.mention} `{user.id}`.", color=discord.Color.red()))
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
@@ -47,16 +45,11 @@ class OwnerCog(commands.Cog, name='Owner'):
     @is_manager()
     async def unblacklist(self, ctx, user:discord.User, *, reason:str):
         """unBlacklists a member from using the bot."""
-        results = await self.bot.db['profile'].find_one({"_id":user.id}) or {}
-        try:
-            results.pop('bl')
-        except:
-            pass
-        await self.bot.db['profile'].replace_one({"_id":user.id}, results, True)
+        await Database.edit_user(self, user.id, {'bl':None, 'blreason':None})
         await self.bot.cbl()
         await ctx.reply(embed=discord.Embed(title="Unblacklist",description=f"Unlacklisted {user.mention} `{user.id}`.", color=discord.Color.green()))
         await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nYou can now continue using bot commands as usual.")
-        embed=discord.Embed(title="Unlacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
+        embed=discord.Embed(title="Unbacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         await self.bot.changes.send(embed=embed)
 
@@ -64,7 +57,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @is_manager()
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
-        results = await self.bot.db['profile'].find_one({"_id":user.id}) or {}
+        results = await Database.get_user(self, user.id)
         await ctx.reply(embed=discord.Embed(description=f"{user.mention}'s blacklist status: {results.get('bl')}.\nReason: {results.get('blreason')}"))
 
     @commands.command(name='blacklisted')
@@ -238,7 +231,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         """Gifts a user premium."""
         if user.bot or user.id in self.bot.bled:
             return await ctx.reply("They won't get to use it.")
-        results= await self.bot.db['profile'].find_one({"_id":user.id}) or {}
+        results= await Database.get_user(self, user.id)
         if expiry:
             settings = {'TIMEZONE': 'UTC', 'RETURN_AS_TIMEZONE_AWARE': True, 'TO_TIMEZONE': 'UTC', 'PREFER_DATES_FROM': 'future'}
             to_be_passed = f"in {expiry}"
@@ -262,7 +255,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             expiry = True
         if results.get('premium') is True:
             return await ctx.reply("User already has premium.")
-        await self.bot.db['profile'].update_one({"_id":user.id}, {"$set": {'premium':expiry}}, True)
+        await Database.edit_user(self, user.id, {'premium':expiry})
         e = discord.Embed(title="Infinity Premium 👑", description=f"{user.mention} received {'Lifetime Premium.' if expiry is True else f'Premium that expires on <t:{expiry}:D>'}", color=discord.Color.gold())
         await ctx.reply(embed=e)
         await self.bot.changes.send(embed=e)

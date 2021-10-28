@@ -4,37 +4,32 @@ from discord.ext import commands, tasks
 class Database(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.db = bot.db
     
     #users
     async def get_user(self, user_id:int):
-        return await self.db.profile.find_one({'_id':user_id}) or {}
+        return await self.bot.db.profile.find_one({'_id':user_id}) or {}
 
-    async def users(self):
-        return await self.db.profile.count_documents({})
+    async def users(self, filter:dict={}):
+        return await self.bot.db.profile.count_documents(filter)
 
     async def edit_user(self, user_id:int, fields:dict):
-        original = await self.get_user(user_id)
-        update = original | fields
-        return await self.db.profile.replace_one({'_id':user_id}, update, upsert=True)
+        return await self.bot.db.profile.update_one({'_id':user_id}, {'$set':fields}, upsert=True)
 
     async def del_user(self, user_id:int):
-        return await self.db.profile.find_one_and_delete({'_id':user_id})
+        return await self.bot.db.profile.find_one_and_delete({'_id':user_id})
 
     #servers
     async def get_server(self, server_id:int):
-        return await self.db.server.find_one({'_id':server_id}) or {}
+        return await self.bot.db.server.find_one({'_id':server_id}) or {}
 
     async def servers(self):
-        return await self.db.server.count_documents({})
+        return await self.bot.db.server.count_documents({})
 
     async def edit_server(self, server_id:int, fields:dict):
-        original = await self.get_user(server_id)
-        update = original | fields
-        return await self.db.server.replace_one({'_id':server_id}, update, upsert=True)
+        return await self.bot.db.server.update_one({'_id':server_id}, {'$set':fields}, upsert=True)
 
     async def del_server(self, server_id:int):
-        return await self.db.server.find_one_and_delete({'_id':server_id})
+        return await self.bot.db.server.find_one_and_delete({'_id':server_id})
 
 def setup(bot):
     bot.add_cog(Database(bot))

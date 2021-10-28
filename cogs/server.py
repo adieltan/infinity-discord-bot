@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 
 from collections import Counter, OrderedDict
 from PIL import Image
-
+from ._utils import Database
 class Menu(discord.ui.View):
     def __init__(self, ctx, pages:list[discord.Embed]) -> None:
         super().__init__(timeout=60)
@@ -64,16 +64,18 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.command(name='prefix')
     @commands.cooldown(1,8)
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
     async def prefix(self, ctx, prefix:str=None):
-        """Changes the prefix for the bot in the server."""
+        """Shows / changes the prefix for the bot in the server."""
         if not prefix:
-            results = await self.bot.db['server'].find_one({"_id":ctx.guild.id})
+            results = await Database.get_server(self, ctx.guild.id)
             await ctx.reply(f"The prefix for {ctx.guild.name} is `{results.get('prefix', '=')}`", mention_author=False)
         elif len(prefix) > 5:
             await ctx.reply("You can't have such a long prefix.")
         else:
-            await self.bot.db['server'].update_one({"_id":ctx.guild.id}, {"$set": {'prefix':prefix}}, True)
+            perms = dict(iter(ctx.channel.permissions_for(ctx.author)))
+            if perms.get('administrator') is not True:
+                raise commands.MissingPermissions(missing_perms=['administrator'])
+            await Database.edit_server(self, ctx.guild.id, {'prefix':prefix})
             await ctx.reply(f'Prefix changed to: `{prefix}`', mention_author=False)
             await ctx.me.edit(nick=f'[{prefix}] Infinity')
 
@@ -166,7 +168,7 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.guild_only()
     async def ll(self, ctx):
         """Sees who left the server the most."""
-        results = await self.bot.db['server'].find_one({'_id':ctx.guild.id}) or {}
+        results = await Database.get_server(self, ctx.guild.id)
         dic = results.get('leaveleaderboard')
         if not dic:
             await ctx.reply('No data.')
@@ -181,22 +183,20 @@ class ServerCog(commands.Cog, name='Server'):
     @commands.has_guild_permissions(kick_members=True)
     async def llreset(self, ctx):
         """Resets the leave leaderboard."""
-        await self.bot.db['server'].update_one({'_id':ctx.guild.id}, {'$set':{'leaveleaderboard':dict()}})
+        await Database.edit_server(self, ctx.guild.id, {'leaveleaderboard':None})
         await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member:discord.Member):
         if member.bot is True:
             return
-        results = await self.bot.db['server'].find_one({'_id':member.guild.id}) or {}
+        results = await Database.get_server(self, member.guild.id)
         dic = results.get('leaveleaderboard')
         if not dic:
-            dic = dict()
-        mem = dic.get(f"{member.id}")
-        if not mem:
-            mem = 0
+            dic = {}
+        mem = dic.get(f"{member.id}", 0)
         dic[f"{member.id}"] = mem + 1
-        await self.bot.db['server'].update_one({'_id':member.guild.id}, {'$set':{'leaveleaderboard':dic}})
+        await Database.edit_server(self, member.guild.id, {'leaveleaderboard':dic})
 
     @commands.group(name="autoresponse", aliases=["ar"])
     @commands.guild_only()
@@ -210,10 +210,8 @@ class ServerCog(commands.Cog, name='Server'):
     async def add_ar(self, ctx, *,trigger:str):
         """Adds a text response for the trigger."""
         trigger = trigger.lower()
-        results= await self.bot.db['server'].find_one({"_id":ctx.guild.id}) or {}
-        try:results['autoresponse']
-        except:results['autoresponse'] = {}
-        if len(list(results['autoresponse'].keys())) >= 10:
+        results = await Database.get_server(self, ctx.guild.id)
+        if len(list(results.get('autoresponse', {}).keys())) >= 10:
             await ctx.reply("This guild has reached the maximum number of autoresponse which is 10.")
             return
         def check(m):
@@ -227,60 +225,42 @@ class ServerCog(commands.Cog, name='Server'):
             await ctx.reply("You can't have such a long text response.")
         else:
             results['autoresponse'][trigger] = f"{response.clean_content}"
-            await self.bot.db['server'].replace_one({"_id":ctx.guild.id}, results, True)
-            await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response.clean_content}`"))
-            results = self.bot.db['server']
-            self.bot.serverdb = results
+            await Database.edit_server(self, ctx.guild.id, results)
+            await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response}`"))
+            self.bot.ar[f'{ctx.guild.id}'] = results['autoresponse']
 
     @ar.command(name="remove")
     async def remove_ar(self, ctx, *,trigger:str):
         """Removes the trigger."""
         trigger = trigger.lower()
-        results= await self.bot.db['server'].find_one({"_id":ctx.guild.id}) or {}
-        try:results['autoresponse']
-        except:results['autoresponse'] = {}
+        results= await Database.get_server(self, ctx.guild.id)
         try:
-            results['autoresponse'].pop(f'{trigger}')
-            await self.bot.db['server'].replace_one({"_id":ctx.guild.id}, results, True)
+            results.get('autoresponse', {}).pop(f'{trigger}')
+            await Database.edit_server(self, ctx.guild.id, results)
             await ctx.reply(embed=discord.Embed(title="Removed Autoresponse", description=f"Removed response for `{trigger}`."))
-            results = self.bot.db['server']
-            self.bot.serverdb = results
+            self.bot.ar[f'{ctx.guild.id}'] = results['autoresponse']
         except:await ctx.reply("Error")
 
     @ar.command(name="list")
     async def list_ar(self, ctx):
         """Lists the autoresponses that are registered in the guild."""
-        results= await self.bot.db['server'].find_one({"_id":ctx.guild.id}) or {}
-        try:dic = results['autoresponse']
-        except:dic =  {}
-        text = '\n'.join(f"{result} ➡ {dic[result]}" for result in dic)
+        results= await Database.get_server(self, ctx.guild.id)
+        dic = results.get('autoresponse', {})
+        text = '\n'.join(f"{result}\n> {dic[result]}" for result in dic)
         await ctx.reply(embed=discord.Embed(title=f"{ctx.guild.name}'s Autoresponses", description=f"{text}"))
 
     @commands.Cog.listener()
-    async def on_message (self, message: discord.Message):
-        if ('732917262297595925') in message.clean_content.lower():
-            await message.add_reaction("\U0000267e")
-        elif message.author.bot is True:
+    async def on_message(self, message: discord.Message):
+        if message.author.bot is True:
             return
-        else:
-            try:
-                server = await self.bot.db['server'].find_one({"_id":message.guild.id})
-                try:keys = list(server['autoresponse'].keys())
-                except:return
-                clean = message.content.lower()
-                if any(key in clean for key in keys):
-                    for key in keys:
-                        if key in clean:
-                            server = await self.bot.db['server'].find_one({"_id":message.guild.id})
-                            response = server['autoresponse'][f'{key}']
-                            try:
-                                await message.reply(response, allowed_mentions=discord.AllowedMentions.none(), mention_author=False, delete_after=100)
-                            except:pass
-            except:pass
-        if ('732917262297595925') in message.content.lower():
-            try:
-                await message.add_reaction("\U0000267e")
-            except:pass
+        try:
+            keys = self.bot.ar.get(f'{message.guild.id}', {}).keys()
+            clean = message.content.lower()
+            if any(key in clean for key in keys):
+                text = '\n'.join(self.bot.ar.get(f'{message.guild.id}', {})[key] for key in keys if key in clean)
+                await message.reply(text, allowed_mentions=discord.AllowedMentions.none(), delete_after=60)
+        except:
+            pass
 
     @commands.group(name="delete", aliases=['del'])
     @commands.guild_only()
@@ -721,6 +701,8 @@ class ServerCog(commands.Cog, name='Server'):
         """Gets info about the user."""
         if not member:
             member = ctx.author
+        results = await Database.get_server(self, ctx.guild.id)
+        leaves = results.get('leaveleaderboard', {}).get(f'{member.id}')
         if type(member) == discord.Member:
             if member.status == discord.Status.online:
                 status = "🟢 Online"
@@ -732,7 +714,8 @@ class ServerCog(commands.Cog, name='Server'):
                 status = "⚫ Offline"
             else:
                 status = ''
-            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.display_avatar})\n{status}\n", color=member.color, timestamp = discord.utils.utcnow())
+            embed = discord.Embed(title="User Info", description=f'{member.mention} {member} [Avatar]({member.display_avatar})\n{status}\n', color=member.color, timestamp=discord.utils.utcnow(),)
+
             if member.activity:
                 embed.description += f"{member.activity.name}"
             embed.set_author(name=f"{member.name}", icon_url=f'{member.display_avatar}')
@@ -740,31 +723,31 @@ class ServerCog(commands.Cog, name='Server'):
             embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
             if member.nick:
                 embed.description = f"`{member.nick}` " + embed.description
-            results = await self.bot.db['server'].find_one({'_id':member.guild.id}) or {}
-            dic = results.get('leaveleaderboard') or {}
-            leavetimes = dic.get(f"{member.id}")
-            if leavetimes is not None:
-                embed.description += f"\nLeft the server {leavetimes} times."
+            
+            if leaves:
+                embed.description += f"\nLeft the server {leaves} times."
             if member.bot:
-                embed.description += f"\n🤖 Bot Account"
+                embed.description += '\n🤖 Bot Account'
             if member.premium_since:
                 embed.add_field(name="Server Boost", value=f"\nBoosting since: {discord.utils.format_dt(member.premium_since, style='f')}\n{discord.utils.format_dt(member.premium_since, style='R')}")
             embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
             embed.set_thumbnail(url=member.display_avatar)
-            embed.set_footer(text=f"ID: {member.id}")
         else:
-            embed=discord.Embed(title="User Info", description=f"{member.mention} {str(member)} [Avatar]({member.avatar})", color=member.color, timestamp = discord.utils.utcnow())
+            embed = discord.Embed(
+                title="User Info",
+                description=f'{member.mention} {member} [Avatar]({member.avatar})',
+                color=member.color,
+                timestamp=discord.utils.utcnow(),
+            )
+
             embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar}')
             embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
             if member.bot:
-                embed.description += f"\n🤖 Bot Account"
-            results = await self.bot.db['server'].find_one({'_id':ctx.guild.id}) or {}
-            dic = results.get('leaveleaderboard')
-            leavetimes = dic.get(f"{member.id}")
-            if leavetimes is not None:
-                embed.description += f"\nLeft the server {leavetimes} times."
+                embed.description += '\n🤖 Bot Account'
+            if leaves:
+                embed.description += f"\nLeft the server {leaves} times."
             embed.set_thumbnail(url=member.avatar)
-            embed.set_footer(text=f"ID: {member.id}")
+        embed.set_footer(text=f"ID: {member.id}")
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name='perms', aliases=['permissions', 'perm'])

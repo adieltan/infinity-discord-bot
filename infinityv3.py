@@ -39,7 +39,7 @@ bot.db = motor.motor_asyncio.AsyncIOMotorClient(str(os.getenv("mongo_server")), 
 bot.bled = set({})
 bot.owners = bot.owner_ids
 bot.managers = set({})
-bot.serverdb = None
+bot.ar = {}
 bot.snipedb = dict({})
 bot.startuptime = discord.utils.utcnow()
 
@@ -72,6 +72,13 @@ async def cache_managers():
         managers.append(doc['_id'])
     bot.managers = managers
 
+async def cache_ar():
+    ar = {}
+    async for doc in bot.db['server'].find({}):
+        if doc.get('autoresponse'):
+            ar[str(doc['_id'])] = doc['autoresponse']
+    bot.ar = ar
+
 bot.cbl = cache_bl
 bot.cmanager = cache_managers
 
@@ -80,6 +87,7 @@ async def on_ready():
     await bot.wait_until_ready()
     await cache_bl()
     await cache_managers()
+    await cache_ar()
     bot.errors = bot.get_channel(825900714013360199)
     bot.logs = bot.get_channel(874461656938340402)
     bot.changes = bot.get_channel(859779506038505532)

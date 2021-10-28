@@ -2,6 +2,7 @@ import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, 
 from discord.ext import commands, tasks
 
 import dateparser, pycountry
+from ._utils import Database
 class UsersCog(commands.Cog, name='User'):
     """👤 Information / function about Users."""
     def __init__(self, bot):
@@ -29,7 +30,8 @@ class UsersCog(commands.Cog, name='User'):
         """Gets the profile of yourself / another user."""
         if not member:
             member = ctx.author
-        results= await self.bot.db['profile'].find_one({"_id":member.id})
+
+        results= await Database.get_user(self, member.id)
         if not results:
             return await ctx.reply('This user does not have a profile.')
         embed=discord.Embed(title="Profile", description="", color=discord.Color.random())
@@ -76,39 +78,35 @@ class UsersCog(commands.Cog, name='User'):
     @profile.command(name='delete')
     async def setdelete(self, ctx):
         """Deletes your profile data."""
-        await self.bot.db['profile'].delete_one({'_id':ctx.author.id})
+        await Database.del_user(self, ctx.author.id)
         await ctx.reply('Profile deleted.')
 
     @profile.command(name="weight", aliases=['w'])
-    async def setweight(self, ctx, kilograms:float):
+    async def setweight(self, ctx, kilograms:int):
         """Sets your own weight."""
-        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'weight':round(kilograms)}}, True)
-        profile = await self.bot.db['profile'].find_one({'_id':ctx.author.id}) or {}
-        await ctx.reply(f"Your weight has been set to {profile.get('weight')} kg.")
+        await Database.edit_user(self, ctx.author.id, {'weight':kilograms})
+        await ctx.reply(f"Your weight has been set to {kilograms} kg.")
 
     @profile.command(name="height", aliases=['h'])
-    async def setheight(self, ctx, centimeters:float):
+    async def setheight(self, ctx, centimeters:int):
         """Sets your own height."""
-        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'height':round(centimeters)}}, True)
-        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
-        await ctx.reply(f"Your height has been set to {profile.get('height')} cm.")
+        await Database.edit_user(self, ctx.author.id, {'height':centimeters})
+        await ctx.reply(f"Your height has been set to {centimeters} cm.")
     
     @profile.command(name="country", aliases=['c'])
     async def setcountry(self, ctx, *, country:str):
         """Sets your country."""
-        fuzzy = pycountry.countries.search_fuzzy(country)
-        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'country':fuzzy[0].name}}, True)
-        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
-        await ctx.reply(f"Your country has been set to {profile.get('country')}")
+        fuz = pycountry.countries.search_fuzzy(country)
+        await Database.edit_user(self, ctx.author.id, {'country':fuz[0].name})
+        await ctx.reply(f"Your country has been set to {fuz[0].name}")
 
     @profile.command(name='biography', aliases=['bio'])
     async def setbiography(self, ctx, *, bio:str):
         """Sets your biography."""
         if len(bio) > 200:
             return await ctx.reply(f"You bio is too long. ({len(bio)}/200 characters)")
-        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bio':discord.utils.remove_markdown(bio)}}, True)
-        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
-        await ctx.reply(f"Your bio has been set to ```\n{profile['bio']}\n```")
+        await Database.edit_user(self, ctx.author.id, {'bio':discord.utils.remove_markdown(bio)})
+        await ctx.reply(f"Your bio has been set to ```\n{bio}\n```")
 
     @profile.command(name="birthday", aliases=['b', 'bd', 'bday'])
     async def setbd(self, ctx, *, birthday:str):
@@ -135,10 +133,8 @@ class UsersCog(commands.Cog, name='User'):
         now = ctx.message.created_at
         time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
         timestamp=round(time[0].timestamp())
-        await self.bot.db['profile'].update_one({"_id":ctx.author.id}, {"$set": {'bd':timestamp}}, True)
-        profile = await self.bot.db['profile'].find_one({"_id":ctx.author.id}) or {}
-        bd = datetime.datetime.fromtimestamp(profile.get('bd'))
-        await ctx.reply(f"Your birthday has been set to {bd}.")
+        await Database.edit_user(self, ctx.author.id, {'bd':timestamp})
+        await ctx.reply(f"Your birthday has been set to <t:{timestamp}:D>.")
 
 def setup(bot):
     bot.add_cog(UsersCog(bot))

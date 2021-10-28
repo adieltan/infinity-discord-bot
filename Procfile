@@ -1,1 +1,1 @@
-worker: python infinityv3.py
+web: python infinityv3.py

@@ -1,10 +1,12 @@
 from operator import matmul
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.channel import DMChannel
 from discord.ext import commands, tasks
 
 from thefuzz import process
 import collections
+
+from ._utils import Database
 
 def server(id:list):
     def predicate(ctx):
@@ -83,17 +85,73 @@ class IvDropdownView(discord.ui.View):
         try:
             value = selectoption.values[0]
             items = '\n'.join([f"{i.title()}" for i in self.ivlist if self.ivlist[i]['t'] == value])
-            embed = discord.Embed(title=f"Item List", description=items + ('\n\n📝 DM Admin if donating Bolt / Karen / Odd Eye.' if value == '7' else '') + ('\n\n📝 DM Admin if donating Blob.' if value == '8' else ''), color=discord.Color.random()).set_footer(text=f'{iv_classes[value]}')
+            embed = discord.Embed(title="Item List", description=items + ('\n\n📝 DM Admin if donating Bolt / Karen / Odd Eye.' if value == '7' else '') + ('\n\n📝 DM Admin if donating Blob.' if value == '8' else ''), color=discord.Color.random()).set_footer(text=f'{iv_classes[value]}')
             await self.msg.edit(embed=embed)
         except:
             pass
 
+class IvEdit(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=10)
+        self.view = None
+        self.value = None
+        self.interaction = None
+        self.ctx = ctx
+    
+    async def on_timeout(self):
+        self.value = False
+
+    async def interaction_check(self, interaction:discord.Interaction):
+        return interaction.user.id == self.ctx.author.id
+
+    @discord.ui.button(emoji='🏷️', label='Name', style=discord.ButtonStyle.green)
+    async def name(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = 'name'
+        self.stop()
+
+    @discord.ui.button(emoji='💰', label='Value', style=discord.ButtonStyle.green)
+    async def value(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = 'value'
+        self.stop()
+
+    @discord.ui.button(emoji='✅', label='Confirm', style=discord.ButtonStyle.green)
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = True
+        self.stop()
+
+    @discord.ui.button(emoji='❌', label='Cancel', style=discord.ButtonStyle.gray)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.interaction = interaction
+        await interaction.response.defer(ephemeral=True)
+        for v in self.children:
+            if v != button:
+                v.disabled = True
+        self.view = self
+        self.value = False
+        self.stop()
 class CustomCog(commands.Cog, name='Custom'):
     """🔧 Custom commands for server."""
     def __init__(self, bot):
         self.bot = bot
         self.youtubeupdate.start()
-        self.ongoing_bm_game = dict()
 
     @commands.command(name="nitro")
     @server([709711335436451901, 336642139381301249, 895176280813752330, 894628265963159622, 841654825456107530, 746020135743127593])
@@ -151,17 +209,17 @@ class CustomCog(commands.Cog, name='Custom'):
         """Gives someone the verified role."""
         panda= ctx.guild.get_role(717957198675968024)
         try:
-            if member is None:
+            if not member:
                 message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
                 member = message.mentions[0]
             if panda in member.roles:
-                await ctx.reply(f"User already verified.")
+                await ctx.reply('User already verified.')
                 return
 
             await member.add_roles(panda, reason="Verification")
             await ctx.reply(f"Verified {member.mention}")
         except:
-            await ctx.reply(f"Verification uncessful.")
+            await ctx.reply('Verification uncessful.')
 
     async def supporter_autorole(self, member:discord.Member):
         await self.bot.wait_until_ready()
@@ -175,11 +233,11 @@ class CustomCog(commands.Cog, name='Custom'):
             return
         activity = [activity for activity in member.activities if type(activity) is discord.activity.CustomActivity]
         try:
-            if len(activity) < 1 and advertiser in member.roles:
+            if not activity and advertiser in member.roles:
                 await member.remove_roles(advertiser, reason="Not advertising for us.")
                 await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
                 return
-            elif activity[0].name is None:
+            elif not activity[0].name:
                 activity[0].name = ""
             else:
                 invites = re.findall("(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", str(activity[0].name))
@@ -195,7 +253,7 @@ class CustomCog(commands.Cog, name='Custom'):
                             break
                     except:
                         continue
-                if invited is False and advertiser in member.roles:
+                if not invited and advertiser in member.roles:
                     await member.remove_roles(advertiser, reason="Not advertising for us.")
                     await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
         except:
@@ -289,16 +347,15 @@ class CustomCog(commands.Cog, name='Custom'):
     async def on_member_join(self, member:discord.Member):
         if member.guild.id != 709711335436451901 or member.bot is True:
             return
-        else:
-            bamboo_chat = self.bot.get_channel(717962272093372556)
-            bots = sum(m.bot for m in member.guild.members)
-            embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar)
-            results = await self.bot.dba['server'].find_one({'_id':member.guild.id}) or {}
-            dic = results.get('leaveleaderboard')
-            leavetimes = dic.get(f"{member.id}")
-            if leavetimes is not None:
-                embed.description += f"\nLeft the server {leavetimes} times."
-            await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
+        bamboo_chat = self.bot.get_channel(717962272093372556)
+        bots = sum(m.bot for m in member.guild.members)
+        embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar or None)
+        results = await Database.get_server(self, member.guild.id)
+        dic = results.get('leaveleaderboard', {})
+        leavetimes = dic.get(f"{member.id}")
+        if leavetimes is not None:
+            embed.description += f"\nLeft the server {leavetimes} times."
+        await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -334,7 +391,7 @@ class CustomCog(commands.Cog, name='Custom'):
     @commands.command(name="donolog", aliases=["dl"], hidden=True)
     @server([841654825456107530])
     @commands.has_role(841655266743418892)
-    async def logging(self, ctx, user:discord.User, quantity:float, item:str, value_per:str, *, proof:str):
+    async def donolog(self, ctx, user:discord.User, quantity:float, item:str, value_per:str, *, proof:str):
         """Logs the dono."""
         raw = float(value_per.replace(",", ""))
         channel = self.bot.get_channel(842738964385497108)
@@ -351,62 +408,23 @@ class CustomCog(commands.Cog, name='Custom'):
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 
-    @commands.command(name='bm')
-    @server([888587803812839424])
-    async def banmystery(self, ctx, target:typing.Union[discord.Member, str]=None):
-        """Intialises a banmystery game."""
-        role = ctx.guild.get_role(888588301852893254)
-        surviver = 888589185475313685
-        rooms = [888589270045040650, 888589293814173727, 888589315087675423, 888589338751946752, 888589353901768715, 888589372432207922, 888589388978733088, 888589409174290462, 888589443836022805, 888589480624291870]
-        chars = list(string.ascii_uppercase)
-        if bool(self.ongoing_bm_game) is False and dict(iter(ctx.channel.permissions_for(ctx.author)))['administrator'] is True:
-            if len(role.members) < 2:
-                await ctx.reply(f"Too less people.")
-            self.ongoing_bm_game = {'banner':random.choice(role.members), 'code':[''.join([random.choice(chars) for _ in range(5)]) for _ in range(10)], 'cd':0}
-            await ctx.author.send(f"{self.ongoing_bm_game['banner'].mention} is the banner.")
-            await self.ongoing_bm_game['banner'].send(f"You are the banner. Run `=bm` in all the ban rooms to search for ban codes. 1 out of the 3 codes will work. \nRun `=bm <code>` to use them and I will ban a random person. All codes are 1 time used. \nOnce you have searched all the 10 channels, I will refresh the codes and there will be 10 new set of codes. \nYou need to try and ban everyone in the server and the survivors need to find out who you are and run `=bb {self.ongoing_bm_game['banner'].mention}` in <#{surviver}> to eject you. \nThey have a cd of 60 seconds and you can sabotage them by suspecting in <#{surviver}>. I will tell you how long their cd each time you search.")
-            await ctx.reply(f"{role.mention}. Game started.\n\n__**Normal People:**__\nUse `=bm` in <#{surviver}>to see list of survivors. `=bm <mention_suspect>` to eject them. 60 seconds cd btw. \n\n__**Banner:**__\n`=bm` in ban rooms to search for code. 1 out of the 3 codes will work.\n`=bm <code>` in same channel to ban a random person.\nCodes refresh after all 10 channels have been searched.")
-            return
-        if bool(self.ongoing_bm_game) is False:
-            return
-        elif ctx.channel.id in rooms:
-            await ctx.message.delete()
-            if ctx.author is self.ongoing_bm_game['banner']:
-                if any(self.ongoing_bm_game['code']) is False:
-                    self.ongoing_bm_game['code'] = [''.join([random.choice(chars) for _ in range(5)]) for _ in range(10)]
-                code = self.ongoing_bm_game['code'][rooms.index(ctx.channel.id)]
-                if target is None:
-                    #search
-                    codes = [''.join(random.sample(code, len(code))), ''.join(random.sample(code, len(code))), code]
-                    random.shuffle(codes)
-                    await ctx.author.send(f"""{' '.join(codes)}\n{f"Suspect will be available in {self.ongoing_bm_game['cd'] + 60 - round(discord.utils.utcnow().timestamp())} seconds." if self.ongoing_bm_game['cd'] + 60 > round(discord.utils.utcnow().timestamp()) else 'Suspect is ready.'}""")
-                elif target.upper() == code:
-                    members = ctx.guild.get_role(888588301852893254).members
-                    members.remove(ctx.author)
-                    await random.choice(members).remove_roles(role)
-                    await ctx.author.send(f"Got 1 player out.")
-                    self.ongoing_bm_game['code'][rooms.index(ctx.channel.id)] = False
-                    if len(ctx.guild.get_role(888588301852893254).members) == 1:
-                        await ctx.reply(f"{role.mention}. Great job Banner{ctx.author.mention}.")
-                        self.ongoing_bm_game = dict()
-                else: await ctx.author.send('Wrong code.')
-        elif ctx.channel.id == surviver:
-            if round(discord.utils.utcnow().timestamp()) < self.ongoing_bm_game['cd'] + 60:
-                await ctx.message.add_reaction('⏳')
-            elif target is None:
-                suspects = '\n'.join(m.mention for m in role.members)
-                await ctx.reply(embed=discord.Embed(description=f"**__SUSPECTS**__\n{suspects}"))
-            elif target == self.ongoing_bm_game['banner']:
-                await self.ongoing_bm_game['banner'].remove_roles(role)
-                await ctx.reply(f"{role.mention} Great job. {self.ongoing_bm_game['banner'].mention} was the Banner.")
-                self.ongoing_bm_game = dict()
-            else:
-                await ctx.reply(f"Wrong Guess.")
-                self.ongoing_bm_game['cd'] = round(discord.utils.utcnow().timestamp())
 
-    
     def iv_view(self, name, price, emoji, item_type:typing.Literal[1,2,3,4,5,6,7,8,9]):
-        emoji = discord.Embed(title=f"Item Value", description=f"**{name.title()}**\nValue: ⏣ {'{:,}'.format(price)}\n", colour=discord.Colour.green() if price >= 200000 else discord.Color.red()).set_footer(text=iv_classes[str(item_type)], icon_url=f"https://cdn.discordapp.com/emojis/{emoji}").set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+        emoji = (
+            discord.Embed(
+                title='Item Value',
+                description=f"**{name.title()}**\nValue: ⏣ {'{:,}'.format(price)}\n",
+                colour=discord.Colour.green()
+                if price >= 200000
+                else discord.Color.red(),
+            )
+            .set_footer(
+                text=iv_classes[str(item_type)],
+                icon_url=f"https://cdn.discordapp.com/emojis/{emoji}",
+            )
+            .set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{emoji}")
+        )
+
         if price < 200000:
             emoji.description += f"```diff\n- Minimum donation is 200k.\n- 💸 You need another ⏣ {'{:,}'.format(round(2e5 - price))}\n```"
         return emoji
@@ -415,14 +433,13 @@ class CustomCog(commands.Cog, name='Custom'):
     @server([894628265963159622])
     async def iv(self, ctx, *, items:str=None):
         """Item Value calculation tool. This command returns the list of items, lookup of single item or calculation of multiple items if invoked without subcommand."""
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await Database.get_server(self, 894628265963159622)
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply("No items.")
-        if items is None:
+        if not items:
             classes = '\n'.join(f"{i}. {iv_classes[i]}" for i in iv_classes)
-            embed = discord.Embed(title="Item Value", description=classes, color=discord.Color.random())
-            
+            embed = discord.Embed(title="Item Value", description=classes, color=discord.Color.random())   
             mes = await ctx.reply(embed=embed)
             v = IvDropdownView(ctx, mes, ivlist)
             await mes.edit(view=v)
@@ -444,8 +461,8 @@ class CustomCog(commands.Cog, name='Custom'):
                 else:
                     await ctx.reply(embed=self.iv_view(f"{quantity} {fuz[0]}", ivlist[fuz[0]]['v'] * int(quantity), ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']))
             else:
-                invalids = list()
-                value_list = list()
+                invalids = []
+                value_list = []
                 for item in itemlist:
                     number = re.findall('\d+', item)
                     itemname = re.sub(r'[0-9]', '', item).replace(' ', '')
@@ -461,36 +478,45 @@ class CustomCog(commands.Cog, name='Custom'):
                             value = ivlist[fuz[0]]['v'] * int(quantity)
                             value_list.append(value)
                 e=discord.Embed(title='Item Value Calculator', description=f'```fix\n{items}\n```', color=discord.Color.green() if sum(value_list) > 200000 else discord.Color.red())
-                if len(invalids) > 0:
+                if invalids:
                     e.add_field(name='Invalid Items', value=', '.join(invalids), inline=False)
-                e.add_field(name="Calculation", value='```fix\n'+' + '.join([str(value) for value in value_list]) + f"\n= ⏣ {sum(value_list)}\n```\n⏣ {'{:,}'.format(sum(value_list))}\n" + (f"```diff\n- Minimum donation is 200k.\n- 💸 You need another ⏣ {'{:,}'.format(round(2e5 - sum(value_list)))}\n```" if sum(value_list)<200000 else ''), inline=False)
+                e.add_field(
+                    name="Calculation",
+                    value='```fix\n'
+                    + ' + '.join(str(value) for value in value_list)
+                    + f"\n= ⏣ {sum(value_list)}\n```\n⏣ {'{:,}'.format(sum(value_list))}\n"
+                    + (
+                        f"```diff\n- Minimum donation is 200k.\n- 💸 You need another ⏣ {'{:,}'.format(round(2e5 - sum(value_list)))}\n```"
+                        if sum(value_list) < 200000
+                        else ''
+                    ),
+                    inline=False,
+                )
                 await ctx.reply(embed=e)
 
     @iv.command(name='add')
     @server([894628265963159622])
-    #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
     async def iv_add(self, ctx, item_type:typing.Literal[1,2,3,4,5,6,7,8,9], value:float, emoji:typing.Union[discord.PartialEmoji, str], *, item_name:str):
         value = round(value)
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await Database.get_server(self, 894628265963159622)
         ivlist = server.get('iv') or {}
         item_name = re.sub(r'[0-9]', '', item_name)
         if item_name.lower() in ivlist.keys():
             return await ctx.reply(f"{item_name.title()} already exists.", embed=self.iv_view(item_name, round(value), ivlist[item_name]['e'], ivlist[item_name]['t']))
         emoji = emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', '')
         ivlist[item_name.lower()] = {'v':value, 'e':emoji, 't':str(item_type)}
-        await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+        await Database.edit_server(self, 894628265963159622, {'iv':ivlist})
         await ctx.reply(f"**{item_name.title()}** added with value ⏣ {'{:,}'.format(value)}.", embed=self.iv_view(item_name, value, emoji,   item_type))
 
     @iv.command(name='remove', aliases=['delete', 'del'])
     @server([894628265963159622])
-    #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
     async def iv_remove(self, ctx, *, item_name):
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await Database.get_server(self, 894628265963159622)
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
-            return await ctx.reply(f"No items.")
+            return await ctx.reply('No items.')
         fuz = process.extractOne(item_name.lower(), ivlist.keys())
         if fuz[1] < 75:
             await ctx.reply(f"{item_name.title()} Not Found")
@@ -502,40 +528,82 @@ class CustomCog(commands.Cog, name='Custom'):
             for vd in msgv.children:
                 vd.disabled = True
             await v.wait()
-            if v.value is None:
-                mes.edit('Timeout.', view=msgv)
-            elif v.value:
+            if v.value is False:
+                await mes.edit('Cancelled', view=msgv)
+            elif not v.value:
+                await mes.edit('Timeout.', view=msgv)
+            else:
                 ivlist.pop(fuz[0])
-                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
+                await Database.edit_server(self, 894628265963159622, {'iv':ivlist})
                 await mes.edit("Confirmed.", view=msgv)
                 await mes.reply(f"**{fuz[0].title()}** removed.")
-            else:
-                await mes.edit('Cancelled', view=msgv)
 
     @iv.command(name='edit')
     @server([894628265963159622])
-    #@commands.has_guild_permissions(administrator=True)
     @commands.is_owner()
-    async def iv_edit(self, ctx, new:typing.Union[float, str], *, item_name:str):
+    async def iv_edit(self, ctx, item_name:str):
         """Edits name/value for an item."""
-        server = await self.bot.dba['server'].find_one({'_id':894628265963159622}) or {}
+        server = await Database.get_server(self, 894628265963159622)
         ivlist = server.get('iv') or {}
         if len(ivlist) == 0:
             return await ctx.reply(f"No items.")
-        fuzzy = process.extractOne(item_name.lower(), ivlist.keys())
-        if fuzzy[1] < 75:
+        fuz = process.extractOne(item_name.lower(), ivlist.keys())
+        if fuz[1] < 75:
             await ctx.reply(f"{item_name} Not Found")
         else:
-            if type(new) is str:
-                ivlist[new.lower()] = ivlist[fuzzy[0]]
-                ivlist.pop(fuzzy[0])
-                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-                await ctx.reply(f"{item_name} renamed to {new}.")
-            elif type(new) is float:
-                val = round(new)
-                ivlist[fuzzy[0]]['v'] = val
-                await self.bot.dba['server'].update_one({'_id':894628265963159622}, {'$set':{'iv':ivlist}})
-                await ctx.reply(f"{fuzzy[0].title()}'s value is now {'{:,}'.format(val)}.")
+            v = IvEdit(ctx)
+            msg = await ctx.reply(f"Click the button to edit.", embed=self.iv_view(f"{fuz[0]}", ivlist[fuz[0]]['v'], ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']), view=v)
+            dv = discord.ui.View.from_message(msg)
+            for db in dv.children:
+                db.disabled = True
+            name = fuz[0]
+            value = ivlist[fuz[0]]['v']
+            while v.value not in (True, False):
+                await v.wait()
+                def author(m):
+                    return m.author == ctx.author and m.channel.id == ctx.channel.id
+                if v.value == 'name':
+                    m = await v.interaction.followup.send(f'Send the new name for **{fuz[0]}** in 20 seconds.')
+                    await msg.edit(view=v.view)
+                    try:
+                        message = await self.bot.wait_for('message', check=author, timeout=20)
+                        name = message.content.lower()
+                        v = IvEdit(ctx)
+                        await msg.edit("Click Confirm to update.", embed=self.iv_view(name, value, ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']), view=v)
+                    except asyncio.TimeoutError:
+                        await v.interaction.followup.edit_message(m.id, 'Timeout.')
+                        await msg.edit('Timeout.', view=dv)
+                        v.value = False
+                    except:
+                        v = IvEdit(ctx)
+                        await msg.edit("Name Invalid.", view=v)
+                elif v.value == 'value':
+                    m = await v.interaction.followup.send(f'Send the new value for **{fuz[0]}** in 20 seconds.')
+                    await msg.edit(view=v.view)
+                    try:
+                        message = await self.bot.wait_for('message', check=author, timeout=20)
+                        value = round(float(message.content.lower()))
+                        v = IvEdit(ctx)
+                        await msg.edit("Click Confirm to update.", embed=self.iv_view(name, value, ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t']), view=v)
+                    except asyncio.TimeoutError:
+                        await v.interaction.followup.edit_message(m.id, 'Timeout.')
+                        await msg.edit('Timeout.', view=dv)
+                    except:
+                        v = IvEdit(ctx)
+                        await msg.edit("Number Invalid.", view=v)
+                elif v.value is True:
+                    await v.interaction.followup.send('Confirmed')
+                    ivlist[name] = ivlist.pop(fuz[0])
+                    ivlist[name]['v'] = value
+                    await Database.edit_server(self, 894628265963159622, {'iv':ivlist})
+                    await msg.edit(view=dv, embed=self.iv_view(name, value, ivlist[name]['e'], ivlist[name]['t']))
+                else:
+                    try:
+                        await v.interaction.followup.send(content='Cancelled')
+                        await msg.edit('Cancelled', view=dv)
+                    except: 
+                        pass
+                    return
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

@@ -1,4 +1,4 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext.commands.errors import PrivateMessageOnly
 from discord.ext import commands, tasks
 
@@ -11,10 +11,6 @@ class ListenerCog(commands.Cog, name='Listener'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_command_completion(self, ctx):
-        self.bot.commands_invoked += 1
-
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -22,36 +18,50 @@ class ListenerCog(commands.Cog, name='Listener'):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild:discord.Guild):
+        if not guild.owner:
+            return
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
-        try:
-            embed.set_author(
-                name=guild.name, icon_url=guild.icon or discord.embeds.MaybeEmpty
-            )
-
-            embed.set_thumbnail(url=f"{guild.icon}")
-        except Exception as e:
-            await self.bot.changes.send(f'Error\n{e}')
+        embed.set_author(name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif')
+        embed.set_thumbnail(url=f"{guild.icon.url}")
         if guild.banner is not None:
             embed.set_image(url=f"{guild.banner}")
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild:discord.Guild):
+        if not guild.owner:
+            return
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
-        try:
-            embed.set_author(
-                name=guild.name, icon_url=guild.icon or discord.embeds.MaybeEmpty
-            )
-
-            embed.set_thumbnail(url=f"{guild.icon}")
-        except Exception as e:
-            await self.bot.changes.send(f'Error\n{e}')
+        embed.set_author(name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif')
+        embed.set_thumbnail(url=f"{guild.icon.url}")
         if guild.banner is not None:
-            embed.set_image(url=f"{guild.banner}")
+            embed.set_image(url=f"{guild.banner.url}")
         await self.bot.changes.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):    # sourcery no-metrics
+    async def on_message(self, msg):
+        await self.bot.wait_until_ready()
+        if type(msg.channel) != discord.Thread:
+            return
+        if msg.channel.parent_id != 900699395639623711 or msg.author.id == self.bot.user.id or msg.content.startswith('=') or str(msg.author.id) == msg.channel.name:
+            return
+        try:
+            supportuser = self.bot.get_user(int(msg.channel.name))
+            e = discord.Embed(title="Support Reply", description=msg.content).set_author(name=msg.author.name, icon_url=msg.author.avatar)
+            await msg.add_reaction('<a:verified:876075132114829342>')
+            def check(reaction, user):
+                return str(reaction.emoji) == '<a:verified:876075132114829342>'
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=10, check=check)
+            await supportuser.send(embeds = [e]+msg.embeds)
+            await msg.clear_reactions()
+        except:
+            await msg.add_reaction('<:exclamation:876077084986966016>')
+        
+        
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):  # sourcery no-metrics
+        await self.bot.wait_until_ready()
         """The event triggered when an error is raised while invoking a command.
         Parameters
         ------------
@@ -76,7 +86,8 @@ class ListenerCog(commands.Cog, name='Listener'):
         # Anything in ignored will return and prevent anything happening.
         if isinstance(error, ignored):
             return
-
+        if type(ctx.channel) is discord.Thread and ctx.channel.parent_id == 900699395639623711:
+            return
         if isinstance(error, commands.NoPrivateMessage):
             try:
                 return await ctx.author.send(f'`{ctx.command}` can not be used in Private Messages.')
@@ -99,6 +110,18 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.NotOwner):
             embed = discord.Embed(title="Owner only command", description='Imagine using this.').set_image(url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652")
             return await ctx.reply(embed=embed)
+        elif isinstance(error, commands.CommandNotFound) and type(ctx.channel) is discord.DMChannel:
+            channel = ctx.bot.get_channel(900699395639623711)
+            tchannel = channel.threads
+            tnames = [tc.name for tc in tchannel]
+            e = discord.Embed(title="Support Ticket", description=ctx.message.content).set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
+            if str(ctx.author.id) in tnames:
+                await tchannel[tnames.index(str(ctx.author.id))].send(embed=e)
+            else:
+                msg = await channel.send(embed=e)
+                thread = await channel.create_thread(name=f"{ctx.author.id}", message=msg)
+                await thread.send(f'<@&843375370627055637>\n{ctx.author.mention} opened a support ticket.\nDO NOT SPAM\nReact with <a:verified:876075132114829342> after the bot reacts to send your message.', allowed_mentions=discord.AllowedMentions.all())
+            return await ctx.message.add_reaction('<a:verified:876075132114829342>')
         elif isinstance(error, commands.CommandNotFound):
             try:
                 return await ctx.message.add_reaction("<:exclamation:876077084986966016>")
@@ -108,7 +131,7 @@ class ListenerCog(commands.Cog, name='Listener'):
             codes = {10003}
             if error.code in codes:
                 return
-        
+
         embed = discord.Embed(
                 title=f"{type(error).__name__}",
                 description=f'{error}',

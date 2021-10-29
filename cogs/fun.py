@@ -1,4 +1,4 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 
 from thefuzz import process
@@ -568,7 +568,7 @@ class FunCog(commands.Cog, name='Fun'):
         if ctx.channel.id in self.ongoing_mm_games.keys():
             await ctx.reply(f"There is an ongoing game in this channel.")
             return
-        if seconds is None:
+        if not seconds:
             seconds = 390
         overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
         overwrite.send_messages=True
@@ -586,7 +586,7 @@ class FunCog(commands.Cog, name='Fun'):
         counter=collections.Counter(messages)
         winners = '\n'.join(f"<medal here>  <@{x[0]}>: {x[1]} messages" for x in counter.most_common(5))
         winners = winners.replace('<medal here>', '🥇', 1).replace('<medal here>', '🥈', 1).replace('<medal here>', '🥉', 1).replace('<medal here>', '🏅', 1).replace('<medal here>', '🏅', 1)
-        embed = discord.Embed(title="Message Mania", description=f"**__Winners__**\n{winners}", color=discord.Color.gold()).set_thumbnail(url="https://images-ext-1.discordapp.net/external/LMTQPkVKqF0jESGgD5djPe1ROAUCybuofm-ismCdBUs/https/media.discordapp.net/attachments/841654825456107533/890903767845834762/MM.png")
+        embed = discord.Embed(title="Message Mania", description=f"**__Winners__**\n{winners}", color=discord.Color.gold()).set_thumbnail(url="https://media.discordapp.net/attachments/841654825456107533/890903767845834762/MM.png")
         try:
             await ctx.reply(embed=embed)
         except:

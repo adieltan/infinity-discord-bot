@@ -1,10 +1,9 @@
-import discord, random, string, os, asyncio, sys, math, requests, json, datetime, psutil, dns, io, PIL, re, aiohttp, typing
+import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 
-
-
 from PIL import Image, ImageDraw, ImageFont
-import blist, MotionBotList, topgg
+import dateparser
+from ._utils import Database
 
 def is_manager():
     def predicate(ctx):
@@ -15,9 +14,6 @@ class OwnerCog(commands.Cog, name='Owner'):
     """🔐 Only owner/managers can use this."""
     def __init__(self, bot):
         self.bot = bot
-        self.blist= blist.Blist(self.bot, token=os.getenv('blist_token'))
-        self.motionlist = MotionBotList.connect(os.getenv('motionlist_token'))
-        self.topgg= topgg.DBLClient(self.bot,token=os.getenv('topgg_token'),autopost=False)
 
     @commands.command(name='dm', aliases=['adm'])
     @is_manager()
@@ -30,7 +26,6 @@ class OwnerCog(commands.Cog, name='Owner'):
         else:
             await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
-
     @commands.command(name='blacklist', aliases=['bl'])
     @is_manager()
     async def blacklist(self, ctx, user:discord.User, *, reason:str=None):
@@ -38,15 +33,8 @@ class OwnerCog(commands.Cog, name='Owner'):
         if user.id in self.bot.managers:
             await ctx.reply("You can't blacklist them.")
             return
-        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
-        results['bl'] = True
-        results['blreason'] = reason + f"\nResponsible manager: {ctx.author.id}"
-        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
-        blquery = {'bl':True}
-        bled = []
-        async for doc in self.bot.dba['profile'].find(blquery):
-            bled.append(doc['_id'])
-        self.bot.bled = bled
+        await Database.edit_user(self, user.id, {'bl':True, 'blreason':reason + f"\nResponsible manager: {ctx.author.id}"})
+        await self.bot.cbl()
         await ctx.reply(embed=discord.Embed(title="Blacklist",description=f"Blacklisted {user.mention} `{user.id}`.", color=discord.Color.red()))
         await user.send(f"You have been blacklisted by a bot moderator ({ctx.author.mention}) for {reason}\nTo appeal or provide context, join our support server at https://discord.gg/dHGqUZNqCu and head to <#851637967952412723>.")
         embed=discord.Embed(title="Blacklist", description=f"{user.mention} for {reason}", color=discord.Color.red())
@@ -55,23 +43,13 @@ class OwnerCog(commands.Cog, name='Owner'):
 
     @commands.command(name='unblacklist', aliases=['ubl'])
     @is_manager()
-    async def unblacklist(self, ctx, user:discord.User, *, reason:str=None):
+    async def unblacklist(self, ctx, user:discord.User, *, reason:str):
         """unBlacklists a member from using the bot."""
-        if user.id in self.bot.managers:
-            await ctx.reply("You can't unblacklist them.")
-            return
-        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
-        results['bl'] = False
-        results['blreason'] = reason + f"\nResponsible manager: {ctx.author.id}"
-        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
-        blquery = {'bl':True}
-        bled = []
-        async for doc in self.bot.dba['profile'].find(blquery):
-            bled.append(doc['_id'])
-        self.bot.bled = bled
+        await Database.edit_user(self, user.id, {'bl':None, 'blreason':None})
+        await self.bot.cbl()
         await ctx.reply(embed=discord.Embed(title="Unblacklist",description=f"Unlacklisted {user.mention} `{user.id}`.", color=discord.Color.green()))
-        await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nSorry if there are any inconvinences caused and please do continue to use and support our bot.")
-        embed=discord.Embed(title="Unlacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
+        await user.send(f"You have been unblacklisted by a bot manager ({ctx.author.mention}).\nYou can now continue using bot commands as usual.")
+        embed=discord.Embed(title="Unbacklist", description=f"{user.mention} for {reason}", color=discord.Color.green())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         await self.bot.changes.send(embed=embed)
 
@@ -79,7 +57,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     @is_manager()
     async def blacklistcheck(self, ctx, user:discord.User):
         """Checks if a member is blacklisted from using the bot."""
-        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
+        results = await Database.get_user(self, user.id)
         await ctx.reply(embed=discord.Embed(description=f"{user.mention}'s blacklist status: {results.get('bl')}.\nReason: {results.get('blreason')}"))
 
     @commands.command(name='blacklisted')
@@ -87,96 +65,13 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def blacklisted(self, ctx):
         bled = set({})
         text = ''
-        async for doc in self.bot.dba['profile'].find({'bl':True}):
+        async for doc in self.bot.db['profile'].find({'bl':True}):
             bled.add(doc['_id'])
             text += f"{doc['_id']} {doc['blreason']}\n"
         self.bot.bled = bled
         buffer = io.BytesIO(text.encode('utf-8'))
         await ctx.reply(file=discord.File(buffer, filename='blacklisted.txt'))
     
-    @commands.command(name="manageradd", aliases=['ma'])
-    @commands.is_owner()
-    async def manageradd(self, ctx, user:discord.User):
-        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
-        results['manager'] = True
-        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
-        managquery = {'manager':True}
-        managers = []
-        async for doc in self.bot.dba['profile'].find(managquery):
-            managers.append(doc['_id'])
-        self.bot.managers = managers
-        await ctx.reply(f"Added {user.mention} as Infinity Managers.")
-        guild = self.bot.get_guild(709711335436451901)
-        member = await guild.fetch_member(user.id)
-        role = guild.get_role(843375370627055637)
-        await member.add_roles(role)
-        embed=discord.Embed(title="Promoted to manager", description=f"{user.mention}", color=discord.Color.blurple())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
-        await self.bot.changes.send(embed=embed)
-
-    @commands.command(name="managerremove", aliases=['mr'])
-    @commands.is_owner()
-    async def managerremove(self, ctx, user:discord.User):
-        results = await self.bot.dba['profile'].find_one({"_id":user.id}) or {}
-        results['manager'] = False
-        await self.bot.dba['profile'].replace_one({"_id":user.id}, results, True)
-        managquery = {'manager':True}
-        managers = []
-        async for doc in self.bot.dba['profile'].find(managquery):
-            managers.append(doc['_id'])
-        self.bot.managers = managers
-        await ctx.reply(f"Removed {user.mention} as Infinity Managers.")
-        try:
-            guild = self.bot.get_guild(709711335436451901)
-            member = await guild.fetch_member(user.id)
-            role = guild.get_role(843375370627055637)
-            await member.remove_roles(role)
-        except:
-            pass
-        embed=discord.Embed(title="Demoted from manager", description=f"{user.mention}", color=discord.Color.dark_orange())
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
-        await self.bot.changes.send(embed=embed)
-
-    @commands.command(name="timer", aliases=['countdown', 'cd'])
-    @commands.is_owner()
-    async def timer(self, ctx, time=None, name:str="Timer"):
-        """Ever heard of a timer countdown?"""
-        if time is None:
-            await ctx.reply("Ever heard of a timer countdown?\nm=minutes\ns=seconds\nh=hours")
-            return
-        lower = time.lower()
-        digit = int(re.sub("[^\\d.]", "", time))
-        if lower[-1] == "s":
-            seconds = digit
-        elif lower[-1] == "m":
-            seconds = digit*60
-        elif lower[-1] == "h":
-            seconds = digit*60*60
-        elif digit is None:
-            await ctx.reply("Do you speak numbers？")
-            raise BaseException
-        else:
-            seconds = digit
-        secondint = int(seconds)
-        if secondint < 0 or secondint == 0:
-            await ctx.send("Do YoU SpEaK NuMbErS?")
-            raise BaseException
-
-        embed = discord.Embed(title=f"{name}", description=f"{seconds} seconds remaining" ,color=discord.Color.random())
-        message = await ctx.send(ctx.message.author.mention, embed=embed)
-        while True:
-            secondint -= 1
-            if secondint == 0:
-
-                embed = discord.Embed(title=f"{name}", description="Ended" ,color=discord.Color.random())
-                await message.edit(embed=embed)
-                break
-
-            embed = discord.Embed(title=f"{name}", description=f"{secondint} seconds remaining" ,color=discord.Color.random())
-            await message.edit(embed=embed)
-            await asyncio.sleep(1)
-        await message.reply(ctx.message.author.mention + " Your countdown Has ended!")
-
     @commands.command(name='logout', aliases=['shutdown'])
     @commands.is_owner()
     async def logout(self, ctx):
@@ -232,7 +127,7 @@ class OwnerCog(commands.Cog, name='Owner'):
     async def remove(self, ctx):
         """Removes the referenced message."""
         ref = ctx.message.reference
-        if ref is None:
+        if not ref:
             await ctx.reply("Eh you gotta reply to the message you wanna remove!", mention_author=True)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
@@ -323,21 +218,66 @@ class OwnerCog(commands.Cog, name='Owner'):
             async with cs.post(url=f"https://api.botlist.me/api/v1/bots/{self.bot.user.id}/stats", json=data, headers=header) as data:
                 json = await data.json()
                 text += f"Botlist\n{json}"
-        await cs.close()
-        await blist.Blist.post_bot_stats(self.blist)
-        self.motionlist.update(self.bot.user.id, len(self.bot.guilds))
-        await self.topgg.post_guild_count(len(self.bot.guilds))
         await ctx.send(text)
 
     @commands.Cog.listener()
     async def on_dbl_vote(self, data):
         await self.voterchannel.send(f"{data}")
 
-    @commands.command(name='test')
+    @commands.command(name='gift')
     @commands.is_owner()
-    async def test(self, ctx, *, input):
-        pass
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    async def gift(self, ctx, user:discord.User, expiry:str=None):
+        """Gifts a user premium."""
+        if user.bot or user.id in self.bot.bled:
+            return await ctx.reply("They won't get to use it.")
+        results= await Database.get_user(self, user.id)
+        if expiry:
+            settings = {'TIMEZONE': 'UTC', 'RETURN_AS_TIMEZONE_AWARE': True, 'TO_TIMEZONE': 'UTC', 'PREFER_DATES_FROM': 'future'}
+            to_be_passed = f"in {expiry}"
+            split = to_be_passed.split(" ")
+            length = len(split[:7])
+            out = None
+            used = ""
+            for i in range(length, 0, -1):
+                used = " ".join(split[:i])
+                out = dateparser.parse(used, settings=settings)
+                if out is not None:
+                    break
+            if not out:
+                raise commands.BadArgument('Provided time is invalid')
+            now = ctx.message.created_at
+            time = out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
+            expiry = round(time[0].timestamp())
+            if expiry < discord.utils.utcnow().timestamp() + 86400:
+                return await ctx.reply("You might as well don't give.")
+        else:
+            expiry = True
+        if results.get('premium') is True:
+            return await ctx.reply("User already has premium.")
+        await Database.edit_user(self, user.id, {'premium':expiry})
+        e = discord.Embed(title="Infinity Premium 👑", description=f"{user.mention} received {'Lifetime Premium.' if expiry is True else f'Premium that expires on <t:{expiry}:D>'}", color=discord.Color.gold())
+        await ctx.reply(embed=e)
+        await self.bot.changes.send(embed=e)
 
+    @commands.command(name="snipe", aliases=["sn"])
+    @commands.is_owner()
+    async def snipe(self, ctx, channel:discord.TextChannel=None):
+        """Snipes the last deleted message of the channel."""
+        if not channel:
+            channel = ctx.message.channel
+        deletedmsg = self.bot.snipedb.get(f"{channel.id}")
+        if not deletedmsg:
+            await ctx.reply('No cached deleted message.')
+        else:
+            embed=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
+            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar or embed.Empty)
+            await ctx.reply(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message:discord.Message):
+        if message.content:
+            self.bot.snipedb[f"{message.channel.id}"]= message
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

@@ -1,6 +1,5 @@
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { token } = process.env.DISCORD_TOKEN
 require('dotenv').config()
 const fs = require('fs');
 
@@ -8,8 +7,8 @@ const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 // Place your client and guild ids here
-const clientId = process.env.DISCORD_CLIENT_ID;
-const guildId = '882994673319313468';
+const clientId = '882811387427037184';
+const guildId = '709711335436451901';
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);

@@ -15,6 +15,7 @@ const MongoClient = require('mongodb').MongoClient;
 require('./error');
 const bot = require('./utils/botData')
 const mongoose = require('mongoose');
+const Bot = require('./utils/botData');
 require('./deploycmd')
 
 try {
@@ -24,11 +25,6 @@ try {
 	console.error(error)
 }
 
-main().catch(err => console.log(err));
-
-async function main() {
-  await mongoose.connect(process.env.mongo);
-}
 
 const client = new Client({ 
 	intents: [
@@ -47,8 +43,7 @@ const client = new Client({
 	], allowedMentions: { parse: ['users', 'roles'] } });
 client.commands = new Collection();
 client.emoji = emoji;
-
-const amari = new AmariBot(process.env.amari, {token:process.env.amari})
+client.bot = Bot
 
 //commands
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -73,5 +68,15 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
+
+mongoose.connect(process.env.mongo, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+		useFindAndModify: false
+}).then(()=>{
+	console.log('Connected to database.');
+}).catch((err)=>{
+	console.log(err);
+});
 
 client.login(process.env.DISCORD_TOKEN);

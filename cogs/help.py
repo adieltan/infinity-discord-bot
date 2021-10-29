@@ -12,19 +12,22 @@ from abc import ABCMeta
 # Unimportant part
 
 class Menu(ui.View):
-    def __init__(self, msg, ctx, pages:list[discord.Embed]) -> None:
+    def __init__(self, ctx, pages:list[discord.Embed]) -> None:
         super().__init__(timeout=30)
         self.current_page = 0
         self.pages = pages
         self.ctx = ctx
-        self.msg = msg
+        self.msg = None
 
     async def on_timeout(self):
         self.clear_items()
         await self.msg.edit(view=None)
 
     async def interaction_check(self, interaction:discord.Interaction):
-        return interaction.user.id == self.ctx.author.id
+        if interaction.user.id == self.ctx.author.id:
+            return True
+        await interaction.response.send_message("Eh don't be busybody.", ephemeral=True)
+        return False
 
     @ui.button(emoji='<:rewind:899651431294967908>', style=discord.ButtonStyle.blurple)
     async def first_page(self, button:discord.ui.Button, interaction:discord.Interaction):
@@ -95,11 +98,10 @@ class Paginator:
         Returns:
             bool: Will return True if the emebed isn't too large
         """
-        check = (
+        return (
             len(embed) + sum(len(char) for char in chars if char) < self.char_limit
             and len(embed.fields) < self.field_limit
         )
-        return check
 
     def _new_page(self, title: str, description: str):
         """
@@ -269,40 +271,6 @@ class Paginator:
 
 
 class GoodHelp(commands.HelpCommand):
-    """The implementation of the prettier help command.
-    A more refined help command format
-    This inherits from :class:`HelpCommand`.
-    It extends it with the following attributes.
-
-    Attributes
-    ------------
-
-    color: :class: `discord.Color`
-        The color to use for the help embeds. Default is a random color.
-    dm_help: Optional[:class:`bool`]
-        A tribool that indicates if the help command should DM the user instead of
-        sending it to the channel it received it from. If the boolean is set to
-        ``True``, then all help output is DM'd. If ``False``, none of the help
-        output is DM'd. If ``None``, then the bot will only DM when the help
-        message becomes too long (dictated by more than :attr:`dm_help_threshold` characters).
-        Defaults to ``False``.
-    menu: Optional[:class:`pretty_help.PrettyMenu`]
-        The menu to use for navigating pages. Defautl is :class:`DefaultMenu`
-        Custom menus should inherit from :class:`pretty_help.PrettyMenu`
-    ending_note: Optional[:class:`str`]
-        The footer in of the help embed
-    index_title: :class: `str`
-        The string used when the index page is shown. Defaults to ``"Categories"``
-    no_category: :class:`str`
-        The string used when there is a command which does not belong to any category(cog).
-        Useful for i18n. Defaults to ``"No Category"``
-    sort_commands: :class:`bool`
-        Whether to sort the commands in the output alphabetically. Defaults to ``True``.
-    show_index: class: `bool`
-        A bool that indicates if the index page should be shown listing the available cogs
-        Defaults to ``True``.
-    """
-
     def __init__(self, **options):
 
         self.color = options.pop(
@@ -352,8 +320,8 @@ class GoodHelp(commands.HelpCommand):
         if len(pages) < 2:
             await self.context.channel.send(embed=pages[0])
         else:
-            msg = await self.context.channel.send(embed=pages[0])
-            await msg.edit(view=Menu(msg, self.context, pages))
+            v = Menu(self.context, pages)
+            v.msg = await self.context.channel.send(embed=pages[0], view=v)
 
     def get_destination(self):
         ctx = self.context

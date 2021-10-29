@@ -3,12 +3,7 @@ from discord.ext import commands, tasks
 
 from PIL import Image, ImageDraw, ImageFont
 import dateparser
-from ._utils import Database
-
-def is_manager():
-    def predicate(ctx):
-        return ctx.message.author.id in ctx.bot.managers
-    return commands.check(predicate)
+from ._utils import Database, is_manager
 
 class OwnerCog(commands.Cog, name='Owner'):
     """🔐 Only owner/managers can use this."""

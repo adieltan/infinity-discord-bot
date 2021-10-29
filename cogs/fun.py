@@ -6,12 +6,27 @@ import collections
 from PIL import Image
 import time
 
+from ._utils import ThreeChoices
+
 class FunCog(commands.Cog, name='Fun'):
     """🥳 Fun / minigame commands."""
     def __init__(self, bot):
         self.bot = bot
         self.ongoing_mm_games = dict()
     
+    @commands.command(name='pet')
+    async def pet(self, ctx):
+        """Pet..."""
+        v = ThreeChoices(ctx)
+        random.shuffle(v.children)
+        v.msg = await ctx.reply(f"Pet", view=v)
+        await v.wait()
+        if v.value:
+            await ctx.send('congrats')
+        else:
+            await ctx.send('.')
+
+
     @commands.command(name= 'roll', aliases=['dice', 'throw'])
     @commands.cooldown(1,5)
     async def roll(self, ctx, number_of_dice:int, number_of_sides:int):

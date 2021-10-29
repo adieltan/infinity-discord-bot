@@ -6,50 +6,8 @@ from discord.ext import commands, tasks
 from thefuzz import process
 import collections
 
-from ._utils import Database
+from ._utils import Database, Confirm, NitroButtons, server
 
-def server(id:list):
-    def predicate(ctx):
-        return ctx.guild.id in id or ctx.author.id in ctx.bot.owners
-    return commands.check(predicate)
-
-class Confirm(discord.ui.View):
-    def __init__(self, ctx):
-        super().__init__(timeout=10)
-        self.value = None
-        self.ctx = ctx
-    
-    async def interaction_check(self, interaction:discord.Interaction):
-        return interaction.user.id == self.ctx.author.id
-
-    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
-    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        self.value = True
-        self.stop()
-
-    # This one is similar to the confirmation button except sets the inner value to `False`
-    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        self.value = False
-        self.stop()
-
-class NitroButtons(discord.ui.View):
-    def __init__(self, msg, ctx):
-        super().__init__(timeout=30)
-        self.ctx = ctx
-        self.msg = msg
-
-    async def on_timeout(self):
-        self.clear_items()
-        self.add_item(discord.ui.Button(label='\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800', style=discord.ButtonStyle.gray, disabled=True))
-        self.msg.embeds[0].description= "Looks like someone already redeemed this gift."
-        await self.msg.edit(embed=self.msg.embeds[0], view=self)
-
-    @discord.ui.button(label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800", style=discord.ButtonStyle.green)
-    async def accept(self, button:discord.ui.Button, interaction:discord.Interaction):
-        await interaction.response.send_message('https://imgur.com/NQinKJB', ephemeral=True)
 
 iv_classes = {
     '1': 'Shop Items',
@@ -63,14 +21,17 @@ iv_classes = {
     '9': 'Random Items'}
 
 class IvDropdownView(discord.ui.View):
-    def __init__(self, ctx, message, ivlist):
+    def __init__(self, ctx, ivlist):
         super().__init__(timeout=20)
         self.ctx = ctx
-        self.msg = message
+        self.msg = None
         self.ivlist = ivlist
 
     async def interaction_check(self, interaction:discord.Interaction):
-        return interaction.user.id == self.ctx.author.id
+        if interaction.user.id == self.ctx.author.id:
+            return True
+        await interaction.response.send_message("Eh don't be busybody.", ephemeral=True)
+        return False
     
     async def on_timeout(self):
         v = self
@@ -162,8 +123,8 @@ class CustomCog(commands.Cog, name='Custom'):
         embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
         embed.set_image(url="https://cdn.discordapp.com/app-assets/521842831262875670/store/633877574094684160.png?size=1024")
         embed.set_footer(text='\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800Expires in 46 hours.')
-        mes = await ctx.send(f"https://discord.gift\{text}",embed=embed)
-        await mes.edit(view=NitroButtons(mes, ctx))
+        v = NitroButtons(ctx)
+        v.msg = await ctx.send(f"https://discord.gift\{text}",embed=embed, view=v)
 
     @commands.command(name="heist")
     @commands.has_any_role(783134076772941876)
@@ -305,9 +266,7 @@ class CustomCog(commands.Cog, name='Custom'):
             'D Event': 807926892723437588,
         }
         if message.content=='list':
-            text = ''
-            for role in roles:
-                text += f"{role} : <@&{roles[role]}>\n"
+            text = ''.join(f'{role} : <@&{value}>\n' for role, value in roles.items())
             await message.reply(text, mention_author=False, allowed_mentions=discord.AllowedMentions.none(), delete_after=100)
             return
         try:
@@ -397,14 +356,13 @@ class CustomCog(commands.Cog, name='Custom'):
         channel = self.bot.get_channel(842738964385497108)
         valu = math.trunc(raw)*quantity
         human = format(int(valu), ',')
-        
         embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator** : {user.mention}\n**Donation** : {quantity} {item}(s) worth {human} [Proof]({proof})", color=discord.Color.random())
         embed.timestamp=discord.utils.utcnow()
         embed.set_author(icon_url=ctx.author.avatar, name=f"Logged by: {ctx.author.name}")
         embed.add_field(name="Logging command", value=f"`,d a {user.id} {valu:.2e} {proof}`\nLog in <#814490036842004520>", inline=False)
         embed.add_field(name="Raw", value=f"||`{ctx.message.content}`||", inline=False)
         embed.set_thumbnail(url=user.avatar)
-        embed.set_footer(text=f"React with a ✅ after logged.")
+        embed.set_footer(text='React with a ✅ after logged.')
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 
@@ -440,9 +398,8 @@ class CustomCog(commands.Cog, name='Custom'):
         if not items:
             classes = '\n'.join(f"{i}. {iv_classes[i]}" for i in iv_classes)
             embed = discord.Embed(title="Item Value", description=classes, color=discord.Color.random())   
-            mes = await ctx.reply(embed=embed)
-            v = IvDropdownView(ctx, mes, ivlist)
-            await mes.edit(view=v)
+            v = IvDropdownView(ctx, ivlist)
+            v.msg = await ctx.reply(embed=embed, view=v)
         else:
             #search mode
             itemlist = items.split('+')
@@ -507,7 +464,7 @@ class CustomCog(commands.Cog, name='Custom'):
         emoji = emoji.url.replace('https://cdn.discordapp.com/emojis/', '') if type(emoji) is discord.PartialEmoji else emoji.replace('https://cdn.discordapp.com/emojis/', '')
         ivlist[item_name.lower()] = {'v':value, 'e':emoji, 't':str(item_type)}
         await Database.edit_server(self, 894628265963159622, {'iv':ivlist})
-        await ctx.reply(f"**{item_name.title()}** added with value ⏣ {'{:,}'.format(value)}.", embed=self.iv_view(item_name, value, emoji,   item_type))
+        await ctx.reply(f"**{item_name.title()}** added with value ⏣ {'{:,}'.format(value)}.", embed=self.iv_view(item_name.lower(), value, emoji,   item_type))
 
     @iv.command(name='remove', aliases=['delete', 'del'])
     @server([894628265963159622])
@@ -523,20 +480,18 @@ class CustomCog(commands.Cog, name='Custom'):
         else:
             e=self.iv_view(f"{fuz[0]}", ivlist[fuz[0]]['v'], ivlist[fuz[0]]['e'], ivlist[fuz[0]]['t'])
             v = Confirm(ctx)
-            mes = await ctx.reply('Are you sure to delete this item?', embed=e, view=v)
-            msgv = discord.ui.View.from_message(mes)
+            v.msg = await ctx.reply('Are you sure to delete this item?', embed=e, view=v)
+            msgv = discord.ui.View.from_message(v.msg)
             for vd in msgv.children:
                 vd.disabled = True
             await v.wait()
             if v.value is False:
-                await mes.edit('Cancelled', view=msgv)
-            elif not v.value:
-                await mes.edit('Timeout.', view=msgv)
-            else:
+                await v.msg.edit('Cancelled', view=msgv)
+            elif v.value is True:
                 ivlist.pop(fuz[0])
                 await Database.edit_server(self, 894628265963159622, {'iv':ivlist})
-                await mes.edit("Confirmed.", view=msgv)
-                await mes.reply(f"**{fuz[0].title()}** removed.")
+                await v.msg.edit("Confirmed.", view=msgv)
+                await v.msg.reply(f"**{fuz[0].title()}** removed.")
 
     @iv.command(name='edit')
     @server([894628265963159622])

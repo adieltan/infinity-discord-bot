@@ -22,10 +22,13 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         embed=discord.Embed(title="Guild Join", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.green())
         embed.set_author(name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif')
-        embed.set_thumbnail(url=f"{guild.icon.url}")
+        embed.set_thumbnail(url=guild.icon or 'https://tenor.com/bjHxN.gif')
         if guild.banner is not None:
             embed.set_image(url=f"{guild.banner}")
-        await self.bot.changes.send(embed=embed)
+        try:
+            await self.bot.changes.send(embed=embed)
+        except:
+            await self.bot.changes.send(f"**Guild Join**\n{guild.name}\nOwner{guild.owner.mention}\nMember Count: {guild.member_count}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild:discord.Guild):
@@ -33,10 +36,13 @@ class ListenerCog(commands.Cog, name='Listener'):
             return
         embed=discord.Embed(title="Guild Leave", description=f"Owner: {guild.owner.mention}\nMember Count: {guild.member_count}", color=discord.Color.red())
         embed.set_author(name=guild.name, icon_url=guild.icon or 'https://tenor.com/bjHxN.gif')
-        embed.set_thumbnail(url=f"{guild.icon.url}")
+        embed.set_thumbnail(url=guild.icon or 'https://tenor.com/bjHxN.gif')
         if guild.banner is not None:
-            embed.set_image(url=f"{guild.banner.url}")
-        await self.bot.changes.send(embed=embed)
+            embed.set_image(url=f"{guild.banner}")
+        try:
+            await self.bot.changes.send(embed=embed)
+        except:
+            await self.bot.changes.send(f"**Guild Join**\n{guild.name}\nOwner{guild.owner.mention}\nMember Count: {guild.member_count}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.Cog.listener()
     async def on_message(self, msg):

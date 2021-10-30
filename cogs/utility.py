@@ -25,58 +25,6 @@ class UtilityCog(commands.Cog, name='Utility'):
                 except:pass
         await ctx.message.add_reaction("<a:verified:876075132114829342>")
 
-    @commands.command(name="remark")
-    @commands.dm_only()
-    async def remark(self, ctx, *, remark:str):
-        """Adds a remark to the referenced bookmark."""
-        ref = ctx.message.reference
-        if not ref:
-            await ctx.reply("Eh you gotta reply to the message you wanna add a remark!", mention_author=True)
-        else:
-            message = await ctx.channel.fetch_message(ref.message_id)
-            try:
-                embed = message.embeds[0]
-                embed.add_field(name="Remark", value=remark, inline=False)
-                await message.edit(embed=embed)
-                await ctx.message.add_reaction("<a:verified:876075132114829342>")
-            except:await ctx.reply("Error")
-
-    @commands.command(name="bookmark")
-    @commands.guild_only()
-    async def bookmarkinfo(self, ctx):
-        """Info about the bookmarking system."""
-        embed=discord.Embed(title="Bookmark System", description="React to a message with :bookmark: to bookmark the message.\nThe bot will send and pin a message in your dms which contain the content and jump link to the message you bookmarked.\nRefering to the bookmark message with `remark <remark>` can add a field to the embed containing the remark you made.")
-        await ctx.reply(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload:discord.RawReactionActionEvent):
-        if (
-            payload.event_type != "REACTION_ADD"
-            or payload.emoji.name != "🔖"
-            or payload.member is None
-        ):
-            return
-        try:
-            message_channel = self.bot.get_channel(payload.channel_id)
-            m = await message_channel.fetch_message(payload.message_id)
-            try:m.clean_content
-            except:content = None
-            else:content = m.clean_content
-            embed=discord.Embed(title="Bookmark", description=f"You have bookmarked [this message]({m.jump_url}) on {discord.utils.format_dt(m.created_at)}\nAt {message_channel.mention} in {m.guild.name}", timestamp=discord.utils.utcnow(), color=discord.Color.from_rgb(0,255,255))
-            embed.set_author(name=m.author.name, icon_url=m.author.avatar)
-            embed.set_footer(text=m.guild.name, icon=m.guild.icon_url)
-            embed.add_field(name="Remark", value="Reply to this message with `remark <remark>` to add your remark.", inline=False)
-            message = await payload.member.send(content=content, embed=embed)
-            pins = await payload.member.dm_channel.pins()
-            if len(pins)>=50:
-                pins.reverse()
-                await pins[0].unpin()
-                await pins[0].reply("This message has been unpinned due to the pin limit in this channel.")
-            await message.pin()
-            history = await payload.member.dm_channel.history(limit=1).flatten()
-            await history[0].delete()
-        except:pass
-
     @commands.command(name='time')
     @commands.cooldown(1,2)
     async def time(self, ctx, *, expression:str): 
@@ -88,7 +36,6 @@ class UtilityCog(commands.Cog, name='Utility'):
             'TO_TIMEZONE': 'UTC',
             'PREFER_DATES_FROM': 'future'
         }
-
         to_be_passed = f"in {user_input}"
         split = to_be_passed.split(" ")
         length = len(split[:7])
@@ -220,7 +167,6 @@ class UtilityCog(commands.Cog, name='Utility'):
         img.save(buffer, format="PNG")
         buffer.seek(0)
         f = discord.File(buffer, filename="qr.png")
-        
         embed=discord.Embed(title="Qr Generator", description=f"{text}", color=discord.Color.random())
         embed.set_image(url="attachment://qr.png")
         embed.timestamp=discord.utils.utcnow()

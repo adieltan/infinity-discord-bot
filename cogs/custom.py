@@ -308,7 +308,7 @@ class CustomCog(commands.Cog, name='Custom'):
             return
         bamboo_chat = self.bot.get_channel(717962272093372556)
         bots = sum(m.bot for m in member.guild.members)
-        embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar or None)
+        embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.avatar or 'https://tenor.com/bjHxN.gif')
         results = await Database.get_server(self, member.guild.id)
         dic = results.get('leaveleaderboard', {})
         leavetimes = dic.get(f"{member.id}")

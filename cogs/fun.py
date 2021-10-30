@@ -6,7 +6,7 @@ import collections
 from PIL import Image
 import time
 
-from ._utils import ThreeChoices
+from ._utils import Database, ThreeChoices
 
 class FunCog(commands.Cog, name='Fun'):
     """🥳 Fun / minigame commands."""
@@ -14,12 +14,33 @@ class FunCog(commands.Cog, name='Fun'):
         self.bot = bot
         self.ongoing_mm_games = dict()
     
-    @commands.command(name='pet')
+    @commands.group(name='pet', invoke_without_command=True)
     async def pet(self, ctx):
         """Pet..."""
+        pets = {
+        '🐶': 'dog', 
+        '🐱': 'cat',
+        '🐭': 'mouse',
+        '🐹': 'hamster',
+        '🐰': 'rabbit',
+        '🦊': 'fox',
+        '🐻': 'bear',
+        '🐼': 'panda',
+        '🐨': 'koala',
+        '🐯': 'tiger',
+        '🦁': 'lion',
+        '🐮': 'cow',
+        '🐷': 'pig',
+        '🐧': 'penguin',
+        '🐦': 'bird',
+        '🐤': 'chick',
+        '🦆': 'duck',
+        '🦉': 'owl',
+        '🐺': 'wolf'}
         v = ThreeChoices(ctx)
         random.shuffle(v.children)
-        v.msg = await ctx.reply(f"Pet", view=v)
+        e = discord.Embed(title='Pet', description='\n'.join(f"{pet} {pets[pet].title()}" for pet in pets))
+        v.msg = await ctx.reply(embed=e, view=v)
         await v.wait()
         if v.value:
             await ctx.send('congrats')

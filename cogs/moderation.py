@@ -222,6 +222,14 @@ class ModerationCog(commands.Cog, name='Moderation'):
             embed.timestamp=discord.utils.utcnow()
             await ctx.reply(embed=embed, mention_author=False)
     
+    @role.command(name='clearpermissions', aliases=['cp', 'clearperms', 'clearperm'])
+    @commands.has_permissions(manage_roles=True)
+    async def role_clearpermissions(self, ctx, roles:commands.Greedy[discord.Role]):
+        """Clears role permissions for role(s)."""
+        for role in roles:
+            await role.edit(permissions=discord.Permissions.none())
+        await ctx.reply(embed=discord.Embed(title="Role Clear Permissions", description='\n'.join(role.mention for role in roles)))
+
     @role.command(name='colour', aliases=['color', 'c'])
     @commands.has_permissions(manage_roles=True)
     async def role_colour(self, ctx, role:discord.Role, colour_hex:str=None):

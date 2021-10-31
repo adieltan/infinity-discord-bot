@@ -215,6 +215,38 @@ class ServerCog(commands.Cog, name='Server'):
         if not ctx.invoked_subcommand:
             await ctx.reply("Subcommands: `category` `channel` `allchannel`")
 
+    @deletechannels.command(name='role', aliases=['r'])
+    async def roledel(self, ctx, roles:commands.Greedy[discord.Role]=None):
+        """Deletes all roles."""
+        if not roles:
+            roles = ctx.guild.roles
+        v = Confirm(ctx)
+        rolesn = 0
+        errors = []
+        embed = discord.Embed(title="Role Deletion", description=f"Deleting {len(roles)} roles.\n{' '.join([role.mention for role in roles])}\nClick Confirm.", color=discord.Color.brand_red())
+        v.msg = await ctx.reply(embed=embed, view=v)
+        msgv = discord.ui.View.from_message(v.msg)
+        for vd in msgv.children:
+            vd.disabled = True
+        await v.wait()
+        if v.value is False:
+            embed.description = 'Cancelled.'
+            embed.color = discord.Color.red()
+            await v.msg.edit(embed=embed, view=msgv)
+        elif v.value:
+            embed.description += '\nConfirmed.'
+            embed.color = discord.Color.green()
+            await v.msg.edit(embed=embed, view=msgv)
+            for role in roles:
+                try:
+                    await role.delete(reason=f"Deleted by {ctx.author.name}.")
+                except:
+                    errors.append(role.id)
+                else:
+                    rolesn += 1
+            err = 'Errors:\n' + ' '.join([f'<@&{id}>' for error in errors if error])
+            await ctx.reply(f"Deleted {rolesn} roles.\n{err if errors else ''}")
+
     @deletechannels.command(name="category", aliases=['cat'])
     async def catdel(self,ctx, categorys:commands.Greedy[discord.CategoryChannel]):
         """Deletes all the channels in the category."""

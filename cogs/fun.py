@@ -8,6 +8,94 @@ import time
 
 from ._utils import Database, ThreeChoices
 
+class TicTacToeButton(discord.ui.Button['TicTacToe']):
+    def __init__(self, x: int, y: int):
+        super().__init__(style=discord.ButtonStyle.secondary, label='\u200b', row=y)
+        self.x = x
+        self.y = y
+
+    async def callback(self, interaction: discord.Interaction):
+        assert self.view is not None
+        view: TicTacToe = self.view
+        state = view.board[self.y][self.x]
+        if state in (view.X, view.O):
+            return
+        if view.current_player == view.X:
+            self.style = discord.ButtonStyle.danger
+            self.label = 'X'
+            self.disabled = True
+            view.board[self.y][self.x] = view.X
+            view.current_player = view.O
+            content = "It is now O's turn"
+        else:
+            self.style = discord.ButtonStyle.success
+            self.label = 'O'
+            self.disabled = True
+            view.board[self.y][self.x] = view.O
+            view.current_player = view.X
+            content = "It is now X's turn"
+        winner = view.check_board_winner()
+        if winner is not None:
+            if winner == view.X:
+                content = 'X won!'
+            elif winner == view.O:
+                content = 'O won!'
+            else:
+                content = "It's a tie!"
+
+            for child in view.children:
+                assert isinstance(child, discord.ui.Button) # just to shut up the linter
+                child.disabled = True
+            view.stop()
+        await interaction.response.edit_message(content=content, view=view)
+
+class TicTacToe(discord.ui.View):
+    X = -1
+    O = 1
+    Tie = 2
+    def __init__(self):
+        super().__init__()
+        self.current_player = self.X
+        self.board = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+        ]
+        for x in range(3):
+            for y in range(3):
+                self.add_item(TicTacToeButton(x, y))
+
+    def check_board_winner(self):
+        for across in self.board:
+            value = sum(across)
+            if value == 3:
+                return self.O
+            elif value == -3:
+                return self.X
+        # Check vertical
+        for line in range(3):
+            value = self.board[0][line] + self.board[1][line] + self.board[2][line]
+            if value == 3:
+                return self.O
+            elif value == -3:
+                return self.X
+        # Check diagonals
+        diag = self.board[0][2] + self.board[1][1] + self.board[2][0]
+        if diag == 3:
+            return self.O
+        elif diag == -3:
+            return self.X
+
+        diag = self.board[0][0] + self.board[1][1] + self.board[2][2]
+        if diag == 3:
+            return self.O
+        elif diag == -3:
+            return self.X
+        # If we're here, we need to check if a tie was made
+        if all(i != 0 for row in self.board for i in row):
+            return self.Tie
+        return None
+
 class FunCog(commands.Cog, name='Fun'):
     """🥳 Fun / minigame commands."""
     def __init__(self, bot):
@@ -444,102 +532,9 @@ class FunCog(commands.Cog, name='Fun'):
 
     @commands.command(name='ttt', aliases=['tictactoe'])
     @commands.cooldown(1,10)
-    async def ttt(self, ctx, opponent:discord.Member):
+    async def ttt(self, ctx):
         """Starts a game of tic-tac-toe."""
-        def checkForWin(board):
-            win = (
-                board[0] == board[1] and board[1] == board[2]
-                or board[3] == board[4] and board[4] == board[5]
-                or board[6] == board[7] and board[7] == board[8]
-                or board[0] == board[4] and board[4] == board[8]
-                or board[2] == board[4] and board[4] == board[6]
-                or board[0] == board[3] and board[3] == board[6]
-                or board[1] == board[4] and board[4] == board[7]
-                or board[2] == board[5] and board[5] == board[8]
-            )
-            if not any(i.isdigit() for i in board) and not win:
-                return 2
-            else:
-                return win
-
-        if ctx.author == opponent:
-            await ctx.reply(f"{ctx.author.mention} You can't challenge yourself!")
-            return
-        if opponent.bot:
-            await ctx.reply(f"{ctx.author.mention} You can't play with a bot. You will never hear a reply...")
-            return
-
-        components = [
-            [Button(style=ButtonStyle.gray,label=str(ia+i)) for ia in range(3)] for i in range(1,9,3)
-        ]
-        gamemsg = await ctx.send(f'{opponent.mention}, {ctx.author.name} has challenged thee to tic-tac-toe! You go first.', components=components)
-        turn = 'X'
-        players = {
-            'X': opponent,
-            'O': ctx.author
-        }
-
-        def checkEvent(event):
-            component = event.component
-            if type(component) is not dict:
-                component = event.component.to_dict()
-            return (
-                (component['label'] != 'X' and component['label'] != 'O')
-                and event.message.id == gamemsg.id
-                and (event.user == players[turn])
-            )
-
-        def getButtonStyle(value):
-            if value == 'X':
-                return ButtonStyle.blue
-            elif value == 'O':
-                return ButtonStyle.red
-            else:
-                return ButtonStyle.gray
-
-        def placed(value):
-            if value in ['X', 'O']:
-                return True
-            else:
-                return False
-
-        while True:
-            try:
-                boardClick = await self.bot.wait_for('button_click', check=checkEvent, timeout=20)
-                moveComponent = boardClick.component
-                if type(moveComponent) is not dict:
-                    moveComponent = boardClick.component.to_dict()
-                board = [button.label for button in boardClick.message.components]
-                squareClicked = board.index(moveComponent["label"])
-                board[squareClicked] = turn
-
-                gameWon = checkForWin(board)
-
-                components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=placed(board[i+ia-1])) for ia in range(3)] for i in range(1,9,3)]
-
-                if gameWon:
-                    components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=bool(gameWon)) for ia in range(3)] for i in range(1,9,3)]
-                    if gameWon == 2:
-                        await boardClick.respond(type=7,content=f'Game Over! It is a tie!', components = components)
-                    else:
-                        await boardClick.respond(type=7,content=f'Game Over! {players[turn].mention} has won!', components = components)
-                    break
-
-                if (turn == 'X'):
-                    turn = 'O'
-                else:
-                    turn = "X"
-                
-                await boardClick.respond(type=7,content=f"It is {players[turn].mention}'s turn.", components = components) 
-            except asyncio.TimeoutError:
-                try:
-                    boardClick
-                except:
-                    components = [[Button(style=ButtonStyle.grey,label=str(ia+i)) for ia in range(3)] for i in range(1,9,3)]
-                else:
-                    board = [button.label for button in boardClick.message.components]
-                    components = [[Button(style=getButtonStyle(board[i+ia-1]),label=board[i+ia-1],disabled=True) for ia in range(3)] for i in range(1,9,3)]
-                await gamemsg.edit(content="Timeout", components=components)
+        await ctx.reply(f'TicTacToe', view=TicTacToe())
 
     @commands.command(name='guess')
     @commands.cooldown(1,5)

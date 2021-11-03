@@ -112,6 +112,72 @@ class IvEdit(discord.ui.View):
         self.view = self
         self.value = False
         self.stop()
+
+class MmConfirm(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=30)
+        self.value = None
+        self.party_ids = None
+        self.msg = None
+
+    async def on_timeout(self) -> None:
+        for v in self.children:
+            v.disabled = True
+        return await self.msg.edit('Timeout.', view=self)
+    
+    async def interaction_check(self, interaction:discord.Interaction):
+        if interaction.user.id in self.party_ids:
+            return True
+        await interaction.response.send_message("Eh don't be busybody.", ephemeral=True)
+        return False
+
+    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.party_ids.remove(interaction.user.id)
+        if bool(self.party_ids) is None:
+            self.value = True
+            for v in self.children:
+                v.disabled = True
+            await self.msg.edit(view=self)
+            self.stop()
+
+    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.value = False
+        for v in self.children:
+                v.disabled = True
+        await self.msg.edit(f"Cancelled my {interaction.user.mention}", view=self)
+        self.stop()
+
+class MmClaim(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+        self.value = None
+        self.msg = None
+
+    async def on_timeout(self) -> None:
+        for v in self.children:
+            v.disabled = True
+        return await self.msg.edit('Timeout.', view=v)
+    
+    async def interaction_check(self, interaction:discord.Interaction):
+        mm = interaction.guild.get_role(895755547343724554)
+        if mm in interaction.user.roles:
+            return True
+        await interaction.response.send_message("Eh don't be busybody.", ephemeral=True)
+        return False
+
+    @discord.ui.button(label='Claim', style=discord.ButtonStyle.green)
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        self.value = True
+        for v in self.children:
+            v.disabled = True
+        await self.msg.edit(f"Claimed by {interaction.user.mention}", view=v)
+        self.stop()
+
 class CustomCog(commands.Cog, name='Custom'):
     """🔧 Custom commands for server."""
     def __init__(self, bot):
@@ -370,6 +436,32 @@ class CustomCog(commands.Cog, name='Custom'):
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 
+    @commands.command(name='bb')
+    @server([841654825456107530, 830731085955989534])
+    #ban battle
+    @commands.has_role(841805626300301374)
+    async def bb(self, ctx, victim:discord.Member):
+        """Ban battle."""
+        admin = ctx.guild.get_role(841655266743418892)
+        banned = ctx.guild.get_role(905455999958278184)
+        # spec = ctx.guild.get_role(842926861239582750)
+        if ctx.channel.id in [843027975070810114, 841654825456107533]:
+            return
+        else:
+            await ctx.reply("Not allowed in this channel.")
+        if banned in ctx.author.roles:
+            await ctx.reply("You are banned.")
+        # elif spec in ctx.author.roles:
+        #     await ctx.reply("You have no weapon.")
+        elif admin in victim.roles:
+            await ctx.reply("Unbannable")
+        # elif spec in victim.roles:
+        #     await ctx.reply("He has no weapons just eyes. No harm to you.")
+        elif banned in victim.roles:
+            await ctx.reply("Already banned.")
+        else:
+            await victim.add_roles(banned)
+            await ctx.reply(f"Banned {victim.mention}")
 
     def iv_view(self, name, price, emoji, item_type:typing.Literal[1,2,3,4,5,6,7,8,9]):
         emoji = (
@@ -564,12 +656,41 @@ class CustomCog(commands.Cog, name='Custom'):
                         pass
                     return
 
-    @commands.command(name='mm')
+    @commands.group(name='mm', invoke_without_command=True)
     # @commands.cooldown(1, 30)
+    @commands.max_concurrency(1, commands.BucketType.user)
     @server([894628265963159622])
     async def mm(self, ctx, user:discord.Member, *, info:str=None):
         """Calls mm?"""
-        await ctx.reply(f"{user.mention}", embed=discord.Embed(title='Middleman Request', description=info, timestamp=discord.utils.utcnow(), color=discord.Color.random()).set_author(name=ctx.guild.name, icon_url=ctx.guild.icon))
+        c = [894637152577658951, 894637521433141328, 894638146141167656, 894651965278150696, 894651980901920819, 895239173940858880]
+        if ctx.channel.id not in c:
+            return await ctx.reply(f"Only usable in {' '.join([f'<#{cc}>' for cc in c])}")
+        e = discord.Embed(title='Middleman Request', description=info, timestamp=discord.utils.utcnow(), color=discord.Color.random()).set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
+        v = MmConfirm()
+        v.party_ids = [ctx.author.id, user.id]
+        v.msg = await ctx.reply(f"{user.mention}", embed=e, view=v)
+        await v.wait()
+        if v.value is True:
+            channel = ctx.guild.get_channel(905440448556957696)
+            e.description = f"{ctx.author.mention}, {user.mention}"
+            e.add_field(name='Info', value=info)
+            mv = MmClaim()
+            mv.msg = await channel.send(f"<@&895755547343724554>", embed=e, view=mv)
+            await mv.wait()
+            if mv.value is True:
+                access = ctx.guild.get_role(905438843250032682)
+                await ctx.author.add_roles(access)
+                await user.add_roles(access)
+
+    @mm.command(name='done', aliases=['d'])
+    @commands.has_any_role(895755547343724554)
+    async def mmdone(self, ctx, users:commands.Greedy[discord.Member]):
+        """Removes the mm access role."""
+        access = ctx.guild.get_role(905438843250032682)
+        for u in users:
+            await u.remove_roles(access)
+        await ctx.reply(f"Removed MM Access role for {len(users)} members.")
+
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

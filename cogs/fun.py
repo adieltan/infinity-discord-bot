@@ -157,6 +157,28 @@ class EightCornersJoin(discord.ui.View):
             return self.stop()
         else:
             await interaction.response.send_message("You aren't the host.", ephemeral=True)
+
+class PetGameJoin(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=10)
+        self.msg = None
+        self.players = {}
+        self.starttime = round(discord.utils.utcnow().timestamp()) + (5*60)
+
+    async def on_timeout(self):
+        for v in self.children:
+            v.disabled = True
+        e = self.msg.embeds[0]
+        e.description=f'Timer: Ended.\nPlayer count: {len(self.players)} players.\nGame starting now.'
+        await self.msg.edit(embed=e, view=None)
+    
+    @discord.ui.button(emoji='<a:Join:855683444310147113>', label='Join', style=discord.ButtonStyle.green)
+    async def join(self, button:discord.ui.Button, interaction:discord.Interaction):
+        if str(interaction.user.id) in self.players.keys():
+            return await interaction.response.send_message('You already joined the game.', ephemeral=True)
+        await interaction.response.send_message(embed=discord.Embed(title="Game join confirmation", description=f"You have joined the game."), ephemeral=True)
+        self.players[str(interaction.user.id)] = {'feed':0, 'water':0, 'interaction':interaction}
+
 class FunCog(commands.Cog, name='Fun'):
     """🥳 Fun / minigame commands."""
     def __init__(self, bot):
@@ -167,25 +189,25 @@ class FunCog(commands.Cog, name='Fun'):
     async def pet(self, ctx):
         """Pet..."""
         pets = {
-        '🐶': 'dog', 
-        '🐱': 'cat',
-        '🐭': 'mouse',
-        '🐹': 'hamster',
-        '🐰': 'rabbit',
-        '🦊': 'fox',
-        '🐻': 'bear',
-        '🐼': 'panda',
-        '🐨': 'koala',
-        '🐯': 'tiger',
-        '🦁': 'lion',
-        '🐮': 'cow',
-        '🐷': 'pig',
-        '🐧': 'penguin',
-        '🐦': 'bird',
-        '🐤': 'chick',
-        '🦆': 'duck',
-        '🦉': 'owl',
-        '🐺': 'wolf'}
+            '🐶': 'dog', 
+            '🐱': 'cat',
+            '🐭': 'mouse',
+            '🐹': 'hamster',
+            '🐰': 'rabbit',
+            '🦊': 'fox',
+            '🐻': 'bear',
+            '🐼': 'panda',
+            '🐨': 'koala',
+            '🐯': 'tiger',
+            '🦁': 'lion',
+            '🐮': 'cow',
+            '🐷': 'pig',
+            '🐧': 'penguin',
+            '🐦': 'bird',
+            '🐤': 'chick',
+            '🦆': 'duck',
+            '🦉': 'owl',
+            '🐺': 'wolf'}
         v = ThreeChoices(ctx)
         random.shuffle(v.children)
         e = discord.Embed(title='Pets', description='\n'.join(f"{pet} {pets[pet].title()}" for pet in pets))
@@ -195,6 +217,18 @@ class FunCog(commands.Cog, name='Fun'):
             await v.msg.edit('Congrats')
         else:
             await v.msg.edit('Failed')
+
+    @pet.command(name='game')
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    async def pet_game(self, ctx):
+        """Multiplayer game about feeding your pets."""
+        v = PetGameJoin()
+        e = discord.Embed(title='Pet Game', description='Feed and give water to your pet.', color=discord.Color.random())
+        v.msg = await ctx.reply(embed=e, view=v)
+        await v.wait()
+        await v.msg.edit('Game starting.')
+        for player in v.players:
+            await v.players[player]['interaction'].followup.send(f"Your pet is hungry and thirsty.", ephemeral=True)
 
 
     @commands.command(name= 'roll', aliases=['dice', 'throw'])

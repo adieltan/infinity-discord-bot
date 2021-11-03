@@ -34,6 +34,32 @@ class Database(commands.Cog):
 def setup(bot):
     bot.add_cog(Database(bot))
 
+
+# class RoleSelect(discord.ui.Select):
+#     def __init__(self):
+#         self.opt = []
+#         super().__init__(placeholder='Pick up roles here', min_values=1, max_values=1, options=self.opt)
+
+#     async def callback(self, interaction: discord.Interaction):
+#         db = await Database.get_server(self, interaction.guild_id)
+#         if interaction.message.id in db.get('roles'):
+#             for sr in self.opt:
+#                 if sr.value == self.values[0]:
+#                     await interaction.user.add_roles(interaction.guild.get_role(sr.value))
+#         await interaction.response.send_message(f"{self.values[0]} added")
+
+# class SelectRoles(discord.ui.View):
+#     def __init__(self):
+#         super().__init__(timeout=None)
+#         self.opt = []
+#         v = RoleSelect()
+#         v.opt = self.opt
+#         self.add_item(v)
+
+#     @discord.ui.Select(placeholder='Pick up roles here', min_values=1, max_values=1, options=self.opt)
+
+
+
 class Menu(discord.ui.View):
     def __init__(self, ctx, pages:list[discord.Embed]) -> None:
         super().__init__(timeout=60)

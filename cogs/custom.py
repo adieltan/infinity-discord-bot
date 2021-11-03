@@ -34,20 +34,24 @@ class IvDropdownView(discord.ui.View):
         return False
     
     async def on_timeout(self):
-        v = self
         for vd in self.children:
             vd.disabled = True
         await self.msg.edit(view=self)
 
-    options = [discord.SelectOption(label=f'{i}', description=f'{iv_classes[i]}') for i in iv_classes]
+    options = [discord.SelectOption(emoji='<a:redformingstar:894910459147329577>', label=f'{i}', description=f'{iv_classes[i]}') for i in iv_classes]
     @discord.ui.select(placeholder="Choose the item's category", min_values=1, max_values=1, options=options)
     async def select(self, selectoption:discord.SelectOption, interaction:discord.Interaction):
         await interaction.response.defer()
         try:
             value = selectoption.values[0]
-            items = '\n'.join([f"{i.title()}" for i in self.ivlist if self.ivlist[i]['t'] == value])
+            for so in self.select.options:
+                so.default = so.value == selectoption.values[0]
+            items = '\n'.join(
+                f"{i.title()}" for i in self.ivlist if self.ivlist[i]['t'] == value
+            )
+
             embed = discord.Embed(title="Item List", description=items + ('\n\n📝 DM Admin if donating Bolt / Karen / Odd Eye.' if value == '7' else '') + ('\n\n📝 DM Admin if donating Blob.' if value == '8' else ''), color=discord.Color.random()).set_footer(text=f'{iv_classes[value]}')
-            await self.msg.edit(embed=embed)
+            await self.msg.edit(embed=embed, view=self)
         except:
             pass
 
@@ -559,6 +563,13 @@ class CustomCog(commands.Cog, name='Custom'):
                     except: 
                         pass
                     return
+
+    @commands.command(name='mm')
+    # @commands.cooldown(1, 30)
+    @server([894628265963159622])
+    async def mm(self, ctx, user:discord.Member, *, info:str=None):
+        """Calls mm?"""
+        await ctx.reply(f"{user.mention}", embed=discord.Embed(title='Middleman Request', description=info, timestamp=discord.utils.utcnow(), color=discord.Color.random()).set_author(name=ctx.guild.name, icon_url=ctx.guild.icon))
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

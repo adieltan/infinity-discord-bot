@@ -9,7 +9,7 @@ from ._utils import Database, Menu, Confirm, is_owner
 class ServerCog(commands.Cog, name='Server'):
     """🌐 Tools for your server."""
     def __init__(self, bot):
-        self.bot = bot        
+        self.bot = bot
 
     @commands.command(name='prefix')
     @commands.cooldown(1,8)
@@ -605,10 +605,8 @@ class ServerCog(commands.Cog, name='Server'):
                 status = "🟡 Idle"
             elif member.status == discord.Status.dnd:
                 status = "🔴 DND"
-            elif member.status == discord.Status.offline:
-                status = "⚫ Offline"
             else:
-                status = ''
+                status = "⚫ Offline"
             embed = discord.Embed(title="User Info", description=f'{member.mention} {member} [Avatar]({member.display_avatar})\n{status}\n', color=member.color, timestamp=discord.utils.utcnow(),)
 
             if member.activity:
@@ -644,6 +642,26 @@ class ServerCog(commands.Cog, name='Server'):
             embed.set_thumbnail(url=member.avatar)
         embed.set_footer(text=f"ID: {member.id}")
         await ctx.reply(embed=embed, mention_author=False)
+
+    # @commands.command(name='selectrole', aliases=['sr'])
+    # @commands.is_owner()
+    # async def selectrole(self, ctx, roles:commands.Greedy[discord.Role]=None, channel:discord.TextChannel=None):
+    #     """Select roles."""
+    #     if not channel:
+    #         channel = ctx.channel
+    #     v = SelectRoles()
+    #     v.opt = [discord.SelectOption(label=f'{role.name}', value=f'{role.id}') for role in roles]
+    #     await ctx.send(f"{v=}\n{v.opt=}")
+    #     msg = await channel.send('Select Role', view=v)
+    #     db = await Database.get_server(self, ctx.guild.id)
+    #     await Database.edit_server(self, ctx.guild.id, {'roles':db.get('roles', []).append(msg.id)})
+
+    # @commands.Cog.listener()
+    # async def on_ready(self):
+    #     sr = set()
+    #     async for r in self.bot.db['server'].find({}):
+    #         if r.get('roles', {}).keys()[0] and r.get('roles') not in self.bot.persistent_views:
+    #             self.bot.add_view(SelectRoles(), r.get('roles'))
 
 def setup(bot):
     bot.add_cog(ServerCog(bot))

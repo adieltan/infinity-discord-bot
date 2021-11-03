@@ -79,6 +79,7 @@ async def cache_ar():
             ar[str(doc['_id'])] = doc['autoresponse']
     bot.ar = ar
 
+
 bot.cbl = cache_bl
 bot.cmanager = cache_managers
 

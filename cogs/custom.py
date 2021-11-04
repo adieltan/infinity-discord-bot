@@ -376,7 +376,7 @@ class CustomCog(commands.Cog, name='Custom'):
         admin = ctx.guild.get_role(841655266743418892)
         banned = ctx.guild.get_role(905455999958278184)
         # spec = ctx.guild.get_role(842926861239582750)
-        if ctx.channel.id in [843027975070810114, 841654825456107533]:
+        if ctx.channel.id not in [905453845524676608]:
             return
         else:
             await ctx.reply("Not allowed in this channel.")

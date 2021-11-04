@@ -170,14 +170,54 @@ class PetGameJoin(discord.ui.View):
             v.disabled = True
         e = self.msg.embeds[0]
         e.description=f'Timer: Ended.\nPlayer count: {len(self.players)} players.\nGame starting now.'
-        await self.msg.edit(embed=e, view=None)
+        await self.msg.edit(embed=e, view=self)
     
     @discord.ui.button(emoji='<a:Join:855683444310147113>', label='Join', style=discord.ButtonStyle.green)
     async def join(self, button:discord.ui.Button, interaction:discord.Interaction):
         if str(interaction.user.id) in self.players.keys():
             return await interaction.response.send_message('You already joined the game.', ephemeral=True)
         await interaction.response.send_message(embed=discord.Embed(title="Game join confirmation", description=f"You have joined the game."), ephemeral=True)
-        self.players[str(interaction.user.id)] = {'feed':0, 'water':0, 'interaction':interaction}
+        self.players[str(interaction.user.id)] = {'feed':round(discord.utils.utcnow().timestamp()) + 300, 'water':round(discord.utils.utcnow().timestamp()) + 300, 'interaction':interaction}
+
+class PetGameInteractions(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=30)
+        self.msg = None
+        self.players = {}
+
+    async def on_timeout(self):
+        for v in self.children:
+            v.disabled = True
+        await self.msg.edit(view=self)
+    
+    @discord.ui.button(label='Water', style=discord.ButtonStyle.gray)
+    async def water(self, button:discord.ui.Button, interaction:discord.Interaction):
+        timenow = round(discord.utils.utcnow().timestamp())
+        time = self.players[str(interaction.user.id)]['water']
+        mins = (timenow-time)/60
+        if timenow-time > 20-mins and timenow-time < 40-mins:
+            await interaction.response.send_message('Your pet drinks the water.', ephemeral=True)
+            self.players[str(interaction.user.id)]['water'] = timenow
+        else:
+            await interaction.response.send_message('Your pet died.', ephemeral=True)
+            await self.msg.edit('Your pet died.', view=None)
+            self.players.pop(str(interaction.user.id))
+            self.stop()
+
+
+    @discord.ui.button(label='Feed', style=discord.ButtonStyle.gray)
+    async def feed(self, button:discord.ui.Button, interaction:discord.Interaction):
+        time = self.players[str(interaction.user.id)]['feed']
+        timenow = round(discord.utils.utcnow().timestamp())
+        mins = (timenow-time)/60
+        if timenow-time > 20-mins and timenow-time < 50-mins:
+            await interaction.response.send_message('Your pet eats the food you prepared.', ephemeral=True)
+            self.players[str(interaction.user.id)]['feed'] = timenow
+        else:
+            await interaction.response.send_message('Your pet died.', ephemeral=True)
+            await self.msg.edit('Your pet died.', view=None)
+            self.players.pop(str(interaction.user.id))
+            self.stop()
 
 class FunCog(commands.Cog, name='Fun'):
     """🥳 Fun / minigame commands."""
@@ -227,8 +267,17 @@ class FunCog(commands.Cog, name='Fun'):
         v.msg = await ctx.reply(embed=e, view=v)
         await v.wait()
         await v.msg.edit('Game starting.')
-        for player in v.players:
-            await v.players[player]['interaction'].followup.send(f"Your pet is hungry and thirsty.", ephemeral=True)
+        for player in v.players.copy():
+            game = PetGameInteractions()
+            game.players = v.players
+            game.msg = await v.players[player]['interaction'].followup.send(f"<@{player}> Your pet is hungry and thirsty.", ephemeral=True, view = game)
+        while len(v.players.keys()) > 0 :
+            for player in v.players.copy():
+                
+            e.description = f'{len(v.players)} still in battle.'
+            await v.msg.edit(embed=e)
+        await ctx.reply(f'Game ended. {len(v.players)}')
+
 
 
     @commands.command(name= 'roll', aliases=['dice', 'throw'])

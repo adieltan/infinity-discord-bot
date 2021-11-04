@@ -273,7 +273,7 @@ class FunCog(commands.Cog, name='Fun'):
             game.msg = await v.players[player]['interaction'].followup.send(f"<@{player}> Your pet is hungry and thirsty.", ephemeral=True, view = game)
         while len(v.players.keys()) > 0 :
             for player in v.players.copy():
-                
+                pass
             e.description = f'{len(v.players)} still in battle.'
             await v.msg.edit(embed=e)
         await ctx.reply(f'Game ended. {len(v.players)}')

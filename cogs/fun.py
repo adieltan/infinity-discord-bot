@@ -160,7 +160,7 @@ class EightCornersJoin(discord.ui.View):
 
 class PetGameJoin(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=10)
+        super().__init__(timeout=20)
         self.msg = None
         self.players = {}
         self.starttime = round(discord.utils.utcnow().timestamp()) + (5*60)
@@ -177,13 +177,26 @@ class PetGameJoin(discord.ui.View):
         if str(interaction.user.id) in self.players.keys():
             return await interaction.response.send_message('You already joined the game.', ephemeral=True)
         await interaction.response.send_message(embed=discord.Embed(title="Game join confirmation", description=f"You have joined the game."), ephemeral=True)
-        self.players[str(interaction.user.id)] = {'feed':round(discord.utils.utcnow().timestamp()) + 300, 'water':round(discord.utils.utcnow().timestamp()) + 300, 'interaction':interaction}
+        self.players[str(interaction.user.id)] = {'feed':0, 'water':0, 'interaction':interaction}
+
+    @discord.ui.button(label='Start', style=discord.ButtonStyle.red)
+    async def skip(self, button:discord.ui.Button, interaction:discord.Interaction):
+        if dict(iter(interaction.user.guild_permissions)).get('administrator') is not True:
+            return await interaction.defer()
+        for v in self.children:
+            v.disabled = True
+        e = self.msg.embeds[0]
+        e.description=f'Timer: Ended.\nPlayer count: {len(self.players)} players.\nGame starting now.'
+        await self.msg.edit(embed=e, view=self)
+        self.stop()
+
 
 class PetGameInteractions(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=30)
+        super().__init__(timeout=50)
         self.msg = None
         self.players = {}
+        self.time = round(discord.utils.utcnow().timestamp())
 
     async def on_timeout(self):
         for v in self.children:
@@ -194,9 +207,11 @@ class PetGameInteractions(discord.ui.View):
     async def water(self, button:discord.ui.Button, interaction:discord.Interaction):
         timenow = round(discord.utils.utcnow().timestamp())
         time = self.players[str(interaction.user.id)]['water']
-        mins = (timenow-time)/60
-        if timenow-time > 20-mins and timenow-time < 40-mins:
-            await interaction.response.send_message('Your pet drinks the water.', ephemeral=True)
+        if time == 0:
+            time = timenow - 20
+        mins = round((timenow-self.time)/60)
+        if timenow-time > 20 and timenow-time < 40-mins:
+            await interaction.response.send_message(f"Your pet drinks the water.\nDon't forget to give it water in 20-{40-mins} seconds.", ephemeral=True)
             self.players[str(interaction.user.id)]['water'] = timenow
         else:
             await interaction.response.send_message('Your pet died.', ephemeral=True)
@@ -209,9 +224,11 @@ class PetGameInteractions(discord.ui.View):
     async def feed(self, button:discord.ui.Button, interaction:discord.Interaction):
         time = self.players[str(interaction.user.id)]['feed']
         timenow = round(discord.utils.utcnow().timestamp())
-        mins = (timenow-time)/60
-        if timenow-time > 20-mins and timenow-time < 50-mins:
-            await interaction.response.send_message('Your pet eats the food you prepared.', ephemeral=True)
+        if time == 0:
+            time = timenow - 20
+        mins = round((timenow-self.time)/60)
+        if timenow-time > 20 and timenow-time < 50-mins:
+            await interaction.response.send_message(f"Your pet eats the food you prepared.\nDon't forget to give it food in 20-{40-mins} seconds.", ephemeral=True)
             self.players[str(interaction.user.id)]['feed'] = timenow
         else:
             await interaction.response.send_message('Your pet died.', ephemeral=True)
@@ -259,6 +276,7 @@ class FunCog(commands.Cog, name='Fun'):
             await v.msg.edit('Failed')
 
     @pet.command(name='game')
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def pet_game(self, ctx):
         """Multiplayer game about feeding your pets."""
@@ -267,16 +285,29 @@ class FunCog(commands.Cog, name='Fun'):
         v.msg = await ctx.reply(embed=e, view=v)
         await v.wait()
         await v.msg.edit('Game starting.')
+        timenow = round(discord.utils.utcnow().timestamp())
         for player in v.players.copy():
+            if v.players[player]['water'] == 0:
+                v.players[player]['water'] = timenow - 20
+            if v.players[player]['feed'] == 0:
+                v.players[player]['feed'] = timenow - 20
             game = PetGameInteractions()
             game.players = v.players
+            game.time = round(discord.utils.utcnow().timestamp())
             game.msg = await v.players[player]['interaction'].followup.send(f"<@{player}> Your pet is hungry and thirsty.", ephemeral=True, view = game)
-        while len(v.players.keys()) > 0 :
-            for player in v.players.copy():
-                pass
-            e.description = f'{len(v.players)} still in battle.'
-            await v.msg.edit(embed=e)
-        await ctx.reply(f'Game ended. {len(v.players)}')
+        while len(v.players.keys()) > 1 :
+            try:
+                for p in v.players.copy():
+                    if v.players[p]['water'] + 50 - ((timenow-v.players[p]['water'])/60) < timenow or v.players[p]['feed'] + 50 - ((timenow-v.players[p]['feed'])/60) < timenow:
+                        await v.players[p]['interaction'].followup.send('Your pet died.', ephemeral=True)
+                        v.players.pop(player)
+                    pass
+                e.description = f"{len(v.players)} still in battle.\n{' '.join([f'<@{p}>' for p in v.players])}"
+                await v.msg.edit(embed=e)
+            except Exception as e:
+                await ctx.reply(f"{e}")
+
+        await ctx.reply(f"Game ended. {len(v.players)}\n\nSurvivors:\n{' '.join([f'<@{p}>' for p in v.players])}")
 
 
 

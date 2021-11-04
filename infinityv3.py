@@ -97,6 +97,8 @@ async def on_ready():
     delete_snipecache.start()
     print(f"\n{bot.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}")
     bot.startuptime = discord.utils.utcnow()
+    channel = bot.get_channel(813251835371454515)
+    await channel.send("∞")
 
 @bot.event
 async def on_error(event, *args, **kwargs):

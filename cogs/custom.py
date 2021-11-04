@@ -196,62 +196,6 @@ class CustomCog(commands.Cog, name='Custom'):
         v = NitroButtons(ctx)
         v.msg = await ctx.send(f"https://discord.gift\{text}",embed=embed, view=v)
 
-    @commands.command(name="heist")
-    @commands.has_any_role(783134076772941876)
-    @server([709711335436451901])
-    @commands.cooldown(1,5, type=commands.BucketType.guild)
-    async def heist(self, ctx, amount:float, donator:discord.User, *, msg:str=None):
-        """Gets people ready for a heist."""
-        heistping = self.bot.get_guild(709711335436451901).get_role(807925829009932330)
-        heistchannel = self.bot.get_guild(709711335436451901).guild.get_channel(783135856017145886)
-
-        into = format(amount, ',')
-        embed = discord.Embed(title='Dank Memer Heist', description=f"Amount: {into}", color=discord.Color.random())
-        embed.timestamp=discord.utils.utcnow()
-        embed.add_field(name='Info', value=f"Donator: {donator.mention}\n{msg} ", inline=False)
-        embed.set_thumbnail(url=f"{donator.avatar}")
-        embed.set_footer(text=f'Remember to thank {donator.name} !')
-        await heistchannel.send(content=f"{heistping.mention} ", embed=embed, allowed_mentions=discord.AllowedMentions.all(),  mention_author=False)
-
-    @commands.command(name="postheist", aliases=['ph'], hidden=True)
-    @server([709711335436451901])
-    @commands.cooldown(1,5, type=commands.BucketType.user)
-    async def pheist(self, ctx, amount: float, invite:str,*, msg:str=None):
-        """Sends your partnered heist ad."""
-        partnered = self.bot.get_guild(709711335436451901).get_role(880822281394356244).members
-        if ctx.author not in partnered:
-            await ctx.reply(embed=discord.Embed(title="You are not partnered.", description="DM <@701009836938231849> to partner.", color=discord.Color.red()))
-            return
-        eventping = self.bot.get_guild(709711335436451901).get_role(807926892723437588)
-        eventchannel = self.bot.get_guild(709711335436451901).get_channel(783135856017145886)
-        inviteinfo = await self.bot.fetch_invite(invite)
-
-        into = format(amount, ',')
-        embed = discord.Embed(title='Heist', description=f'Amount: {into}', color=discord.Color.random())
-        embed.timestamp=discord.utils.utcnow()
-        embed.add_field(name='Info', value=f"{msg} ", inline=False)
-        embed.add_field(name='Server', value=f"[**{inviteinfo.guild.name}**]({inviteinfo.url})\nMembers: {inviteinfo.approximate_member_count}")
-        await eventchannel.send(f"{eventping.mention} {invite}", embed=embed, allowed_mentions=discord.AllowedMentions(roles=[eventping]),  mention_author=False)
-
-    @commands.command(name="verify")
-    @commands.has_permissions(manage_roles=True)
-    @server([709711335436451901])
-    async def verify(self, ctx, member:discord.Member=None):
-        """Gives someone the verified role."""
-        panda= ctx.guild.get_role(717957198675968024)
-        try:
-            if not member:
-                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-                member = message.mentions[0]
-            if panda in member.roles:
-                await ctx.reply('User already verified.')
-                return
-
-            await member.add_roles(panda, reason="Verification")
-            await ctx.reply(f"Verified {member.mention}")
-        except:
-            await ctx.reply('Verification uncessful.')
-
     async def supporter_autorole(self, member:discord.Member):
         await self.bot.wait_until_ready()
         if member.guild.id != 709711335436451901 or member.bot is True:
@@ -370,7 +314,6 @@ class CustomCog(commands.Cog, name='Custom'):
             await self.self_role(message=message)
             return
 
-
     @commands.Cog.listener()
     @server([709711335436451901])
     async def on_member_join(self, member:discord.Member):
@@ -385,15 +328,6 @@ class CustomCog(commands.Cog, name='Custom'):
         if leavetimes is not None:
             embed.description += f"\nLeft the server {leavetimes} times."
         await bamboo_chat.send(f"<a:Welcome:848827232944259092> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:Welcome:848827232944259092>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        vc = self.bot.get_channel(736791916397723780)
-        try:await vc.connect()
-        except:pass
-
-        channel = self.bot.get_channel(813251835371454515)
-        await channel.send("∞")
 
     @tasks.loop(hours=24, reconnect=True)
     async def youtubeupdate(self):
@@ -417,22 +351,19 @@ class CustomCog(commands.Cog, name='Custom'):
                 await tbviews.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ Beggar's Views")
         await cs.close()
 
-    @commands.command(name="donolog", aliases=["dl"], hidden=True)
+    @commands.command(name="donolog", aliases=["dl"])
     @server([841654825456107530])
     @commands.has_role(841655266743418892)
-    async def donolog(self, ctx, user:discord.User, quantity:float, item:str, value_per:str, *, proof:str):
+    async def donolog(self, ctx, user:discord.User, quantity:int, item:str, value_per:str, *, proof:str):
         """Logs the dono."""
         raw = float(value_per.replace(",", ""))
         channel = self.bot.get_channel(842738964385497108)
         valu = math.trunc(raw)*quantity
         human = format(int(valu), ',')
-        embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator** : {user.mention}\n**Donation** : {quantity} {item}(s) worth {human} [Proof]({proof})", color=discord.Color.random())
+        embed=discord.Embed(title="Ultimate Dankers Event Donation", description=f"**Donator:** {user.mention}\n**Donation:** __{quantity} {item}(s)__ worth __{human}__  [Proof]({proof})\n\n**Log in <#814490036842004520>**\n```\n,d a {user.id} {valu:.2e} {proof}```", color=discord.Color.random())
         embed.timestamp=discord.utils.utcnow()
-        embed.set_author(icon_url=ctx.author.avatar, name=f"Logged by: {ctx.author.name}")
-        embed.add_field(name="Logging command", value=f"`,d a {user.id} {valu:.2e} {proof}`\nLog in <#814490036842004520>", inline=False)
-        embed.add_field(name="Raw", value=f"||`{ctx.message.content}`||", inline=False)
         embed.set_thumbnail(url=user.avatar)
-        embed.set_footer(text='React with a ✅ after logged.')
+        embed.set_footer(text=f'\nLogged by {ctx.author.name} • React with a ✅ after logged.', icon_url=ctx.author.avatar)
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 

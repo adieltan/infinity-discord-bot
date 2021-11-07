@@ -185,7 +185,7 @@ class CustomCog(commands.Cog, name='Custom'):
         self.youtubeupdate.start()
 
     @commands.command(name="nitro")
-    @server([709711335436451901, 336642139381301249, 895176280813752330, 894628265963159622, 841654825456107530, 746020135743127593])
+    @server([709711335436451901, 336642139381301249, 895176280813752330, 894628265963159622, 841654825456107530, 746020135743127593, 881540405013917706 ])
     async def nitro(self, ctx):
         """Generates nitro codes."""
         letters = string.ascii_uppercase + string.ascii_lowercase + string.digits

@@ -236,8 +236,9 @@ class ModerationCog(commands.Cog, name='Moderation'):
         "Changes/views the role colour."
         if not colour_hex:
             embed=discord.Embed(description=f"{role.mention}\nRGB: {role.colour.to_rgb()}\nInt: {role.colour.value}\nHex: {str(hex(role.colour.value))[2:]}", color=role.color)
-            await ctx.reply(embed=embed, mention_author=False)
-            return
+            return await ctx.reply(embed=embed, mention_author=False)
+        elif 'random' in colour_hex.lower():
+            return await role.edit(color=random.randint(0, 16777215))
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
             return

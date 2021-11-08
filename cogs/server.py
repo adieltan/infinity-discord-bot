@@ -168,7 +168,8 @@ class ServerCog(commands.Cog, name='Server'):
         if len(response.clean_content) >= 500:
             await ctx.reply("You can't have such a long text response.")
         else:
-            results['autoresponse'][trigger] = f"{response.clean_content}"
+            edit = results.get('autoresponse', {})[trigger] = f"{response.clean_content}"
+            results['autoresponse'] = edit
             await Database.edit_server(self, ctx.guild.id, results)
             await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response}`"))
             self.bot.ar[f'{ctx.guild.id}'] = results['autoresponse']
@@ -367,7 +368,6 @@ class ServerCog(commands.Cog, name='Server'):
                 return
             o.view_channel=False
             await channel.set_permissions(target, overwrite=o)
-            channels.append(channel)
         if not target:
             target = ctx.guild.default_role
         if not channels:
@@ -393,7 +393,6 @@ class ServerCog(commands.Cog, name='Server'):
                 return
             o.view_channel=True
             await channel.set_permissions(target, overwrite=o)
-            channels.append(channel)
         if not target:
             target = ctx.guild.default_role
         if not channels:
@@ -419,7 +418,6 @@ class ServerCog(commands.Cog, name='Server'):
                 return
             o.send_messages=False
             await channel.set_permissions(target, overwrite=o)
-            channels.append(channel)
         if not target:
             target = ctx.guild.default_role
         if not channels:
@@ -445,7 +443,6 @@ class ServerCog(commands.Cog, name='Server'):
                 return
             o.send_messages=True
             await channel.set_permissions(target, overwrite=o)
-            channels.append(channel)
         if not target:
             target = ctx.guild.default_role
         if not channels:

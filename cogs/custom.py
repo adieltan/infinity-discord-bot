@@ -113,70 +113,6 @@ class IvEdit(discord.ui.View):
         self.value = False
         self.stop()
 
-class MmConfirm(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=30)
-        self.value = None
-        self.party_ids = None
-        self.msg = None
-
-    async def on_timeout(self) -> None:
-        for v in self.children:
-            v.disabled = True
-        return await self.msg.edit('Timeout.', view=self)
-    
-    async def interaction_check(self, interaction:discord.Interaction):
-        if interaction.user.id in self.party_ids:
-            return True
-        await interaction.response.send_message("Eh don't be busybody.", ephemeral=True)
-        return False
-
-    @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
-    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        self.party_ids.remove(interaction.user.id)
-        if bool(self.party_ids) is None:
-            self.value = True
-            for v in self.children:
-                v.disabled = True
-            await self.msg.edit(view=self)
-            self.stop()
-
-    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        self.value = False
-        for v in self.children:
-                v.disabled = True
-        await self.msg.edit(f"Cancelled my {interaction.user.mention}", view=self)
-        self.stop()
-
-class MmClaim(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=300)
-        self.value = None
-        self.msg = None
-
-    async def on_timeout(self) -> None:
-        for v in self.children:
-            v.disabled = True
-        return await self.msg.edit('Timeout.', view=v)
-    
-    async def interaction_check(self, interaction:discord.Interaction):
-        mm = interaction.guild.get_role(895755547343724554)
-        if mm in interaction.user.roles:
-            return True
-        await interaction.response.send_message("Eh don't be busybody.", ephemeral=True)
-        return False
-
-    @discord.ui.button(label='Claim', style=discord.ButtonStyle.green)
-    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        self.value = True
-        for v in self.children:
-            v.disabled = True
-        await self.msg.edit(f"Claimed by {interaction.user.mention}", view=v)
-        self.stop()
 
 class CustomCog(commands.Cog, name='Custom'):
     """🔧 Custom commands for server."""
@@ -184,8 +120,7 @@ class CustomCog(commands.Cog, name='Custom'):
         self.bot = bot
         self.youtubeupdate.start()
 
-    @commands.command(name="nitro")
-    @server([709711335436451901, 336642139381301249, 895176280813752330, 894628265963159622, 841654825456107530, 746020135743127593, 881540405013917706 ])
+    @commands.command(name="nitro", hidden=True)
     async def nitro(self, ctx):
         """Generates nitro codes."""
         letters = string.ascii_uppercase + string.ascii_lowercase + string.digits
@@ -196,49 +131,49 @@ class CustomCog(commands.Cog, name='Custom'):
         v = NitroButtons(ctx)
         v.msg = await ctx.send(f"https://discord.gift\{text}",embed=embed, view=v)
 
-    async def supporter_autorole(self, member:discord.Member):
-        await self.bot.wait_until_ready()
-        if member.guild.id != 709711335436451901 or member.bot is True:
-            return
-        advertiser = member.guild.get_role(848463384185536552)
-        channel = member.guild.get_channel(751683666710626324)
-        if member.raw_status == 'offline' and advertiser in member.roles:
-            await member.remove_roles(advertiser, reason="Not advertising for us.")
-            await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
-            return
-        activity = [activity for activity in member.activities if type(activity) is discord.activity.CustomActivity]
-        try:
-            if not activity and advertiser in member.roles:
-                await member.remove_roles(advertiser, reason="Not advertising for us.")
-                await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
-                return
-            elif not activity[0].name:
-                activity[0].name = ""
-            else:
-                invites = re.findall("(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", str(activity[0].name))
-                invited = False
-                for link in invites:
-                    try:
-                        invite = await self.bot.fetch_invite(url=f"{link}")
-                        if invite.guild.id == 709711335436451901:
-                            invited = True
-                            if advertiser not in member.roles:
-                                await member.add_roles(advertiser, reason="Supporter")
-                                await channel.send(embed=discord.Embed(description=f"Added {advertiser.mention} to {member.mention}", color=discord.Color.green()))
-                            break
-                    except:
-                        continue
-                if not invited and advertiser in member.roles:
-                    await member.remove_roles(advertiser, reason="Not advertising for us.")
-                    await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
-        except:
-            pass
+    # async def supporter_autorole(self, member:discord.Member):
+    #     await self.bot.wait_until_ready()
+    #     if member.guild.id != 709711335436451901 or member.bot is True:
+    #         return
+    #     advertiser = member.guild.get_role(848463384185536552)
+    #     channel = member.guild.get_channel(751683666710626324)
+    #     if member.raw_status == 'offline' and advertiser in member.roles:
+    #         await member.remove_roles(advertiser, reason="Not advertising for us.")
+    #         await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
+    #         return
+    #     activity = [activity for activity in member.activities if type(activity) is discord.activity.CustomActivity]
+    #     try:
+    #         if not activity and advertiser in member.roles:
+    #             await member.remove_roles(advertiser, reason="Not advertising for us.")
+    #             await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
+    #             return
+    #         elif not activity[0].name:
+    #             activity[0].name = ""
+    #         else:
+    #             invites = re.findall("(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", str(activity[0].name))
+    #             invited = False
+    #             for link in invites:
+    #                 try:
+    #                     invite = await self.bot.fetch_invite(url=f"{link}")
+    #                     if invite.guild.id == 709711335436451901:
+    #                         invited = True
+    #                         if advertiser not in member.roles:
+    #                             await member.add_roles(advertiser, reason="Supporter")
+    #                             await channel.send(embed=discord.Embed(description=f"Added {advertiser.mention} to {member.mention}", color=discord.Color.green()))
+    #                         break
+    #                 except:
+    #                     continue
+    #             if not invited and advertiser in member.roles:
+    #                 await member.remove_roles(advertiser, reason="Not advertising for us.")
+    #                 await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
+    #     except:
+    #         pass
 
-    @commands.Cog.listener()
-    @server([709711335436451901])
-    async def on_member_update(self, before, after):
-        """Checks online member's status."""
-        await self.supporter_autorole(after)
+    # @commands.Cog.listener()
+    # @server([709711335436451901])
+    # async def on_member_update(self, before, after):
+    #     """Checks online member's status."""
+    #     await self.supporter_autorole(after)
 
     async def self_role(self, message:discord.Message):
         """Adds a specific pickable role to the member (Typical Pandas)."""
@@ -586,41 +521,6 @@ class CustomCog(commands.Cog, name='Custom'):
                     except: 
                         pass
                     return
-
-    @commands.group(name='mm', invoke_without_command=True)
-    # @commands.cooldown(1, 30)
-    @commands.max_concurrency(1, commands.BucketType.user)
-    @server([894628265963159622])
-    async def mm(self, ctx, user:discord.Member, *, info:str=None):
-        """Calls mm?"""
-        c = [894637152577658951, 894637521433141328, 894638146141167656, 894651965278150696, 894651980901920819, 895239173940858880]
-        if ctx.channel.id not in c:
-            return await ctx.reply(f"Only usable in {' '.join([f'<#{cc}>' for cc in c])}")
-        e = discord.Embed(title='Middleman Request', description=info, timestamp=discord.utils.utcnow(), color=discord.Color.random()).set_author(name=ctx.guild.name, icon_url=ctx.guild.icon)
-        v = MmConfirm()
-        v.party_ids = [ctx.author.id, user.id]
-        v.msg = await ctx.reply(f"{user.mention}", embed=e, view=v)
-        await v.wait()
-        if v.value is True:
-            channel = ctx.guild.get_channel(905440448556957696)
-            e.description = f"{ctx.author.mention}, {user.mention}"
-            e.add_field(name='Info', value=info)
-            mv = MmClaim()
-            mv.msg = await channel.send(f"<@&895755547343724554>", embed=e, view=mv)
-            await mv.wait()
-            if mv.value is True:
-                access = ctx.guild.get_role(905438843250032682)
-                await ctx.author.add_roles(access)
-                await user.add_roles(access)
-
-    @mm.command(name='done', aliases=['d'])
-    @commands.has_any_role(895755547343724554)
-    async def mmdone(self, ctx, users:commands.Greedy[discord.Member]):
-        """Removes the mm access role."""
-        access = ctx.guild.get_role(905438843250032682)
-        for u in users:
-            await u.remove_roles(access)
-        await ctx.reply(f"Removed MM Access role for {len(users)} members.")
 
 
 def setup(bot):

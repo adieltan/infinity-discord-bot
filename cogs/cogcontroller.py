@@ -15,23 +15,22 @@ class CogControllerCog(commands.Cog, name='CogController'):
             cog="cogs." + cog.removeprefix("cogs.")
             try:
                 self.bot.reload_extension(cog)
-                return f"<a:verified:876075132114829342> (re)loaded `{cog}`"
+                return f"+ ✅ (re)loaded `{cog}`"
             except:
                 try:
                     self.bot.load_extension(cog)
-                    return f"<a:verified:876075132114829342> (re)loaded `{cog}`"
+                    return f"+ ✅ (re)loaded `{cog}`"
                 except:
                     try:
                         cog=cog.removeprefix("cogs.")
                         self.bot.reload_extension(cog)
-                        return f"<a:verified:876075132114829342> (re)loaded `{cog}`"
+                        return f"+ ✅ (re)loaded `{cog}`"
                     except:
                         try:
                             self.bot.load_extension(cog)
-                            return f"<a:verified:876075132114829342> (re)loaded `{cog}`"
+                            return f"+ ✅ (re)loaded `{cog}`"
                         except:
-                            return f"<:exclamation:876077084986966016> Error while loading `{cog}`\n```\n{traceback.format_exc()}\n```"
-
+                            return f"- ❗ Error while loading `{cog}`\n```\n{traceback.format_exc()}\n```"
         if not cog:
             cogs = []
             load_reload('jishaku')
@@ -41,9 +40,11 @@ class CogControllerCog(commands.Cog, name='CogController'):
             for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash):
                 if filename.endswith(".py"):
                     cogs.append(load_reload(filename[:-3]))
-            await ctx.reply('\n'.join(cogs))
+            text = '\n'.join(cogs)
         else:
-            await ctx.reply(load_reload(cog))
+            text = load_reload(cog)
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await ctx.reply(file=discord.File(buffer, filename='LOAD.diff'))
 
     @commands.command(name='unload', hidden=True)
     @commands.is_owner()

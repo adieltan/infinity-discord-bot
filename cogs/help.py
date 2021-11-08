@@ -298,8 +298,6 @@ class GoodHelp(commands.HelpCommand):
                 raise commands.BotMissingPermissions(("embed links",))
             if not perms.read_message_history:
                 raise commands.BotMissingPermissions(("read message history",))
-            if not perms.add_reactions:
-                raise commands.BotMissingPermissions(("add reactions permission",))
 
         self.paginator.clear()
         self.paginator.ending_note = self.get_ending_note()

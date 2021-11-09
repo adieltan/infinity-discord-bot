@@ -420,6 +420,39 @@ class UtilityCog(commands.Cog, name='Utility'):
         e.set_image(url=img.get('hdurl'))
         await ctx.reply(embed=e)
 
+    @commands.command(name="attachments", aliases=['attachment'])
+    async def attachments(self, ctx, channelid_or_messageid:str=None):
+        """Gets the url of all the attachments in the message referenced."""
+        ref = ctx.message.reference
+        msg = None
+        if channelid_or_messageid is None and ref is not None:
+            msg = await ctx.channel.fetch_message(ref.message_id)
+        elif not channelid_or_messageid:
+            await ctx.reply('You have to reply to or provide the message id to the message.')
+
+        else:
+            ids = re.findall("\d{18}", channelid_or_messageid)
+            if len(ids) < 1:
+                await ctx.reply("Can't find id.")
+            elif len(ids) < 2:
+                msg = await ctx.channel.fetch_message(int(ids[0]))
+            elif len(ids) < 3:
+                channel = ctx.guild.get_channel(int(ids[0]))
+                msg = await channel.fetch_message(int(ids[1]))
+            elif len(ids) <4:
+                channel = ctx.guild.get_channel(int(ids[1]))
+                msg = await channel.fetch_message(int(ids[2]))
+        if msg:
+            text = f"Message: {msg.jump_url}\nAttachments:\n"
+            attachments = msg.attachments
+            for attachment in attachments:
+                text += str(attachment)  + '\n'
+            await ctx.reply(text)
+
+    @commands.command(name='id')
+    async def id(self, ctx, objects:commands.Greedy[discord.Object]):
+        """Returns the id of given objects."""
+        await ctx.reply(' '.join(str(o.id) for o in objects) if objects else 'None')
 
 def setup(bot):
     bot.add_cog(UtilityCog(bot))

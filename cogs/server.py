@@ -171,7 +171,7 @@ class ServerCog(commands.Cog, name='Server'):
             edit = results.get('autoresponse', {})[trigger] = f"{response.clean_content}"
             results['autoresponse'] = edit
             await Database.edit_server(self, ctx.guild.id, results)
-            await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response}`"))
+            await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response.clean_content}`"))
             self.bot.ar[f'{ctx.guild.id}'] = results['autoresponse']
 
     @ar.command(name="remove")
@@ -522,35 +522,6 @@ class ServerCog(commands.Cog, name='Server'):
 
         await ctx.reply("Done")
 
-    @commands.command(name="attachments", aliases=['attachment'])
-    async def attachments(self, ctx, channelid_or_messageid:str=None):
-        """Gets the url of all the attachments in the message referenced."""
-        ref = ctx.message.reference
-        msg = None
-        if channelid_or_messageid is None and ref is not None:
-            msg = await ctx.channel.fetch_message(ref.message_id)
-        elif not channelid_or_messageid:
-            await ctx.reply('You have to reply to or provide the message id to the message.')
-
-        else:
-            ids = re.findall("\d{18}", channelid_or_messageid)
-            if len(ids) < 1:
-                await ctx.reply("Can't find id.")
-            elif len(ids) < 2:
-                msg = await ctx.channel.fetch_message(int(ids[0]))
-            elif len(ids) < 3:
-                channel = ctx.guild.get_channel(int(ids[0]))
-                msg = await channel.fetch_message(int(ids[1]))
-            elif len(ids) <4:
-                channel = ctx.guild.get_channel(int(ids[1]))
-                msg = await channel.fetch_message(int(ids[2]))
-        if msg:
-            text = f"Message: {msg.jump_url}\nAttachments:\n"
-            attachments = msg.attachments
-            for attachment in attachments:
-                text += str(attachment)  + '\n'
-            await ctx.reply(text)
-
     @commands.command(name='rename', aliases=['channelrename'])
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(manage_channels=True)
@@ -588,77 +559,36 @@ class ServerCog(commands.Cog, name='Server'):
             e.description=f"Session Ended\n[Result]({result.jump_url})"
             await msg.edit(embed=e)
 
-    @commands.command(name='userinfo', aliases=['ui', 'user', 'whois', 'i'])
-    async def userinfo(self, ctx, *, member: typing.Union[discord.Member, discord.User]=None):
-        """Gets info about the user."""
-        if not member:
-            member = ctx.author
-        results = await Database.get_server(self, ctx.guild.id)
-        leaves = results.get('leaveleaderboard', {}).get(f'{member.id}')
-        if type(member) == discord.Member:
-            if member.status == discord.Status.online:
-                status = "🟢 Online"
-            elif member.status == discord.Status.idle:
-                status = "🟡 Idle"
-            elif member.status == discord.Status.dnd:
-                status = "🔴 DND"
-            else:
-                status = "⚫ Offline"
-            embed = discord.Embed(title="User Info", description=f'{member.mention} {member} [Avatar]({member.display_avatar})\n{status}\n', color=member.color, timestamp=discord.utils.utcnow(),)
+    @commands.group(name='overwrites', aliases=['ow'], invoke_without_command=True)
+    @commands.has_permissions(manage_channels=True)
+    async def overwrites(self, ctx, channel:typing.Optional[typing.Union[discord.CategoryChannel, discord.TextChannel, discord.VoiceChannel, discord.StageChannel]]=None, target:commands.Greedy[typing.Union[discord.Role, discord.Member]]=None):
+        """Lists out permission overwrites in this channel."""
+        if not channel:
+            channel = ctx.channel
+        text = f"Channel overwrites for {channel.name}\n"
+        if channel.permissions_synced:
+            text += f"Synced with {channel.category.name}"
+        overwrites = channel.overwrites if not target else target
+        for o in overwrites:
+            text += f"""\n{o.id} {o.name}\n"""
+            for perm, value in channel.overwrites_for(o):
+                if value in (True, False):
+                    emoji = '✅' if value else '❌'
+                    text += f"▪ {emoji} {perm.replace('_', ' ').title()}\n"
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await ctx.reply(file=discord.File(buffer, filename='overwrites.txt'))
 
-            if member.activity:
-                embed.description += f"{member.activity.name}"
-            embed.set_author(name=f"{member.name}", icon_url=f'{member.display_avatar}')
-            embed.add_field(name="Joined", value=f"{discord.utils.format_dt(member.joined_at, style='F')}\n{discord.utils.format_dt(member.joined_at, style='R')}")
-            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
-            if member.nick:
-                embed.description = f"`{member.nick}` " + embed.description
-            
-            if leaves:
-                embed.description += f"\nLeft the server {leaves} times."
-            if member.bot:
-                embed.description += '\n🤖 Bot Account'
-            if member.premium_since:
-                embed.add_field(name="Server Boost", value=f"\nBoosting since: {discord.utils.format_dt(member.premium_since, style='f')}\n{discord.utils.format_dt(member.premium_since, style='R')}")
-            embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
-            embed.set_thumbnail(url=member.display_avatar)
-        else:
-            embed = discord.Embed(
-                title="User Info",
-                description=f'{member.mention} {member} [Avatar]({member.avatar})',
-                color=member.color,
-                timestamp=discord.utils.utcnow(),
-            )
+    @overwrites.command(name='sync', aliases=['s'])
+    async def overwrites_remove(self, ctx, channel:typing.Optional[typing.Union[discord.CategoryChannel, discord.TextChannel, discord.VoiceChannel, discord.StageChannel]]=None):
+        """Syncs the channel permission with the category permissions."""
+        if not channel:
+            channel = ctx.channel
+        if not channel.category:
+            return await ctx.reply('No category.')
+        await channel.edit(sync_permissions=True)
+        await ctx.reply(f"Permission for {channel.mention} has been synced with {channel.category.mention}.")
 
-            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar}')
-            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
-            if member.bot:
-                embed.description += '\n🤖 Bot Account'
-            if leaves:
-                embed.description += f"\nLeft the server {leaves} times."
-            embed.set_thumbnail(url=member.avatar)
-        embed.set_footer(text=f"ID: {member.id}")
-        await ctx.reply(embed=embed, mention_author=False)
 
-    # @commands.command(name='selectrole', aliases=['sr'])
-    # @commands.is_owner()
-    # async def selectrole(self, ctx, roles:commands.Greedy[discord.Role]=None, channel:discord.TextChannel=None):
-    #     """Select roles."""
-    #     if not channel:
-    #         channel = ctx.channel
-    #     v = SelectRoles()
-    #     v.opt = [discord.SelectOption(label=f'{role.name}', value=f'{role.id}') for role in roles]
-    #     await ctx.send(f"{v=}\n{v.opt=}")
-    #     msg = await channel.send('Select Role', view=v)
-    #     db = await Database.get_server(self, ctx.guild.id)
-    #     await Database.edit_server(self, ctx.guild.id, {'roles':db.get('roles', []).append(msg.id)})
-
-    # @commands.Cog.listener()
-    # async def on_ready(self):
-    #     sr = set()
-    #     async for r in self.bot.db['server'].find({}):
-    #         if r.get('roles', {}).keys()[0] and r.get('roles') not in self.bot.persistent_views:
-    #             self.bot.add_view(SelectRoles(), r.get('roles'))
 
 def setup(bot):
     bot.add_cog(ServerCog(bot))

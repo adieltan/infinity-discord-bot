@@ -2,7 +2,7 @@ import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, 
 from discord.ext import commands, tasks
 
 
-from ._utils import Menu
+from ._utils import Menu, Database
 class ModerationCog(commands.Cog, name='Moderation'):
     """🔨 Commands to keep your server safe."""
     def __init__(self, bot):
@@ -177,8 +177,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
                 perms += f" {emoji} - {perm.replace('_',' ').title()}\n"
             perms += '```'
         elif type(object) == discord.Member:
-            perms = '```\nServer - 🛑 \nCurrent Channel - 💬 \n'
-            perms += ' 🛑 | 💬 \n'
+            perms = '```\nServer - 🛑 \nCurrent Channel - 💬 \n 🛑 | 💬 \n'
             channel_perms = dict(iter(ctx.channel.permissions_for(object)))
             for perm, value in object.guild_permissions:
                 if value is not False or channel_perms[perm] is not False:
@@ -189,7 +188,6 @@ class ModerationCog(commands.Cog, name='Moderation'):
                 if value is True and perm not in dict(iter(object.guild_permissions)):
                     perms += f" ❌ | ✅ - {perm.replace('_',' ').title()}\n"
             perms += '```'
-
         embed = discord.Embed(title='Permissions for:', description=object.mention+'\n'+perms, color=discord.Color.random())
         if object is discord.Member:
             embed.set_author(icon_url=object.avatar, name=str(object))
@@ -364,18 +362,17 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.guild_only()
     async def random(self, ctx, role:discord.Role=None, howmany:int=1):
         """Finds random peoples from the whole server or from roles."""
-        if role == None:
+        if role is None:
             role = ctx.guild.default_role
         people = role.members
         winners = []
-        if howmany > len(people):
-            howmany = len(people)
+        howmany = min(howmany, len(people))
         while len(winners) < howmany:
             win = random.choice(people)
             winners.append(win)
             people.remove(win)
-        
-        text= "\n".join([f'{winner.mention} `{winner.id}`' for winner in winners])
+
+        text = "\n".join(f'{winner.mention} `{winner.id}`' for winner in winners)
         embed = discord.Embed(title='Member randomizer', description=f'{text}', color=discord.Color.random())
         embed.timestamp=discord.utils.utcnow()
         embed.set_footer(text=f'Drawn {len(winners)} winners.')
@@ -510,6 +507,58 @@ class ModerationCog(commands.Cog, name='Moderation'):
                 except: pass
                 else:   success += 1
         await ctx.reply(embed=discord.Embed(title="Role rhumans command", description=f"Sucessfully removed {role.mention} from **{success}** humans out of {len(members)} members.", color=discord.Color.green()))
+
+    @commands.command(name='userinfo', aliases=['ui', 'user', 'whois', 'i'])
+    async def userinfo(self, ctx, *, member: typing.Union[discord.Member, discord.User]=None):
+        """Gets info about the user."""
+        if not member:
+            member = ctx.author
+        results = await Database.get_server(self, ctx.guild.id)
+        leaves = results.get('leaveleaderboard', {}).get(f'{member.id}')
+        if type(member) == discord.Member:
+            if member.status == discord.Status.online:
+                status = "🟢 Online"
+            elif member.status == discord.Status.idle:
+                status = "🟡 Idle"
+            elif member.status == discord.Status.dnd:
+                status = "🔴 DND"
+            else:
+                status = "⚫ Offline"
+            embed = discord.Embed(title="User Info", description=f'{member.mention} {member} [Avatar]({member.display_avatar})\n{status}\n', color=member.color, timestamp=discord.utils.utcnow(),)
+
+            if member.activity:
+                embed.description += f"{member.activity.name}"
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.display_avatar}')
+            embed.add_field(name="Joined", value=f"{discord.utils.format_dt(member.joined_at, style='F')}\n{discord.utils.format_dt(member.joined_at, style='R')}")
+            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
+            if member.nick:
+                embed.description = f"`{member.nick}` " + embed.description
+            
+            if leaves:
+                embed.description += f"\nLeft the server {leaves} times."
+            if member.bot:
+                embed.description += '\n🤖 Bot Account'
+            if member.premium_since:
+                embed.add_field(name="Server Boost", value=f"\nBoosting since: {discord.utils.format_dt(member.premium_since, style='f')}\n{discord.utils.format_dt(member.premium_since, style='R')}")
+            embed.add_field(name="Roles", value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}", inline=False)
+            embed.set_thumbnail(url=member.display_avatar)
+        else:
+            embed = discord.Embed(
+                title="User Info",
+                description=f'{member.mention} {member} [Avatar]({member.avatar})',
+                color=member.color,
+                timestamp=discord.utils.utcnow(),
+            )
+
+            embed.set_author(name=f"{member.name}", icon_url=f'{member.avatar}')
+            embed.add_field(name="Registered", value=f"{discord.utils.format_dt(member.created_at, style='F')}\n{discord.utils.format_dt(member.created_at, style='R')}")
+            if member.bot:
+                embed.description += '\n🤖 Bot Account'
+            if leaves:
+                embed.description += f"\nLeft the server {leaves} times."
+            embed.set_thumbnail(url=member.avatar)
+        embed.set_footer(text=f"ID: {member.id}")
+        await ctx.reply(embed=embed, mention_author=False)
 
 def setup(bot):
     bot.add_cog(ModerationCog(bot))

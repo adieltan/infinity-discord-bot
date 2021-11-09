@@ -566,8 +566,11 @@ class ServerCog(commands.Cog, name='Server'):
         if not channel:
             channel = ctx.channel
         text = f"Channel overwrites for {channel.name}\n"
-        if channel.permissions_synced:
-            text += f"Synced with {channel.category.name}"
+        try:
+            if channel.permissions_synced:
+                text += f"Synced with {channel.category.name}"
+        except:
+            pass
         overwrites = channel.overwrites if not target else target
         for o in overwrites:
             text += f"""\n{o.id} {o.name}\n"""

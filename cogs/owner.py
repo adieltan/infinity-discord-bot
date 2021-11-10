@@ -275,7 +275,7 @@ class OwnerCog(commands.Cog, name='Owner'):
             message.content = ''
         for a in message.attachments:
             message.content += f"{a} \n"
-            self.bot.snipedb[f"{message.channel.id}"]= message
+        self.bot.snipedb[f"{message.channel.id}"]= message
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

@@ -127,7 +127,7 @@ async def performance():
     embed.timestamp=discord.utils.utcnow()
     await bot.logs.send(embed=embed)
 
-@tasks.loop(minutes=3, reconnect=True)
+@tasks.loop(minutes=30, reconnect=True)
 async def delete_snipecache():
         for i in bot.snipedb.copy():
             if round(bot.snipedb[i].created_at.timestamp() + 60) < round(discord.utils.utcnow().timestamp()):

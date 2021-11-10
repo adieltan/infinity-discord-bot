@@ -265,13 +265,16 @@ class OwnerCog(commands.Cog, name='Owner'):
         if not deletedmsg:
             await ctx.reply('No cached deleted message.')
         else:
-            embed=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
-            embed.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar or embed.Empty)
-            await ctx.reply(embed=embed)
+            e=discord.Embed(title="Snipe", description=deletedmsg.content, color=deletedmsg.author.color, timestamp=deletedmsg.created_at)
+            e.set_author(name=f"{deletedmsg.author.name}", icon_url=deletedmsg.author.avatar or e.Empty)
+            await ctx.reply(embeds=[e]+deletedmsg.embeds)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message:discord.Message):
-        if message.content:
+        if not message.content:
+            message.content = ''
+        for a in message.attachments:
+            message.content += f"{a} \n"
             self.bot.snipedb[f"{message.channel.id}"]= message
 
 def setup(bot):

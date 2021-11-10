@@ -371,7 +371,7 @@ class ServerCog(commands.Cog, name='Server'):
         if not target:
             target = ctx.guild.default_role
         if not channels:
-            channels.append(ctx.channel)
+            channels = [ctx.channel]
         for c in channels:
             if type(c) is discord.CategoryChannel:
                 for cc in c.channels:
@@ -396,7 +396,7 @@ class ServerCog(commands.Cog, name='Server'):
         if not target:
             target = ctx.guild.default_role
         if not channels:
-            channels.append(ctx.channel)
+            channels = [ctx.channel]
         for c in channels:
             if type(c) is discord.CategoryChannel:
                 for cc in c.channels:
@@ -421,7 +421,7 @@ class ServerCog(commands.Cog, name='Server'):
         if not target:
             target = ctx.guild.default_role
         if not channels:
-            channels.append(ctx.channel)
+            channels = [ctx.channel]
         for c in channels:
             if type(c) is discord.CategoryChannel:
                 for cc in c.channels:
@@ -446,7 +446,7 @@ class ServerCog(commands.Cog, name='Server'):
         if not target:
             target = ctx.guild.default_role
         if not channels:
-            channels.append(ctx.channel)
+            channels = [ctx.channel]
         for c in channels:
             if type(c) is discord.CategoryChannel:
                 for cc in c.channels:

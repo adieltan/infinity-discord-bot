@@ -465,10 +465,11 @@ class ServerCog(commands.Cog, name='Server'):
         if len(f"{first_message_id}") < 18:
             limit = first_message_id
             first_message_id = None
-        if not first_message_id and ctx.message.reference:
-            first_message_id = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-        else:
+        if first_message_id:
             first_message_id = await ctx.channel.fetch_message(first_message_id)
+        elif ctx.message.reference:
+            first_message_id = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+        
         channel_perms = dict(iter(destination_channel.permissions_for(ctx.author)))
         if channel_perms.get('administrator') is not True:
             raise commands.MissingPermissions(missing_perms=['administrator'])
@@ -486,6 +487,8 @@ class ServerCog(commands.Cog, name='Server'):
         last_webhookmsg = None
 
         async for m in ctx.channel.history(limit=limit, after=first_message_id, oldest_first=True):
+            if m == ctx.message:
+                break
             try:
                 if last_message is None or m.author.id != last_message.author.id:
                     raise

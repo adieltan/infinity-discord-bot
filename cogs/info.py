@@ -50,31 +50,43 @@ class InfoCog(commands.Cog, name='Info'):
         }
         async with aiohttp.ClientSession() as cs:
             header={'Authorization':os.getenv('topgg_token')}
-            async with cs.get(url=f"https://top.gg/api/bots/{self.bot.user.id}/check?userId={ctx.author.id}", headers=header, timeout=5) as data:
-                json = await data.json()
-                if json.get('voted') == 1:
-                    bl['Top.gg']['v'] = True
+            try:
+                async with cs.get(url=f"https://top.gg/api/bots/{self.bot.user.id}/check?userId={ctx.author.id}", headers=header, timeout=5) as data:
+                    json = await data.json()
+                    if json.get('voted') == 1:
+                        bl['Top.gg']['v'] = True
+            except:
+                pass
             header['Authorization'] = os.getenv('voidbots_token')
-            async with cs.get(url=f"https://api.voidbots.net/bot/voted/{self.bot.user.id}/{ctx.author.id}", headers=header, timeout=5) as data:
-                json = await data.json()
-                if json.get('voted') is True:
-                    bl['VoidBots']['v'] = True
-                    bl['VoidBots']['nextvote'] = round(datetime.datetime.now().timestamp()) + round(json['nextVote']['ms'] / 1000)
+            try:
+                async with cs.get(url=f"https://api.voidbots.net/bot/voted/{self.bot.user.id}/{ctx.author.id}", headers=header, timeout=5) as data:
+                    json = await data.json()
+                    if json.get('voted') is True:
+                        bl['VoidBots']['v'] = True
+                        bl['VoidBots']['nextvote'] = round(datetime.datetime.now().timestamp()) + round(json['nextVote']['ms'] / 1000)
+            except:
+                pass
             header['Authorization'] = os.getenv('listcord_token')
-            async with cs.get(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/voted", headers=header, params={'user_id':f"{ctx.author.id}"}, timeout=5) as data:
-                json = await data.json()
-                if json.get('voted') is True:
-                    bl['ListCord']['v'] = True
-                    bl['ListCord']['nextvote'] = round(json['next_at'] / 1000)
+            try:
+                async with cs.get(url=f"https://listcord.gg/api/bot/{self.bot.user.id}/voted", headers=header, params={'user_id':f"{ctx.author.id}"}, timeout=5) as data:
+                    json = await data.json()
+                    if json.get('voted') is True:
+                        bl['ListCord']['v'] = True
+                        bl['ListCord']['nextvote'] = round(json['next_at'] / 1000)
+            except:
+                pass
             header['Authorization']=os.getenv('blist_token')
-            async with cs.get(url=f"https://blist.xyz/api/v2/bot/{self.bot.user.id}/votes", headers=header, timeout=5) as data:
-                json = await data.json()
-                json['votes'].reverse()
-                if str(ctx.author.id) in str(json['votes']):
-                    if datetime.datetime.fromisoformat([vote for vote in json['votes'] if vote['user'] == str(ctx.author.id)][0]['time'][:-1]+'+00:00').timestamp() + 60*60*12 > discord.utils.utcnow().timestamp():
+            try:
+                async with cs.get(url=f"https://blist.xyz/api/v2/bot/{self.bot.user.id}/votes", headers=header, timeout=5) as data:
+                    json = await data.json()
+                    json['votes'].reverse()
+                    if (str(ctx.author.id) in str(json['votes'])
+                        and datetime.datetime.fromisoformat( [vote for vote in json['votes'] if vote['user'] == str(ctx.author.id) ][0]['time'][:-1] + '+00:00' ).timestamp() + 60 ** 2 * 12 > discord.utils.utcnow().timestamp()):
                         bl['Blist']['v'] = True
                         bl['Blist']['nextvote'] = round(datetime.datetime.fromisoformat([vote for vote in json['votes'] if vote['user'] == str(ctx.author.id)][0]['time'][:-1]+'+00:00').timestamp() + 60*60*12)
-            
+            except:
+                pass
+
         if any(bl[item]['v'] is True for item in bl):
             voted = "**Votes On Cooldown:**\n" + '\n'.join([
             f"""[{item}]({bl[item]['w']}) {f"<t:{bl[item].get('nextvote')}:R>"if bl[item].get('nextvote') else ''}"""
@@ -181,7 +193,7 @@ class InfoCog(commands.Cog, name='Info'):
         if ctx.channel.id != 827896302008139806:
             return
         await ctx.message.delete()
-        if ref == None:
+        if ref is None:
             await ctx.send(f"{ctx.author.mention} Eh you gotta reply to the suggestion you wanna accept!", delete_after=5)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
@@ -201,7 +213,7 @@ class InfoCog(commands.Cog, name='Info'):
         if ctx.channel.id != 827896302008139806:
             return
         await ctx.message.delete()
-        if ref == None:
+        if ref is None:
             await ctx.send(f"{ctx.author.mention} Eh you gotta reply to the suggestion you wanna accept!", delete_after=5)
         else:
             message = await ctx.channel.fetch_message(ref.message_id)
@@ -215,10 +227,14 @@ class InfoCog(commands.Cog, name='Info'):
 
     @commands.command(name='premium')
     async def premium(self, ctx):
-        e = discord.Embed(title="Infinity Premium 👑", description=f"Suprise!\nIn development.", color=5479679)
+        e = discord.Embed(title="Infinity Premium 👑", description='Suprise!\nIn development.', color=5479679)
+
         e.set_author(name=ctx.me, icon_url=ctx.me.avatar)
         e.set_thumbnail(url=ctx.me.avatar)
-        e.add_field(name="Perks", value=f"Quicker Cooldowns.\nPremium commands/functions.")
+        e.add_field(
+            name="Perks", value='Quicker Cooldowns.\nPremium commands/functions.'
+        )
+
         e.set_footer(text="Support us today.")
         await ctx.reply(embed=e)
 

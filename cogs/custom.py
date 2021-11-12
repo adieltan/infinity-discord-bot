@@ -131,50 +131,6 @@ class CustomCog(commands.Cog, name='Custom'):
         v = NitroButtons(ctx)
         v.msg = await ctx.send(f"https://discord.gift\{text}",embed=embed, view=v)
 
-    # async def supporter_autorole(self, member:discord.Member):
-    #     await self.bot.wait_until_ready()
-    #     if member.guild.id != 709711335436451901 or member.bot is True:
-    #         return
-    #     advertiser = member.guild.get_role(848463384185536552)
-    #     channel = member.guild.get_channel(751683666710626324)
-    #     if member.raw_status == 'offline' and advertiser in member.roles:
-    #         await member.remove_roles(advertiser, reason="Not advertising for us.")
-    #         await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
-    #         return
-    #     activity = [activity for activity in member.activities if type(activity) is discord.activity.CustomActivity]
-    #     try:
-    #         if not activity and advertiser in member.roles:
-    #             await member.remove_roles(advertiser, reason="Not advertising for us.")
-    #             await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
-    #             return
-    #         elif not activity[0].name:
-    #             activity[0].name = ""
-    #         else:
-    #             invites = re.findall("(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", str(activity[0].name))
-    #             invited = False
-    #             for link in invites:
-    #                 try:
-    #                     invite = await self.bot.fetch_invite(url=f"{link}")
-    #                     if invite.guild.id == 709711335436451901:
-    #                         invited = True
-    #                         if advertiser not in member.roles:
-    #                             await member.add_roles(advertiser, reason="Supporter")
-    #                             await channel.send(embed=discord.Embed(description=f"Added {advertiser.mention} to {member.mention}", color=discord.Color.green()))
-    #                         break
-    #                 except:
-    #                     continue
-    #             if not invited and advertiser in member.roles:
-    #                 await member.remove_roles(advertiser, reason="Not advertising for us.")
-    #                 await channel.send(embed=discord.Embed(description=f"Removed {advertiser.mention} from {member.mention}", color=discord.Color.red()))
-    #     except:
-    #         pass
-
-    # @commands.Cog.listener()
-    # @server([709711335436451901])
-    # async def on_member_update(self, before, after):
-    #     """Checks online member's status."""
-    #     await self.supporter_autorole(after)
-
     async def self_role(self, message:discord.Message):
         """Adds a specific pickable role to the member (Typical Pandas)."""
         if message.channel.id != 848892659828916274:

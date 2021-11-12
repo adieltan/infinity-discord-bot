@@ -6,7 +6,6 @@ datetime
 psutil
 motor
 qrcode
-py_expression_eval
 dateparser
 pillow
 tornado

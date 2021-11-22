@@ -5,8 +5,8 @@ module.exports = {
 		.setName('shutdown')
 		.setDescription('Shuts down the bot.'),
 	async execute(interaction) {
-		if (interaction.client.bot.owners().indexOf(`${interaction.member.id}`) >-1 ){
-            interaction.defer()
+		if (interaction.client.owner.indexOf(`${interaction.member.id}`) >-1 ){
+            await interaction.reply(`Success.`)
             return interaction.client.destroy()}
 		else{ return interaction.reply(`You aren't owner ${interaction.client.bot.owners()}\n${interaction.member.id}`)
         }

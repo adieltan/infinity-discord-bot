@@ -1,12 +1,24 @@
 import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 
-
+from unicodedata import normalize
 from ._utils import Menu, Database
 class ModerationCog(commands.Cog, name='Moderation'):
     """🔨 Commands to keep your server safe."""
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command(name='decancer')
+    @commands.guild_only()
+    @commands.has_permissions(manage_nicknames=True)
+    @commands.bot_has_permissions(manage_nicknames=True)
+    async def decancer(self, ctx, member: discord.Member=None):
+        """Changes the member's nickname to something pingable."""
+        if not member:
+            member = ctx.author
+        ori = member.nick
+        await member.edit(nick=normalize('NFKD', member.nick).encode("ascii","ignore").decode())
+        await ctx.reply(f"{member.mention}'s name edited from {ori} to {member.nick}.")
 
     @commands.command(name='ban')
     @commands.cooldown(1,5)

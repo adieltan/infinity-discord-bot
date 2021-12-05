@@ -6,7 +6,8 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
 except:pass
-
+from time import perf_counter
+ori = perf_counter()
 os.environ['JISHAKU_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
 os.environ['JISHAKU_NO_DM_TRACEBACK'] = 'True'
@@ -19,10 +20,6 @@ async def get_prefix(bot, message):
     pref = results.get("prefix", '=')
     return commands.when_mentioned_or(pref)(bot, message)
 
-class Infinity(commands.AutoShardedBot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 intents = discord.Intents.all()
 intents.presences = False
 intents.typing = False
@@ -31,85 +28,100 @@ intents.integrations = False
 intents.webhooks = False
 intents.invites = False
 
-bot = Infinity(
-command_prefix=get_prefix, description='**__Infinity__**', case_insensitive=True, strip_after_prefix=True, intents=intents, allowed_mentions=discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True))
-bot.owner_ids = set({701009836938231849,703135131459911740,708233854640455740})
-bot._BotBase__cogs = commands.core._CaseInsensitiveDict()
-bot.db = motor.motor_asyncio.AsyncIOMotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE).infinity
-bot.bled = set({})
-bot.owners = bot.owner_ids
-bot.managers = set({})
-bot.ar = {}
-bot.snipedb = dict({})
-bot.startuptime = discord.utils.utcnow()
+class Infinity(commands.Bot):
+    def __init__(self):
+        super().__init__(
+            command_prefix = get_prefix, 
+            description = '**__Infinity__**', 
+            case_insensitive = True, 
+            strip_after_prefix = True, 
+            intents = intents, 
+            allowed_mentions = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=True), 
+            owner_ids = {701009836938231849,703135131459911740,708233854640455740},
+            activity = discord.Activity(type = discord.ActivityType.watching, name='the startup process.')
+            )
 
-bot.load_extension('jishaku')
-print(f"{os.path.dirname(os.path.abspath(__file__))}")
-if '\\' in os.path.dirname(os.path.abspath(__file__)):
-    slash = '\\'
-elif '/' in os.path.dirname(os.path.abspath(__file__)):
-    slash = '/'
-for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cogs'):
-    if filename.endswith(".py"):
-        try:
-            bot.load_extension(f"cogs.{filename[:-3]}")
-        except Exception as e:
-            print(e)
+    async def cbl(self):
+        #cache blacklisted
+        b = set()
+        async for doc in self.db['profile'].find({'bl':True}):
+            b.add(doc['_id'])
+        self.bled = b
+
+    async def cmanagers(self):
+        #cache managers
+        managers = []
+        async for doc in self.db['profile'].find({'manager':True}):
+            managers.append(doc['_id'])
+        self.managers = managers
+
+    async def cache_ar(self):
+        ar = {}
+        async for doc in self.db['server'].find({}):
+            if doc.get('autoresponse'):
+                ar[str(doc['_id'])] = doc['autoresponse']
+        self.ar = ar
+
+    async def on_ready(self):
+        ready = perf_counter()
+        self.owners = self.owner_ids
+        self._BotBase__cogs = commands.core._CaseInsensitiveDict()
+        self.db = motor.motor_asyncio.AsyncIOMotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE).infinity
+        self.snipedb = dict({})
+        
+        self.errors = self.get_channel(825900714013360199)
+        self.logs = self.get_channel(874461656938340402)
+        self.changes = self.get_channel(859779506038505532)
+        status.start()
+        performance.start()
+        delete_snipecache.start()
+
+        print(f"Startup took {ready - ori :0.4f} seconds.")
+        print(f"\n{self.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}")
+        self.startuptime = discord.utils.utcnow()
+        await self.cbl()
+        await self.cmanagers()
+        await self.cache_ar()
+
+        self.load_extension('jishaku')
+        print(f"{os.path.dirname(os.path.abspath(__file__))}")
+        if '\\' in os.path.dirname(os.path.abspath(__file__)):
+            slash = '\\'
+        elif '/' in os.path.dirname(os.path.abspath(__file__)):
+            slash = '/'
+        for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cogs'):
+            if filename.endswith(".py"):
+                try:
+                    self.load_extension(f"cogs.{filename[:-3]}")
+                except Exception as e:
+                    print(e)
+        await self.get_channel(813251835371454515).send(f"∞ Startup took {ready - ori :0.4f} seconds.")
+
+    async def on_error(self, event, *args, **kwargs):
+        print('Ignoring exception in {}'.format(event), file=sys.stderr)
+        text = traceback.format_exc()
+        buffer = io.BytesIO(text.encode('utf-8'))
+        await self.errors.send(f"{discord.utils.format_dt(discord.utils.utcnow(), style='t')} Ignoring exception in {event}", file=discord.File(buffer, filename='traceback.txt'))
+
+    async def process_commands(self, message: discord.Message) -> None:
+        if not self.is_ready():
+            return
+        if message.author.bot:
+            return
+
+        ctx = await self.get_context(message)
+        await self.invoke(ctx)
+
+
+bot = Infinity()
 
 @bot.check
 def blacklisted(ctx) -> bool:
     return (ctx.author.id not in ctx.bot.bled or ctx.author.id in ctx.bot.owners or ctx.author.id in ctx.bot.managers)
 
-async def cache_bl():
-    b = set()
-    async for doc in bot.db['profile'].find({'bl':True}):
-        b.add(doc['_id'])
-    bot.bled = b
-
-async def cache_managers():
-    managers = []
-    async for doc in bot.db['profile'].find({'manager':True}):
-        managers.append(doc['_id'])
-    bot.managers = managers
-
-async def cache_ar():
-    ar = {}
-    async for doc in bot.db['server'].find({}):
-        if doc.get('autoresponse'):
-            ar[str(doc['_id'])] = doc['autoresponse']
-    bot.ar = ar
-
-
-bot.cbl = cache_bl
-bot.cmanager = cache_managers
-
-@bot.event
-async def on_ready():
-    await bot.wait_until_ready()
-    await cache_bl()
-    await cache_managers()
-    await cache_ar()
-    bot.errors = bot.get_channel(825900714013360199)
-    bot.logs = bot.get_channel(874461656938340402)
-    bot.changes = bot.get_channel(859779506038505532)
-    status.start()
-    performance.start()
-    delete_snipecache.start()
-    print(f"\n{bot.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}")
-    bot.startuptime = discord.utils.utcnow()
-    channel = bot.get_channel(813251835371454515)
-    await channel.send("∞")
-
-@bot.event
-async def on_error(event, *args, **kwargs):
-    print('Ignoring exception in {}'.format(event), file=sys.stderr)
-    text = traceback.format_exc()
-    buffer = io.BytesIO(text.encode('utf-8'))
-    await bot.errors.send(f"{discord.utils.format_dt(discord.utils.utcnow(), style='t')} Ignoring exception in {event}", file=discord.File(buffer, filename='traceback.txt'))
 
 @tasks.loop(minutes=5, reconnect=True)
 async def status():
-    await bot.wait_until_ready()
     timenow = discord.utils.utcnow()
     d = timenow-bot.startuptime
     await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
@@ -117,7 +129,6 @@ async def status():
 @tasks.loop(minutes=30, reconnect=True)
 async def performance():
     #Report on performance every 30 mins.
-    await bot.wait_until_ready()
     rawping = bot.latency
     pingvalue = round(rawping *1000 ) if rawping != float('inf') else "∞"
     cpuvalue = psutil.cpu_percent()
@@ -129,9 +140,10 @@ async def performance():
 
 @tasks.loop(minutes=30, reconnect=True)
 async def delete_snipecache():
-        for i in bot.snipedb.copy():
-            if round(bot.snipedb[i].created_at.timestamp() + 60) < round(discord.utils.utcnow().timestamp()):
-                bot.snipedb.pop(i)
+    for i in bot.snipedb.copy():
+        if round(bot.snipedb[i].created_at.timestamp() + 60) < round(discord.utils.utcnow().timestamp()):
+            bot.snipedb.pop(i)
 
 
 bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)
+# bot.run(os.getenv("beta"), reconnect=True)

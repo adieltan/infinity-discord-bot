@@ -1,7 +1,7 @@
 from __future__ import annotations
 import re, discord, itertools, asyncio
 from thefuzz import process
-from discord.ext import commands, menus
+from discord.ext import commands
 from collections import namedtuple
 from jishaku.codeblocks import Codeblock
 from typing import Any, Tuple, List, Union, Optional, Dict, TYPE_CHECKING

@@ -5,6 +5,8 @@ from PIL import Image, ImageDraw, ImageFont
 import dateparser
 from ._utils import Database, is_manager
 
+from discord.commands import permissions, slash_command
+
 class OwnerCog(commands.Cog, name='Owner'):
     """🔐 Only owner/managers can use this."""
     def __init__(self, bot):
@@ -271,11 +273,18 @@ class OwnerCog(commands.Cog, name='Owner'):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message:discord.Message):
+        await self.bot.wait_until_ready()
         if not message.content:
             message.content = ''
         for a in message.attachments:
             message.content += f"{a} \n"
         self.bot.snipedb[f"{message.channel.id}"]= message
+    
+    @slash_command(guild_ids=[709711335436451901], default_permission=False)
+    @permissions.is_owner()
+    async def test(self, ctx : discord.ApplicationContext):
+        """Slash command testing."""
+        await ctx.respond(f"{ctx.message.author}")
 
 def setup(bot):
     bot.add_cog(OwnerCog(bot))

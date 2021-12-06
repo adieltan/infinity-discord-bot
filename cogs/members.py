@@ -3,8 +3,6 @@ from discord.ext import commands, tasks
 
 import dateparser, pycountry
 from ._utils import Database
-
-from discord.commands import user_command
 class UsersCog(commands.Cog, name='User'):
     """👤 Information / function about Users."""
     def __init__(self, bot):
@@ -137,53 +135,6 @@ class UsersCog(commands.Cog, name='User'):
         timestamp=round(time[0].timestamp())
         await Database.edit_user(self, ctx.author.id, {'bd':timestamp})
         await ctx.reply(f"Your birthday has been set to <t:{timestamp}:D>.")
-
-    @user_command(name='Profile')
-    async def app_profile(self, ctx, member: discord.Member):
-        """User command for showing profile."""
-        results= await Database.get_user(self, member.id)
-        if not results:
-            return await ctx.respond('This user does not have a profile.')
-        embed=discord.Embed(title="Profile", description="", color=discord.Color.random())
-        embed.set_author(icon_url=member.avatar, name=member.display_name)
-        embed.set_thumbnail(url=member.avatar)
-        weight = results.get('weight')
-        height = results.get('height')
-        bd = results.get('bd')
-        if weight and height:
-            bmi = weight / (height/100)**2
-            if bmi == 0:
-                status = "None"
-            elif bmi <= 18.4:
-                status="underweight"
-            elif bmi <= 24.9:
-                status="healthy"
-            elif bmi <= 29.9:
-                status="overweight"
-            elif bmi <= 34.9:
-                status="severely overweight"
-            elif bmi <= 39.9:
-                status="obese"
-            else:
-                status="severely obese"
-            embed.add_field(name="BMI", value=f"📏 {height} cm\n⚖️ {weight} kg\nBMI: **{round(bmi, 2)}** ({status})")
-        if results.get('country'):
-            fuz = pycountry.countries.search_fuzzy(results.get('country'))
-            embed.add_field(name="Location", value=f":flag_{fuz[0].alpha_2.lower()}: {fuz[0].name}" + '\n')
-        if bd:
-            embed.add_field(name='Birthday', value=f"<t:{round(bd)}:D>")
-        if member.id in self.bot.owner_ids:
-            embed.description += '<a:crown:902048071343538176> **Bot Owner**\n'
-        if results.get('bl'):
-            embed.description += '<:exclamation:876077084986966016> **Blacklisted**\n'
-        if results.get('manager'):
-            embed.description += '<a:infinity:874548940610097163> **Infinity Managers**\n'
-        premium = results.get('premium', False)
-        if premium is True or premium > round(discord.utils.utcnow().timestamp()):
-            embed.description += f"<:infinity_coin:874548715338227722> **Premium User** {f'until <t:{premium}:d>'if type(premium) is int else ''}"
-        if results.get('bio'):
-            embed.add_field(name="Bio", value=f"{results.get('bio')}\n", inline=False)
-        await ctx.respond(embed=embed)
 
 def setup(bot):
     bot.add_cog(UsersCog(bot))

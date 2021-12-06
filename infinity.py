@@ -6,12 +6,8 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
 except:pass
-
-from discord.commands import permissions
-
 from time import perf_counter
 ori = perf_counter()
-
 os.environ['JISHAKU_UNDERSCORE'] = 'True'
 os.environ['JISHAKU_HIDE'] = 'True'
 os.environ['JISHAKU_NO_DM_TRACEBACK'] = 'True'
@@ -68,7 +64,6 @@ class Infinity(commands.Bot):
 
     async def on_ready(self):
         ready = perf_counter()
-        self.startuptime = discord.utils.utcnow()
         self.owners = self.owner_ids
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self.db = motor.motor_asyncio.AsyncIOMotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE).infinity
@@ -77,17 +72,30 @@ class Infinity(commands.Bot):
         self.errors = self.get_channel(825900714013360199)
         self.logs = self.get_channel(874461656938340402)
         self.changes = self.get_channel(859779506038505532)
-        status.start(self)
-        performance.start(self)
-        delete_snipecache.start(self)
+        status.start()
+        performance.start()
+        delete_snipecache.start()
 
+        print(f"Startup took {ready - ori :0.4f} seconds.")
+        print(f"\n{self.user} ~ UTC: {discord.utils.utcnow().strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}")
+        self.startuptime = discord.utils.utcnow()
         await self.cbl()
         await self.cmanagers()
         await self.cache_ar()
 
+        self.load_extension('jishaku')
+        print(f"{os.path.dirname(os.path.abspath(__file__))}")
+        if '\\' in os.path.dirname(os.path.abspath(__file__)):
+            slash = '\\'
+        elif '/' in os.path.dirname(os.path.abspath(__file__)):
+            slash = '/'
+        for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cogs'):
+            if filename.endswith(".py"):
+                try:
+                    self.load_extension(f"cogs.{filename[:-3]}")
+                except Exception as e:
+                    print(e)
         await self.get_channel(813251835371454515).send(f"∞ Startup took {ready - ori :0.4f} seconds.")
-        print(f"Startup took {ready - ori :0.4f} seconds.")
-        print(f"\n{self.user} ~ UTC: {self.startuptime.strftime('%H:%M %d %b %Y')} ~ GMT +8: {datetime.datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).strftime('%H:%M %d %b %Y')}")
 
     async def on_error(self, event, *args, **kwargs):
         print('Ignoring exception in {}'.format(event), file=sys.stderr)
@@ -106,18 +114,6 @@ class Infinity(commands.Bot):
 
 
 bot = Infinity()
-bot.load_extension('jishaku')
-print(f"{os.path.dirname(os.path.abspath(__file__))}")
-if '\\' in os.path.dirname(os.path.abspath(__file__)):
-    slash = '\\'
-elif '/' in os.path.dirname(os.path.abspath(__file__)):
-    slash = '/'
-for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))+slash+'cogs'):
-    if filename.endswith(".py"):
-        try:
-            bot.load_extension(f"cogs.{filename[:-3]}")
-        except Exception as e:
-            print(e)
 
 @bot.check
 def blacklisted(ctx) -> bool:
@@ -125,26 +121,28 @@ def blacklisted(ctx) -> bool:
 
 
 @tasks.loop(minutes=5, reconnect=True)
-async def status(self):
+async def status():
     timenow = discord.utils.utcnow()
-    d = timenow-self.startuptime
-    await self.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(self.users)} members in {len(self.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
+    d = timenow-bot.startuptime
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours."))
 
 @tasks.loop(minutes=30, reconnect=True)
-async def performance(self):
+async def performance():
     #Report on performance every 30 mins.
-    pingvalue = round(self.latency *1000 ) if self.latency != float('inf') else "∞"
+    rawping = bot.latency
+    pingvalue = round(rawping *1000 ) if rawping != float('inf') else "∞"
     cpuvalue = psutil.cpu_percent()
     memoryvalue= psutil.virtual_memory().percent
+    timenow = datetime.datetime.now().strftime('%M')
     embed=discord.Embed(title="Performance report", description=f"<:ping:901051623416152095> {pingvalue}ms\n<:cpu:901051865960181770> {cpuvalue}%\n<:memory:901049486242091049> {memoryvalue}%", color=discord.Color.random())
     embed.timestamp=discord.utils.utcnow()
-    await self.logs.send(embed=embed)
+    await bot.logs.send(embed=embed)
 
 @tasks.loop(minutes=30, reconnect=True)
-async def delete_snipecache(self):
-    for i in self.snipedb.copy():
-        if round(self.snipedb[i].created_at.timestamp() + 60) < round(discord.utils.utcnow().timestamp()):
-            self.snipedb.pop(i)
+async def delete_snipecache():
+    for i in bot.snipedb.copy():
+        if round(bot.snipedb[i].created_at.timestamp() + 60) < round(discord.utils.utcnow().timestamp()):
+            bot.snipedb.pop(i)
 
 
 bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)

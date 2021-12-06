@@ -1,1 +1,2 @@
-web: python infinity.py
+worker: npm start
+dev: npm run dev

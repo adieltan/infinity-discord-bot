@@ -1,5 +1,4 @@
 import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
-from discord.ext.commands.errors import PrivateMessageOnly
 from discord.ext import commands, tasks
 
 
@@ -133,6 +132,8 @@ class ListenerCog(commands.Cog, name='Listener'):
                 return await ctx.message.add_reaction("<:exclamation:876077084986966016>")
             except:
                 return
+        elif isinstance(error, discord.errors.ApplicationCommandInvokeError):
+            return await ctx.respond(f"{error = }")
         elif isinstance(error, discord.errors.NotFound):
             codes = {10003}
             if error.code in codes:

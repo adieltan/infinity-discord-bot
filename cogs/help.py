@@ -132,7 +132,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
             mapping[cmd.cog].append(cmd)
         embed = await self.bot_help_embed(mapping)
         options = await self._cog_select_options()
-        self.response = await self.get_destination().send(embed=discord.Embed(color=0x2F3136).set_image(url='https://cdn.discordapp.com/attachments/894903892398206996/908562238481244263/image_2.png'), view=HelpView(self, options))
+        self.response = await self.get_destination().send(embed=discord.Embed(color=0xBB2528).set_image(url='https://cdn.discordapp.com/attachments/813251835371454515/919210575643435008/christmas-background.jpg'), view=HelpView(self, options))
 
     async def send_command_help(self, command: commands.Command):
         emoji = getattr(command.cog, "COG_EMOJI", None)

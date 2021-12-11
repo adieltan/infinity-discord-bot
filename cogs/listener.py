@@ -112,7 +112,7 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.MaxConcurrencyReached):
             return await ctx.reply(embed=discord.Embed(title='Too many Concurrent Uses', description=f"{error.number} concurrent uses per {error.per}"))
         elif isinstance(error, commands.MissingRequiredArgument):
-            return await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}` is a required argument that is missing.\n\nUsage:\n```\n{ctx.prefix}{ctx.command.signature}\n```", color=discord.Color.dark_teal()))
+            return await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}` is a required argument that is missing.\n\nUsage:\n```\n{ctx.prefix}{ctx.invoked_with}{ctx.command.signature}\n```", color=discord.Color.dark_teal()))
         elif isinstance(error, commands.NotOwner):
             embed = discord.Embed(title="Owner only command", description='Imagine using this.').set_image(url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652")
             return await ctx.reply(embed=embed)

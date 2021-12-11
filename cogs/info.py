@@ -6,9 +6,10 @@ from psutil._common import bytes2human
 
 from ._utils import Database
 class InfoCog(commands.Cog, name='Info'):
-    """❕ Info about bot and related servers."""
+    """Info about bot and related servers."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '❗'
 
     @commands.command(name='links', aliases=['botinvite', 'infinity', 'support', 'server', 'website', 'webpage', 'supportserver', 'invite', 'appeal', 'info', 'botinfo', 'ping', 'servers'])
     async def links(self, ctx):

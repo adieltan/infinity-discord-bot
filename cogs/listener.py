@@ -7,9 +7,10 @@ from discord.ext import commands, tasks
 import traceback
 from thefuzz import process
 class ListenerCog(commands.Cog, name='Listener'):
-    """📢 Listening Commands."""
+    """Listening Commands."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '📢'
 
 
     @commands.Cog.listener()

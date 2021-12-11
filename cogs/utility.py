@@ -9,9 +9,10 @@ from fractions import Fraction
 parser = Parser()
 
 class UtilityCog(commands.Cog, name='Utility'):
-    """🛠️ Commands to improve user experience, draw data, integration with APIs."""
+    """Commands to improve user experience, draw data, integration with APIs."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '🛠️'
         
     @commands.command(name='cleandm')
     @commands.dm_only()

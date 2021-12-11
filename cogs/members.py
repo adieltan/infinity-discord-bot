@@ -4,9 +4,10 @@ from discord.ext import commands, tasks
 import dateparser, pycountry
 from ._utils import Database
 class UsersCog(commands.Cog, name='User'):
-    """👤 Information / function about Users."""
+    """Information / function about Users."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '👤'
 
     @commands.command(name="selfharm", aliases=["suicide", 'die'])
     async def selfharm(self, ctx, victim:discord.Member=None):

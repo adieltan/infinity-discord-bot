@@ -7,9 +7,10 @@ from ._utils import Database, Menu, Confirm, is_owner
 
 
 class ServerCog(commands.Cog, name='Server'):
-    """🌐 Tools for your server."""
+    """Tools for your server."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '🌐'
 
     @commands.command(name='prefix')
     @commands.cooldown(1,8)

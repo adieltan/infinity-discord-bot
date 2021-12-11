@@ -115,10 +115,12 @@ class IvEdit(discord.ui.View):
 
 
 class CustomCog(commands.Cog, name='Custom'):
-    """🔧 Custom commands for server."""
+    """Custom commands for server."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '🔧'
         self.youtubeupdate.start()
+
 
     @commands.command(name="nitro", hidden=True)
     async def nitro(self, ctx):

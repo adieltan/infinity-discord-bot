@@ -237,9 +237,10 @@ class PetGameInteractions(discord.ui.View):
             self.stop()
 
 class FunCog(commands.Cog, name='Fun'):
-    """🥳 Fun / minigame commands."""
+    """Fun / minigame commands."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '🥳'
         self.ongoing_mm_games = dict()
     
     @commands.group(name='pet', invoke_without_command=True)

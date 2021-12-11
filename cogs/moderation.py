@@ -4,9 +4,10 @@ from discord.ext import commands, tasks
 from unicodedata import normalize
 from ._utils import Menu, Database
 class ModerationCog(commands.Cog, name='Moderation'):
-    """🔨 Commands to keep your server safe."""
+    """Commands to keep your server safe."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '🔨'
 
     @commands.command(name='decancer')
     @commands.guild_only()

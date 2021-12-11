@@ -6,9 +6,10 @@ import dateparser
 from ._utils import Database, is_manager
 
 class OwnerCog(commands.Cog, name='Owner'):
-    """🔐 Only owner/managers can use this."""
+    """Only owner/managers can use this."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '🔐'
 
     @commands.command(name='dm', aliases=['adm'])
     @is_manager()

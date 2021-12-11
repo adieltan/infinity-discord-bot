@@ -6,9 +6,10 @@ from discord.ext import commands, tasks
 
 
 class ImageCog(commands.Cog, name='Image'):
-    """📸 Image Commands."""
+    """Image Commands."""
     def __init__(self, bot):
         self.bot = bot
+        self.COG_EMOJI = '📸'
     
     @commands.command(name="monkey")
     @commands.cooldown(1,5)

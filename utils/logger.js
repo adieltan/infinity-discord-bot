@@ -18,6 +18,9 @@ class Logger {
     static stacktrace(content, { color = 'white', tag = 'Error' } = {}) { //stacktrace = white
         this.write(content, { color, tag, error: true});
     }
+    static startup(content, { color = 'blue', tag = 'Startup'} = {}){
+        this.write(content, { color, tag });
+    }
     static write(content, { color = 'grey', tag = 'Log', error = false } = {}) {
         const timestamp = chalk.cyan(`[${moment().format('DD-MM-YYYY hh:mm:ss A')}]`); //format with time
         const levelTag = chalk.bold(`[${tag}]:`); //bold whether log, info, warn, error

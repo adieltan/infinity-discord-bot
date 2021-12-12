@@ -2,11 +2,10 @@ require('dotenv').config();
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const logger = require('./utils/logger');
-const MongoClient = require('mongodb').MongoClient;
 require('./error');
 const mongoose = require('mongoose');
 require('./deploy');
-
+mongoose.connect(process.env.mongo_server);
 
 const client = new Client({ 
 	intents: [

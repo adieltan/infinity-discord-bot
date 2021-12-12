@@ -2,6 +2,7 @@ const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 require('dotenv').config()
 const fs = require('fs');
+const logger = require('./utils/logger')
 
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -19,7 +20,7 @@ const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
 	try {
-		console.log('Started refreshing application (/) commands.');
+		logger.log('Started refreshing application (/) commands.');
 
 		await rest.put(
 			// Routes.applicationCommands(clientId),
@@ -27,8 +28,8 @@ const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
 			{ body: commands },
 		);
 
-		console.log('Successfully reloaded application (/) commands.');
+		logger.log('Successfully reloaded application (/) commands.');
 	} catch (error) {
-		console.error(error);
+		logger.stacktrace(error);
 	}
 })();

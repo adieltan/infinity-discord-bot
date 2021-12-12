@@ -42,4 +42,4 @@ catch (err) {
     process.exit(1)
 }
 
-logger.info('You have all the required modules installed!') //Let the user know they're good to go!
+logger.startup('You have all the required modules installed!') //Let the user know they're good to go!

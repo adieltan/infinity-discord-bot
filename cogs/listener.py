@@ -109,9 +109,9 @@ class ListenerCog(commands.Cog, name='Listener'):
         elif isinstance(error, commands.BotMissingPermissions):
             return await ctx.send(f"The bot dosen't have {', '.join(error.missing_permissions)} perms", mention_author=True)
         elif isinstance(error, commands.CommandOnCooldown):
-            return await ctx.reply(embed=discord.Embed(title="Command is on cooldown", description=f"Retry again in {round(error.retry_after)} seconds.", color=discord.Color.dark_gold()))
+            return await ctx.reply(embed=discord.Embed(title="Command is on cooldown", description=f"Retry again in {round(error.retry_after)} seconds.", color=discord.Color.dark_gold()), delete_after=4)
         elif isinstance(error, commands.MaxConcurrencyReached):
-            return await ctx.reply(embed=discord.Embed(title='Too many Concurrent Uses', description=f"{error.number} concurrent uses per {error.per}"))
+            return await ctx.reply(embed=discord.Embed(title='Too many Concurrent Uses', description=f"{error.number} concurrent uses per {error.per}"), delete_after=4)
         elif isinstance(error, commands.MissingRequiredArgument):
             return await ctx.reply(embed=discord.Embed(title="Missing Required Argument", description=f"`{error.param.name}` is a required argument that is missing.\n\nUsage:\n```\n{ctx.prefix}{ctx.invoked_with}{ctx.command.signature}\n```", color=discord.Color.dark_teal()))
         elif isinstance(error, commands.NotOwner):

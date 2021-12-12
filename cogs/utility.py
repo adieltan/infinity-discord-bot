@@ -55,8 +55,8 @@ class UtilityCog(commands.Cog, name='Utility'):
         embed.timestamp=time[0]
         embed.set_footer(text=f"{round(time[0].timestamp())}")
         styles = ['t', 'T', 'd', 'D', 'f', 'F', 'R']
-        text = '\n'.join(discord.utils.format_dt(time[0], style=style) for style in styles)
-        embed.add_field(name='Text Formatting', value=f"{text}\n```\n{text}\n```")
+        text = '\n'.join(f"`{discord.utils.format_dt(time[0], style=style)}` {discord.utils.format_dt(time[0], style=style)}" for style in styles)
+        embed.add_field(name='Text Formatting', value=text)
         await ctx.reply(embed=embed)
 
     @commands.command(name='creationdate', aliases=['createdate', 'created'])

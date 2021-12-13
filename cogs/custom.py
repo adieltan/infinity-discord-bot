@@ -121,24 +121,15 @@ class CustomCog(commands.Cog, name='Custom'):
     @tasks.loop(hours=24, reconnect=True)
     async def youtubeupdate(self):
         await self.bot.wait_until_ready()
-        rhsub = self.bot.get_channel(859359926526935061)
-        rhviews = self.bot.get_channel(859361059302277120)
-        tbsub = self.bot.get_channel(861445998630273056)
-        tbviews = self.bot.get_channel(861446020026466334)
+        sub = self.bot.get_channel(861445998630273056)
+        views = self.bot.get_channel(861446020026466334)
         async with aiohttp.ClientSession() as cs:
-            async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UCW4gBQyPWrTeyKN6EPV6sGA&key={os.getenv('googleapi')}") as data:
-                json = await data.json()
-                items = json['items']
-                stats= items[0]['statistics']
-                await rhsub.edit(name=f"{format(int(stats['subscriberCount']), ',')} ⬅ rh's Subscribers")
-                await rhviews.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ rh's Views")
             async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UC52Xt2wq5H16HglMwNAvLeg&key={os.getenv('googleapi')}") as data:
                 json = await data.json()
                 items = json['items']
                 stats= items[0]['statistics']
-                await tbsub.edit(name=f"{format(int(stats['subscriberCount']), ',')} ⬅ Beggar's Subscribers")
-                await tbviews.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ Beggar's Views")
-        await cs.close()
+                await sub.edit(name=f"{format(int(stats['subscriberCount']), ',')} ⬅ Beggar's Subscribers")
+                await views.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ Beggar's Views")
 
     @commands.command(name="donolog", aliases=["dl"])
     @server([841654825456107530])

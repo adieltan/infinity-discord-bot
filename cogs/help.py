@@ -108,7 +108,10 @@ class MyHelpCommand(commands.MinimalHelpCommand):
                 )
                 embed.add_field(name=cog_label, value=value)
         embed.color = discord.Color.random()
-        embed.set_thumbnail(url=self.context.guild.icon)
+        if self.context.guild:
+            embed.set_thumbnail(url=self.context.guild.icon)
+        else:
+            embed.set_thumbnail(url=self.context.author.display_avatar)
         return embed
 
     async def bot_help_embed(self, mapping: dict) -> discord.Embed:

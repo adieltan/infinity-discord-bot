@@ -18,6 +18,8 @@ class UtilityCog(commands.Cog, name='Utility'):
     @commands.dm_only()
     async def cleandm(self, ctx):
         """Cleans the messages in your dm with the bot."""
+        if not ctx.author.dm_channel:
+            await ctx.author.create_dm()
         history = await ctx.author.dm_channel.history(limit=None).flatten()
         for message in history:
             if message.pinned is False:
@@ -55,7 +57,7 @@ class UtilityCog(commands.Cog, name='Utility'):
         embed.timestamp=time[0]
         embed.set_footer(text=f"{round(time[0].timestamp())}")
         styles = ['t', 'T', 'd', 'D', 'f', 'F', 'R']
-        text = '\n'.join(f"`{discord.utils.format_dt(time[0], style=style)}` {discord.utils.format_dt(time[0], style=style)}" for style in styles)
+        text = '\n'.join(f"`{discord.utils.format_dt(time[0], style=style)}`\u2800\u2800{discord.utils.format_dt(time[0], style=style)}" for style in styles)
         embed.add_field(name='Text Formatting', value=text)
         await ctx.reply(embed=embed)
 

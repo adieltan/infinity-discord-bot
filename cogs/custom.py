@@ -18,9 +18,15 @@ class CustomCog(commands.Cog, name='Custom'):
         self.youtubeupdate.start()
 
 
-    @commands.command(name="nitro", hidden=True)
+    @commands.group(name="nitro", hidden=True, invoke_without_command=True)
     async def nitro(self, ctx):
-        """Generates nitro codes."""
+        """Mockup fake nitro."""
+        db = await Database.get_server(self, ctx.guild.id)
+        if not db.get('nitro'):
+            try:
+                return await ctx.reply(f"Nitro generated will not be usable. Use at your own risk.\nCommand not intended for public use.")
+            except:
+                return await ctx.send(f"Nitro generated will not be usable. Use at your own risk.\nCommand not intended for public use.")
         letters = string.ascii_uppercase + string.ascii_lowercase + string.digits
         text = ''.join([random.choice(letters) for _ in range(16)])
         embed=discord.Embed(title="You've been gifted a subscription.", description="Infinity#5345 has gifted you Nitro for 1 year.", color=0x2F3136)
@@ -28,6 +34,18 @@ class CustomCog(commands.Cog, name='Custom'):
         embed.set_footer(text='\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800Expires in 46 hours.')
         v = NitroButtons(ctx)
         v.msg = await ctx.send(f"https://discord.gift\{text}",embed=embed, view=v)
+
+    @nitro.command(name="toggle")
+    @commands.has_guild_permissions(administrator=True)
+    async def toggle(self, ctx):
+        """Turns on / off the nitro command in the server."""
+        db = await Database.get_server(self, ctx.guild.id)
+        if db.get('nitro'):
+            await Database.edit_server(self, ctx.guild.id, {'nitro':False})
+            return await ctx.reply(f"Disabled `nitro` command for guild {ctx.guild.id}")
+        else:
+            await Database.edit_server(self, ctx.guild.id, {'nitro':True})
+            return await ctx.reply(f"Enabled `nitro` command for guild {ctx.guild.id}")
 
     async def self_role(self, message:discord.Message):
         """Adds a specific pickable role to the member (Typical Pandas)."""

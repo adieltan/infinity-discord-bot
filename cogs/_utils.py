@@ -206,3 +206,7 @@ def server(id:list):
     def predicate(ctx):
         return ctx.guild.id in id or ctx.author.id in ctx.bot.owners
     return commands.check(predicate)
+
+def file(content:str, file_name:str):
+    buffer = io.BytesIO(content.encode('utf-8'))
+    return discord.File(buffer, filename=file_name)

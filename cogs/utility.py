@@ -8,6 +8,8 @@ from py_expression_eval import Parser
 from fractions import Fraction
 parser = Parser()
 
+from ._utils import file
+
 class UtilityCog(commands.Cog, name='Utility'):
     """Commands to improve user experience, draw data, integration with APIs."""
     def __init__(self, bot):
@@ -456,6 +458,19 @@ class UtilityCog(commands.Cog, name='Utility'):
     async def id(self, ctx, objects:commands.Greedy[discord.Object]):
         """Returns the id of given objects."""
         await ctx.reply(' '.join(str(o.id) for o in objects) if objects else 'None')
+
+    @commands.command(name='raw')
+    async def raw_msg(self, ctx, message: typing.Optional[discord.Message]):
+        message: discord.Message = getattr(ctx.message.reference, 'resolved', message)
+        if not message:
+            raise commands.BadArgument('You must specify a message, or reply to one.')
+        try:
+            data = await self.bot.http.get_message(message.channel.id, message.id)
+        except discord.HTTPException:
+            raise commands.BadArgument('There was an error retrieving that message.')
+        data = json.dumps(data, indent=4)
+        await ctx.reply(file=file(data, 'raw_msg.json'))
+
 
 def setup(bot):
     bot.add_cog(UtilityCog(bot))

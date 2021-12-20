@@ -3,9 +3,9 @@ const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const logger = require('./utils/logger');
 require('./error');
-const mongoose = require('mongoose');
 require('./deploy');
-mongoose.connect(process.env.mongo_server);
+const mongoose = require('mongoose');
+mongoose.connect(process.env.mongo_server).then(logger.custom('Connected!', 'green', 'MongoDB'))
 
 const client = new Client({ 
 	intents: [

@@ -5,8 +5,8 @@ module.exports = {
   name: "ready",
   once: true,
   execute(client) {
-    logger.startup('discord.js v'+Discord.version);
-    logger.startup('Node '+process.version);
+    logger.custom('v'+Discord.version, 'grey', 'discord.js');
+    logger.custom(process.version, 'grey', 'Node');
     logger.info(`${client.user.tag}`);
     client.user.setPresence({
       activities: [

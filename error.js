@@ -18,12 +18,12 @@ try {
 
 //* Error Handler
 process.on('uncaughtExeption', err => {
-    logger.error(err)
+    logger.stacktrace(err);
     process.exit(1)
 })
 
 process.on('TypeError', err => {
-    logger.error(err);
+    logger.stacktrace(err);
     process.exit(1)
 })
 
@@ -42,4 +42,4 @@ catch (err) {
     process.exit(1)
 }
 
-logger.startup('You have all the required modules installed!') //Let the user know they're good to go!
+logger.custom('You have all the required modules installed!', 'green', 'Check') //Let the user know they're good to go!

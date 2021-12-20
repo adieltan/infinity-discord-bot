@@ -21,6 +21,9 @@ class Logger {
     static startup(content, { color = 'blue', tag = 'Startup'} = {}){
         this.write(content, { color, tag });
     }
+    static custom(content, color, tag, err){
+        this.write(content, {color, tag, error: err})
+    }
     static write(content, { color = 'grey', tag = 'Log', error = false } = {}) {
         const timestamp = chalk.cyan(`[${moment().format('DD-MM-YYYY hh:mm:ss A')}]`); //format with time
         const levelTag = chalk.bold(`[${tag}]:`); //bold whether log, info, warn, error

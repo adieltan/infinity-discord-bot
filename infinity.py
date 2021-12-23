@@ -146,4 +146,4 @@ async def delete_snipecache():
 
 
 bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)
-# bot.run(os.getenv("beta"), reconnect=True)
+# bot.run(os.getenv("dc_beta"), reconnect=True)

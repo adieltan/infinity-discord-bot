@@ -184,25 +184,3 @@ def server(id:list):
 def file(content:str, file_name:str):
     buffer = io.BytesIO(content.encode('utf-8'))
     return discord.File(buffer, filename=file_name)
-
-class ImprovedRoleConverter(commands.converter.IDConverter[discord.Role]):
-    """Converts to a :class:`~discord.Role`. Yeah Yeah Yeah.
-    """
-
-    async def convert(self, ctx: commands.Context, argument: str) -> discord.Role:
-        guild = ctx.guild
-        if not guild:
-            raise commands.NoPrivateMessage()
-        try:
-            match = self._get_id_match(argument) or re.match(r'<@&([0-9]{15,20})>$', argument)
-            if match:
-                result = guild.get_role(int(match.group(1)))
-            else:
-                result = discord.utils.get(guild._roles.values(), name=argument)
-        except:
-            result = next(filter(lambda r: argument.lower() in r.name.lower(), reversed(ctx.guild.roles)), None)
-            print(result)
-
-        if result is None:
-            raise commands.RoleNotFound(argument)
-        return result

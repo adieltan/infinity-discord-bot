@@ -697,11 +697,14 @@ class RoleConverter(IDConverter[discord.Role]):
         if not guild:
             raise NoPrivateMessage()
 
-        match = self._get_id_match(argument) or re.match(r'<@&([0-9]{15,20})>$', argument)
-        if match:
-            result = guild.get_role(int(match.group(1)))
-        else:
-            result = discord.utils.get(guild._roles.values(), name=argument)
+        try:
+            match = self._get_id_match(argument) or re.match(r'<@&([0-9]{15,20})>$', argument)
+            if match:
+                result = guild.get_role(int(match.group(1)))
+            else:
+                result = discord.utils.get(guild._roles.values(), name=argument)
+        except:
+            result = next(filter(lambda r: argument.lower() in r.name.lower(), reversed(guild.roles)), None)
 
         if result is None:
             raise RoleNotFound(argument)

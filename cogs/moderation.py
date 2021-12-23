@@ -2,7 +2,7 @@ import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, 
 from discord.ext import commands, tasks
 
 from unicodedata import normalize
-from ._utils import Menu, Database
+from ._utils import Menu, Database, ImprovedRoleConverter
 class ModerationCog(commands.Cog, name='Moderation'):
     """Commands to keep your server safe."""
     def __init__(self, bot):
@@ -209,7 +209,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.group(aliases=['r'], invoke_without_command=True)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def role(self,ctx, member:discord.Member, *,  role:discord.Role):
+    async def role(self,ctx, member:discord.Member, *,  role:ImprovedRoleConverter):
         """Role Utilities."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -235,7 +235,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     
     @role.command(name='clearpermissions', aliases=['cp', 'clearperms', 'clearperm'])
     @commands.has_permissions(manage_roles=True)
-    async def role_clearpermissions(self, ctx, roles:commands.Greedy[discord.Role]):
+    async def role_clearpermissions(self, ctx, roles:commands.Greedy[ImprovedRoleConverter]):
         """Clears role permissions for role(s)."""
         for role in roles:
             await role.edit(permissions=discord.Permissions.none())
@@ -243,7 +243,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
 
     @role.command(name='colour', aliases=['color', 'c'])
     @commands.has_permissions(manage_roles=True)
-    async def role_colour(self, ctx, role:discord.Role, colour_hex:str=None):
+    async def role_colour(self, ctx, role:ImprovedRoleConverter, colour_hex:str=None):
         "Changes/views the role colour."
         if not colour_hex:
             embed=discord.Embed(description=f"{role.mention}\nRGB: {role.colour.to_rgb()}\nInt: {role.colour.value}\nHex: {str(hex(role.colour.value))[2:]}", color=role.color)
@@ -265,7 +265,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
-    async def delete(self,ctx, role:discord.Role, *, reason:str=None):
+    async def delete(self,ctx, role:ImprovedRoleConverter, *, reason:str=None):
         """Deletes the role."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -298,7 +298,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
-    async def add(self,ctx, member:discord.Member, *,  role:discord.Role):
+    async def add(self,ctx, member:discord.Member, *,  role:ImprovedRoleConverter):
         """Adds a role to a person."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -318,7 +318,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @role.command()
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
-    async def remove(self,ctx, member:discord.Member, *, role:discord.Role):
+    async def remove(self,ctx, member:discord.Member, *, role:ImprovedRoleConverter):
         """Removes a role from a person."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -338,7 +338,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @role.command(aliases=['i'])
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
-    async def info(self,ctx, *, role:discord.Role=None):
+    async def info(self,ctx, *, role:ImprovedRoleConverter=None):
         """Shows infomation about a role."""
         if not role:
             role = ctx.guild.default_role
@@ -351,7 +351,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @role.command(aliases=['d'])
     @commands.cooldown(1,4)
     @commands.has_permissions(manage_roles=True)
-    async def dump(self,ctx, *, role:discord.Role):
+    async def dump(self,ctx, *, role:ImprovedRoleConverter):
         """Dumps members from the role."""
         people = role.members
         text ="```css\n" + '\n'.join((f'{m.name} ({m.id})')for m in people) + "```"
@@ -373,7 +373,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @role.command(name='random', aliases=['randommember'])
     @commands.cooldown(1,2)
     @commands.guild_only()
-    async def random(self, ctx, role:discord.Role=None, howmany:int=1):
+    async def random(self, ctx, role:ImprovedRoleConverter=None, howmany:int=1):
         """Finds random peoples from the whole server or from roles."""
         if role is None:
             role = ctx.guild.default_role
@@ -411,7 +411,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def roleall(self, ctx,*, role:discord.Role):
+    async def roleall(self, ctx,*, role:ImprovedRoleConverter):
         """Adds a role to all members in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -430,7 +430,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolebots(self, ctx,*, role:discord.Role):
+    async def rolebots(self, ctx,*, role:ImprovedRoleConverter):
         """Adds a role to all bots in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -449,7 +449,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolehumans(self, ctx,*, role:discord.Role):
+    async def rolehumans(self, ctx,*, role:ImprovedRoleConverter):
         """Adds a role to all humans in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -468,7 +468,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolerall(self, ctx,*, role:discord.Role):
+    async def rolerall(self, ctx,*, role:ImprovedRoleConverter):
         """Removes a role from all members in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -487,7 +487,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolerbots(self, ctx,*, role:discord.Role):
+    async def rolerbots(self, ctx,*, role:ImprovedRoleConverter):
         """Removes a role from all bots in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -506,7 +506,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     @commands.cooldown(1,2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolerhumans(self, ctx,*, role:discord.Role):
+    async def rolerhumans(self, ctx,*, role:ImprovedRoleConverter):
         """Removes a role from all humans in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")

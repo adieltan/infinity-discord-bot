@@ -12,3 +12,4 @@ thefuzz[speedup]
 pytz
 dnspython
 py-expression-eval
+aiohttp

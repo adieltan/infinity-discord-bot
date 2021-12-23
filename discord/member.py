@@ -296,7 +296,6 @@ class Member(discord.abc.Messageable, _UserTag):
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
         self._avatar: Optional[str] = data.get('avatar')
-        self._timeout: Optional[datetime.datetime] = data.get("communication_disabled_until")
 
     def __str__(self) -> str:
         return str(self._user)
@@ -354,7 +353,6 @@ class Member(discord.abc.Messageable, _UserTag):
         self.activities = member.activities
         self._state = member._state
         self._avatar = member._avatar
-        self._timeout = member._timeout
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
@@ -610,11 +608,6 @@ class Member(discord.abc.Messageable, _UserTag):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
 
-    @property
-    def timeout(self) -> Optional[datetime.datetime]:
-        """Returns the time member's timeout end."""
-        return self._timeout
-
     async def ban(
         self,
         *,
@@ -651,7 +644,6 @@ class Member(discord.abc.Messageable, _UserTag):
         roles: List[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         reason: Optional[str] = None,
-        timed_out_until: Optional[datetime.datetime] = MISSING,
     ) -> Optional[Member]:
         """|coro|
 
@@ -754,12 +746,6 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if roles is not MISSING:
             payload['roles'] = tuple(r.id for r in roles)
-
-        if timed_out_until is not MISSING:
-            if timed_out_until is None:
-                payload["communication_disabled_until"] = None
-            else:
-                payload["communication_disabled_until"] = timed_out_until.isoformat()
 
         if payload:
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)

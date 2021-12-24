@@ -1,5 +1,6 @@
 from operator import matmul
 import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
+from discord import interactions
 from discord.channel import DMChannel
 from discord.ext import commands, tasks
 
@@ -7,8 +8,6 @@ from thefuzz import process
 import collections
 
 from ._utils import Database, Confirm, NitroButtons, server
-
-
 
 class CustomCog(commands.Cog, name='Custom'):
     """Custom commands for server."""
@@ -164,6 +163,44 @@ class CustomCog(commands.Cog, name='Custom'):
         embed.set_footer(text=f'\nLogged by {ctx.author.name} • React with a ✅ after logged.', icon_url=ctx.author.avatar)
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
+
+    @commands.command(name='tm')
+    @server([906401850012606494, 906544173350535319, 906544179319042048])
+    async def tm(self, ctx, code):
+        tm1 = self.bot.get_guild(906544173350535319)
+        tm2 = self.bot.get_guild(906544173350535319)
+        tm3 = self.bot.get_guild(906544179319042048)
+        tmp = self.bot.get_guild(906544179507773503)
+
+    @commands.Cog.listener()
+    async def on_interaction(self, interaction: discord.Interaction):
+        if interaction.type != discord.InteractionType.application_command:
+            return
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send(f"{interaction.data}\n{type(interaction.user)}", ephemeral=True)
+        if interaction.data.get('id') == '923799170702250054' and interaction.data.get('options', [])[0]['value'] == 4 and (interaction.guild.get_role(906556235040587836) in interaction.user.roles):
+            nxt: discord.TextChannel = self.bot.get_channel(906544174055186466)
+            role: discord.Role = interaction.guild.get_role(906402631818305568)
+            invite = await nxt.create_invite(max_uses=1)
+            await interaction.followup.send(str(invite), ephemeral=True)
+            await interaction.user.add_roles(role)
+        elif interaction.data.get('id') == '923799446079303710' and interaction.data.get('options', [])[0]['value'].lower() == 'waltdisneyworld' and (interaction.guild.get_role(906747055832186890) in interaction.user.roles):
+            nxt: discord.TextChannel = self.bot.get_channel(906544179319042057)
+            role: discord.Role = interaction.guild.get_role(906544173350535320)
+            invite = await nxt.create_invite(max_uses=1)
+            await interaction.followup.send(str(invite), ephemeral=True)
+            await interaction.user.add_roles(role)
+        elif interaction.data.get('id') == '923799659099607060' and interaction.data.get('options', [])[0]['value'].lower() == 'monday' and (interaction.guild.get_role(917653201178726410) in interaction.user.roles):
+            nxt: discord.TextChannel = self.bot.get_channel(906544180166262808)
+            role: discord.Role = interaction.guild.get_role(917653221353353226)
+            invite = await nxt.create_invite(max_uses=1)
+            await interaction.followup.send(str(invite), ephemeral=True)
+            await interaction.user.add_roles(role)
+        else:
+            await interaction.followup.send("Wrong", ephemeral=True)
+            
+
+
 
 
 def setup(bot):

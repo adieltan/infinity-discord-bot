@@ -24,7 +24,7 @@ class UsersCog(commands.Cog, name='User'):
         except:
             await ctx.reply(f"Error sending message to {victim.mention}")
         else:
-            await ctx.tick(ctx, True)
+            await ctx.tick(True)
 
     @commands.group(name="profile", aliases=['me'], invoke_without_command=True)
     async def profile(self, ctx, member:discord.User=None):

@@ -764,7 +764,7 @@ class FunCog(commands.Cog, name='Fun'):
                 return True
         try:    
             await ctx.channel.purge(limit=10, check=pinc, after=self.ongoing_mm_games[ctx.channel.id])
-            await ctx.tick(ctx, True)
+            await ctx.tick(True)
         except:
             pass
 
@@ -800,7 +800,7 @@ class FunCog(commands.Cog, name='Fun'):
             await ctx.send(f"{next(iter(user)).mention} muted for 30s.")
             await asyncio.sleep(30)
             await ctx.channel.set_permissions(user.pop(), overwrite=None)
-            await ctx.tick(ctx, True)
+            await ctx.tick(True)
         except:
             pass
 

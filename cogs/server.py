@@ -129,7 +129,7 @@ class ServerCog(commands.Cog, name='Server'):
     async def llreset(self, ctx):
         """Resets the leave leaderboard."""
         await Database.edit_server(self, ctx.guild.id, {'leaveleaderboard':None})
-        await ctx.tick(ctx, True)
+        await ctx.tick(True)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member:discord.Member):

@@ -28,7 +28,7 @@ class UtilityCog(commands.Cog, name='Utility'):
                 try:
                     await message.delete()
                 except:pass
-        await ctx.tick(ctx, True)
+        await ctx.tick(True)
 
     @commands.command(name='time')
     @commands.cooldown(1,2)

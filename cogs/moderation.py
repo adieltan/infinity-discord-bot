@@ -44,7 +44,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
                     try:
                         await member.send(message)
                     except:
-                        await ctx.tick(ctx, False)
+                        await ctx.tick(False)
                 except:
                     await ctx.reply("Missing permissions.")
         elif type(member) is discord.User:

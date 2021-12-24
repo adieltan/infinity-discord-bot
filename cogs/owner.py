@@ -18,9 +18,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         try:
             await user.send(message)
         except:
-            await ctx.tick(ctx, False)
+            await ctx.tick(False)
         else:
-            await ctx.tick(ctx, True)
+            await ctx.tick(True)
 
     @commands.command(name='blacklist', aliases=['bl'])
     @is_manager()

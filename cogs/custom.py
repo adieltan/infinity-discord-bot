@@ -200,7 +200,7 @@ class CustomCog(commands.Cog, name='Custom'):
             await interaction.followup.send("Wrong", ephemeral=True)
             
 
-
+discord.utils.utcnow().timestamp()
 
 
 def setup(bot):

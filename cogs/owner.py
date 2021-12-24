@@ -18,9 +18,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         try:
             await user.send(message)
         except:
-            await ctx.message.add_reaction("<:exclamation:876077084986966016>")
+            await ctx.tick(ctx, False)
         else:
-            await ctx.message.add_reaction("<a:verified:876075132114829342>")
+            await ctx.tick(ctx, True)
 
     @commands.command(name='blacklist', aliases=['bl'])
     @is_manager()

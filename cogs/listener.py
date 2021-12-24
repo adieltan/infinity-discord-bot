@@ -128,10 +128,10 @@ class ListenerCog(commands.Cog, name='Listener'):
                 msg = await channel.send(embed=e)
                 thread = await channel.create_thread(name=f"{ctx.author.id}", message=msg)
                 await thread.send(f'<@&843375370627055637>\n{ctx.author.mention} opened a support ticket.\nDO NOT SPAM\nReact with <a:verified:876075132114829342> after the bot reacts to send your message.', allowed_mentions=discord.AllowedMentions.all())
-            return await ctx.message.add_reaction('<a:verified:876075132114829342>')
+            return await ctx.tick(ctx, True)
         elif isinstance(error, commands.CommandNotFound):
             try:
-                return await ctx.message.add_reaction("<:exclamation:876077084986966016>")
+                return await ctx.tick(ctx, False)
             except:
                 return
         elif isinstance(error, discord.errors.NotFound):

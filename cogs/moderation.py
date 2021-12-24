@@ -2,7 +2,7 @@ import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, 
 from discord.ext import commands, tasks
 
 from unicodedata import normalize
-from ._utils import Menu, Database, ImprovedRoleConverter
+from ._utils import Menu, Database
 class ModerationCog(commands.Cog, name='Moderation'):
     """Commands to keep your server safe."""
     def __init__(self, bot):
@@ -44,7 +44,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
                     try:
                         await member.send(message)
                     except:
-                        await ctx.message.add_reaction("<:exclamation:876077084986966016>")
+                        await ctx.tick(ctx, False)
                 except:
                     await ctx.reply("Missing permissions.")
         elif type(member) is discord.User:

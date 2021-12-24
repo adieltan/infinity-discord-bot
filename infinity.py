@@ -28,6 +28,28 @@ intents.integrations = False
 intents.webhooks = False
 intents.invites = False
 
+class Context(commands.Context):
+    async def tick(self, value):
+        # reacts to the message with an emoji
+        # depending on whether value is True or False
+        # if its True, it'll add a green check mark
+        # otherwise, it'll add a red cross mark
+        emoji = '<a:verified:876075132114829342>' if value else '<:exclamation:876077084986966016>'
+        try:
+            # this will react to the command author's message
+            await self.message.add_reaction(emoji)
+        except discord.HTTPException:
+            # sometimes errors occur during this, for example
+            # maybe you don't have permission to do that
+            # we don't mind, so we can just ignore them
+            pass
+    
+    async def reply(self, content: typing.Optional[str] = None, **kwargs: typing.Any) -> discord.Message:
+        try:
+            return await super().reply(content=content, **kwargs)
+        except:
+            await super().send(content=content, **kwargs)
+
 class Infinity(commands.Bot):
     def __init__(self):
         super().__init__(
@@ -40,6 +62,10 @@ class Infinity(commands.Bot):
             owner_ids = {701009836938231849,703135131459911740,708233854640455740},
             activity = discord.Activity(type = discord.ActivityType.watching, name='the startup process.')
             )
+
+    async def get_context(self, message, *, cls=Context):
+        # when you override this method, you pass your new Context subclass to the super() method, which tells the bot to use the new Context class
+        return await super().get_context(message, cls=cls)
 
     async def cbl(self):
         #cache blacklisted

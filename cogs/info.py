@@ -184,7 +184,7 @@ class InfoCog(commands.Cog, name='Info'):
         msg = await suggestchannel.send(embed=embed)
         await msg.add_reaction('✅')
         await msg.add_reaction('❌')
-        await ctx.message.add_reaction("<a:verified:876075132114829342>")
+        await ctx.tick(ctx, True)
 
     @suggest.command(name='accept', aliases=['a'])
     @commands.is_owner()

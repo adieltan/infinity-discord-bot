@@ -24,7 +24,7 @@ class UsersCog(commands.Cog, name='User'):
         except:
             await ctx.reply(f"Error sending message to {victim.mention}")
         else:
-            await ctx.message.add_reaction("<a:verified:876075132114829342>")
+            await ctx.tick(ctx, True)
 
     @commands.group(name="profile", aliases=['me'], invoke_without_command=True)
     async def profile(self, ctx, member:discord.User=None):

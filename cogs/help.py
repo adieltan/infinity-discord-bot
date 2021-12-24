@@ -167,7 +167,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
     send_group_help = send_command_help
 
 
-class Help(commands.Cog):
+class Help(commands.Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot):
        self.bot = bot
         

@@ -704,7 +704,8 @@ class RoleConverter(IDConverter[discord.Role]):
             else:
                 result = discord.utils.get(guild._roles.values(), name=argument)
         except:
-            result = next(filter(lambda r: argument.lower() in r.name.lower(), reversed(guild.roles)), None)
+            # result = next(filter(lambda r: argument.lower() in r.name.lower(), reversed(guild.roles)), None)
+            result = discord.utils.find(lambda role: argument.lower() in role.name.lower(), reversed(guild.roles))
 
         if result is None:
             raise RoleNotFound(argument)

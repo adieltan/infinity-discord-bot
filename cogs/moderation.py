@@ -235,7 +235,7 @@ class ModerationCog(commands.Cog, name='Moderation'):
     
     @role.command(name='clearpermissions', aliases=['cp', 'clearperms', 'clearperm'])
     @commands.has_permissions(manage_roles=True)
-    async def role_clearpermissions(self, ctx, roles:commands.Greedy[ImprovedRoleConverter]):
+    async def role_clearpermissions(self, ctx, roles:commands.Greedy[discord.Role]):
         """Clears role permissions for role(s)."""
         for role in roles:
             await role.edit(permissions=discord.Permissions.none())

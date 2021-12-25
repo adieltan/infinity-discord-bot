@@ -141,7 +141,7 @@ class EightCornersJoin(discord.ui.View):
     @discord.ui.button(emoji='<a:Join:855683444310147113>', label='Join', style=discord.ButtonStyle.green)
     async def join(self, button:discord.ui.Button, interaction:discord.Interaction):
         if interaction.user in self.players:
-            return await interaction.response.send_message('You already joined the game.', ephmeral=True)
+            return await interaction.response.send_message('You already joined the game.', ephemeral=True)
         await interaction.response.send_message(embed=discord.Embed(title="Game join confirmation",description=f"You have joined the game. [Message]({self.msg.jump_url})",color=discord.Color.random()), ephemeral=True)
         self.players.append(interaction.user)
 
@@ -190,7 +190,6 @@ class PetGameJoin(discord.ui.View):
         await self.msg.edit(embed=e, view=self)
         self.stop()
 
-
 class PetGameInteractions(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=50)
@@ -236,13 +235,102 @@ class PetGameInteractions(discord.ui.View):
             self.players.pop(str(interaction.user.id))
             self.stop()
 
+class Statues(discord.ui.View):
+    def __init__(self, FunCog, ctx):
+        super().__init__(timeout=180)
+        self.value = None
+        self.FunCog = FunCog
+        self.ctx = ctx
+        self.msg = None
+
+    async def on_timeout(self) -> None:
+        for v in self.children:
+            v.disabled = True
+        return await self.msg.edit('Timeout.', view=self)
+    
+    async def interaction_check(self, interaction:discord.Interaction):
+        if self.FunCog.statue_games.get(f"{self.msg.channel.id}", {}).get(f"{interaction.user.id}", None) is not False:
+            return True
+        await interaction.response.send_message("You already died.", ephemeral=True)
+        return False
+
+    @discord.ui.button(label='Run', style=discord.ButtonStyle.green)
+    async def run(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        if self.FunCog.statue_games.get(f"{self.msg.channel.id}") is None:
+            return self.stop()
+        if button.style != discord.ButtonStyle.red:
+            self.FunCog.statue_games[f"{self.msg.channel.id}"].update({f'{interaction.user.id}':self.FunCog.statue_games[f"{self.msg.channel.id}"].get(f"{interaction.user.id}", 0) + 1 })
+        else:
+            self.FunCog.statue_games[f"{self.msg.channel.id}"][f"{interaction.user.id}"] = False
+            await interaction.followup.send(f"You died.", ephemeral=True)
+
+    @discord.ui.button(label='My Position', style=discord.ButtonStyle.grey, row=1)
+    async def myposition(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if not self.FunCog.statue_games.get(f"{self.msg.channel.id}"):
+            return await interaction.response.send_message('No data.', ephemeral=True)
+        if self.FunCog.statue_games.get(f"{self.msg.channel.id}", {}).get(f"{interaction.user.id}", None) is False:
+            return await interaction.response.send_message('You already died.', ephemeral=True)
+        elif self.FunCog.statue_games.get(f"{self.msg.channel.id}", {}).get(f"{interaction.user.id}", None) is None:
+            return await interaction.response.send_message("You haven't ran a step.", ephemeral=True)
+        sorted_dict = dict( sorted(self.FunCog.statue_games[f'{self.msg.channel.id}'].items(),
+                           key=lambda item: item[1],
+                           reverse=True))
+        positions = list(sorted_dict).index(f"{interaction.user.id}")
+        await interaction.response.send_message(f"You ran {self.FunCog.statue_games[f'{self.msg.channel.id}'][f'{interaction.user.id}']} steps. You are now at the {positions} place.", ephemeral=True)
+        
+        
+
 class FunCog(commands.Cog, name='Fun'):
     """Fun / minigame commands."""
     def __init__(self, bot):
         self.bot = bot
         self.COG_EMOJI = '🥳'
         self.ongoing_mm_games = dict()
+        self.statue_games = dict()
     
+    @commands.command(name='statues', aliases=['redlightgreenlight', 'rlgl', '木头人', '一二三木头人'])
+    @commands.max_concurrency(1, commands.BucketType.channel)
+    async def statues(self, ctx):
+        """[Statues](https://en.wikipedia.org/wiki/Statues_(game)) is a popular childhood game that is often played in many countries."""
+        v = Statues(self, ctx)
+        for ui in v.children:
+            ui.disabled = True
+        v.msg = await ctx.reply('Game will start in 30 seconds.', embed=discord.Embed(title='Statues Game Information', description=f"Statues (also known as Red Light, Green Light) is a popular children's game, often played in different countries.\nSource: [Wikipedia](https://en.wikipedia.org/wiki/Statues_(game))\nThe game is also seen in Netflix™ Drama: [Squid Game](https://g.co/kgs/WmEEUi) \nIn this game, you have to run as far as possible by pressing the Run button when it is green. Pressing it when it is red will get you instantly executed.\nThe button **might** change from red to green or from green to red every 5 seconds. Burple coloured button is \"Yellow\".", colour=discord.Color.red()).set_image(url='https://cdn.mos.cms.futurecdn.net/WDBV52ZBsohECa3V9HeKyZ.jpg').set_thumbnail(url='https://us-east-1.tixte.net/uploads/u.very-stinky.com/20211018165888947.jpg'), view=v, allowed_mentions=discord.AllowedMentions.none())
+        await asyncio.sleep(30)
+        for ui in v.children:
+            ui.disabled = False
+        starting = round(discord.utils.utcnow().timestamp())
+        self.statue_games[f"{ctx.channel.id}"] = {}
+        await v.msg.edit('Game will end in 3 minutes.', view=v)
+        while round(discord.utils.utcnow().timestamp()) < (starting + (3*60) ):
+            if self.statue_games.get(f"{ctx.channel.id}") is None:
+                return await v.msg.edit(f"Ended somehow?", view=None)
+            await asyncio.sleep(5)
+            rgb = random.choice([True, False])
+            if rgb is True and v.children[0].style == discord.ButtonStyle.green:
+                pass
+            elif rgb is True:
+                v.children[0].style = discord.ButtonStyle.green
+                await v.msg.edit(view=v)
+            elif rgb is False and v.children[0].style == discord.ButtonStyle.red:
+                pass
+            elif rgb is False:
+                v.children[0].style = discord.ButtonStyle.blurple
+                await v.msg.edit(view=v)
+                await asyncio.sleep(1)
+                v.children[0].style = discord.ButtonStyle.red
+                await v.msg.edit(view=v)
+
+        v.stop()
+        await v.msg.edit(f"Ended.", view=None)
+        result =  dict( sorted(self.statue_games[f'{ctx.channel.id}'].items(),
+                    key=lambda item: item[1],
+                    reverse=True))
+        await v.msg.reply(f"{result}")
+        del(self.statue_games[f"{ctx.channel.id}"])
+
+
     @commands.group(name='pet', invoke_without_command=True)
     async def pet(self, ctx):
         """Pet..."""

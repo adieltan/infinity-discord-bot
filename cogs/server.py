@@ -156,22 +156,19 @@ class ServerCog(commands.Cog, name='Server'):
         """Adds a text response for the trigger."""
         trigger = trigger.lower()
         results = await Database.get_server(self, ctx.guild.id)
-        if len(list(results.get('autoresponse', {}).keys())) >= 10:
-            await ctx.reply("This guild has reached the maximum number of autoresponse which is 10.")
-            return
-        def check(m):
-            return m.author == ctx.author
+        ar = results.get('autoresponse', {})
+        if len(list(ar.keys())) >= 10:
+            return await ctx.reply("This guild has reached the maximum number of autoresponse which is 10.")
         await ctx.reply(embed=discord.Embed(title="Autoresponse", description=f"Type the response you want for `{trigger}`."))
         try:
-            response = await self.bot.wait_for('message', check=check, timeout=40.0)
+            response = await self.bot.wait_for('message', check=lambda message: message.author == ctx.author, timeout=40.0)
         except asyncio.TimeoutError:
             return await ctx.reply(f'Sorry, you took too long.')
         if len(response.clean_content) >= 500:
             await ctx.reply("You can't have such a long text response.")
         else:
-            edit = results.get('autoresponse', {})[trigger] = f"{response.clean_content}"
-            results['autoresponse'] = edit
-            await Database.edit_server(self, ctx.guild.id, results)
+            ar.update(trigger = response.clean_content)
+            await Database.edit_server(self, ctx.guild.id, {'autoresponse':ar})
             await ctx.reply(embed=discord.Embed(title="New Autoresponse", description=f"Response for `{trigger}` set to `{response.clean_content}`"))
             self.bot.ar[f'{ctx.guild.id}'] = results['autoresponse']
 

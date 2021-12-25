@@ -18,6 +18,7 @@ class CustomCog(commands.Cog, name='Custom'):
 
 
     @commands.group(name="nitro", hidden=True, invoke_without_command=True)
+    @commands.guild_only()
     async def nitro(self, ctx):
         """Mockup fake nitro."""
         db = await Database.get_server(self, ctx.guild.id)
@@ -164,14 +165,6 @@ class CustomCog(commands.Cog, name='Custom'):
         await channel.send(f"{user.id}", embed=embed)
         await ctx.reply("Logged in <#842738964385497108>")
 
-    @commands.command(name='tm')
-    @server([906401850012606494, 906544173350535319, 906544179319042048])
-    async def tm(self, ctx, code):
-        tm1 = self.bot.get_guild(906544173350535319)
-        tm2 = self.bot.get_guild(906544173350535319)
-        tm3 = self.bot.get_guild(906544179319042048)
-        tmp = self.bot.get_guild(906544179507773503)
-
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.type != discord.InteractionType.application_command:
@@ -198,10 +191,6 @@ class CustomCog(commands.Cog, name='Custom'):
             await interaction.user.add_roles(role)
         else:
             await interaction.followup.send("Wrong", ephemeral=True)
-            
-
-discord.utils.utcnow().timestamp()
-
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

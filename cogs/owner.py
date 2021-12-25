@@ -17,10 +17,9 @@ class OwnerCog(commands.Cog, name='Owner'):
         """Anounymous DM."""
         try:
             await user.send(message)
+            await ctx.tick(True)
         except:
             await ctx.tick(False)
-        else:
-            await ctx.tick(True)
 
     @commands.command(name='blacklist', aliases=['bl'])
     @is_manager()
@@ -67,16 +66,6 @@ class OwnerCog(commands.Cog, name='Owner'):
         self.bot.bled = bled
         buffer = io.BytesIO(text.encode('utf-8'))
         await ctx.reply(file=discord.File(buffer, filename='blacklisted.txt'))
-    
-    @commands.command(name='logout', aliases=['shutdown'])
-    @commands.is_owner()
-    async def logout(self, ctx):
-        """Logs out."""
-        await self.bot.logs.send(f"The bot is being shut down by {ctx.author.name}.")
-        await ctx.reply("👋")
-        await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Activity(type= discord.ActivityType.playing, name="with the exit door."))
-        await asyncio.sleep(0.5)
-        await self.bot.logout()
 
     @commands.command(name="gg")
     @commands.cooldown(1,0)

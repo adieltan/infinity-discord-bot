@@ -108,10 +108,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
                 )
                 embed.add_field(name=cog_label, value=value)
         embed.color = discord.Color.random()
-        if self.context.guild:
-            embed.set_thumbnail(url=self.context.guild.icon)
-        else:
-            embed.set_thumbnail(url=self.context.author.display_avatar)
+        embed.set_thumbnail(url=self.context.bot.user.avatar)
         return embed
 
     async def bot_help_embed(self, mapping: dict) -> discord.Embed:
@@ -143,6 +140,21 @@ class MyHelpCommand(commands.MinimalHelpCommand):
             title=f"{emoji} {command.qualified_name} {command.signature}" if emoji else command.qualified_name,
             description=command.help if command.help else 'No description 😜',
             command_set=command.commands if isinstance(command, commands.Group) else None
+        )
+        if command.hidden:
+            embed.add_field(name="Hidden", value="✅")
+        if command.aliases:
+            embed.add_field(
+                name="Aliases",
+                value=", ".join(command.aliases),
+                inline=False,
+            )
+        if command._max_concurrency:
+            embed.add_field(name="Concurrent uses", value=f"{command._max_concurrency.number} concurrent uses per {command._max_concurrency.per}")
+        if command.get_cooldown_retry_after(self.context):
+            embed.add_field(name="Cooldown", value=f"Usable in **{command.get_cooldown_retry_after(self.context)}** seconds.")
+        embed.add_field(
+            name="Usage", value=f"```\n{self.context.prefix}{command.qualified_name} {command.signature}\n```", inline=False
         )
         await self.get_destination().send(embed=embed)
 

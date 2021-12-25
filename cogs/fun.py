@@ -1,4 +1,5 @@
 import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
+from discord import colour
 from discord.ext import commands, tasks
 
 from thefuzz import process
@@ -277,7 +278,7 @@ class Statues(discord.ui.View):
                            key=lambda item: item[1],
                            reverse=True))
         positions = list(sorted_dict).index(f"{interaction.user.id}")
-        await interaction.response.send_message(f"You ran {self.FunCog.statue_games[f'{self.msg.channel.id}'][f'{interaction.user.id}']} steps. You are now at the {positions} place.", ephemeral=True)
+        await interaction.response.send_message(f"You ran {self.FunCog.statue_games[f'{self.msg.channel.id}'][f'{interaction.user.id}']} steps. You are now at the {positions+1} place.", ephemeral=True)
         
         
 
@@ -318,7 +319,7 @@ class FunCog(commands.Cog, name='Fun'):
             elif rgb is False:
                 v.children[0].style = discord.ButtonStyle.blurple
                 await v.msg.edit(view=v)
-                await asyncio.sleep(1)
+                await asyncio.sleep(1.25)
                 v.children[0].style = discord.ButtonStyle.red
                 await v.msg.edit(view=v)
 
@@ -327,9 +328,18 @@ class FunCog(commands.Cog, name='Fun'):
         result =  dict( sorted(self.statue_games[f'{ctx.channel.id}'].items(),
                     key=lambda item: item[1],
                     reverse=True))
+        e = discord.Embed(title="Red Light Green Light Podium", description='', colour=discord.Color.gold(), timestamp=discord.utils.utcnow()).set_image(url='https://c.tenor.com/0AHfpLZ90JQAAAAC/squid-game-red-light-green-light.gif')
+        dead = []
+        for key, value in result.items():
+            if value is not False:
+                e.description += f"{list(result).index(key)+1}. <@{key}>\n"
+            else:
+                dead.append(key)
+        if dead:
+            e.add_field(name='Disqualified', value=' '.join(f"<@{p}>" for p in dead))
         await v.msg.reply(f"{result}")
+        await v.msg.reply(embed=e)
         del(self.statue_games[f"{ctx.channel.id}"])
-
 
     @commands.group(name='pet', invoke_without_command=True)
     async def pet(self, ctx):

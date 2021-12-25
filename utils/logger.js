@@ -18,10 +18,7 @@ class Logger {
     static stacktrace(content, { color = 'white', tag = 'Error' } = {}) { //stacktrace = white
         this.write(content, { color, tag, error: true});
     }
-    static startup(content, { color = 'blue', tag = 'Startup'} = {}){
-        this.write(content, { color, tag });
-    }
-    static custom(content, color, tag, err){
+    static custom(content, color, tag, err){ //custom logger
         this.write(content, {color, tag, error: err})
     }
     static write(content, { color = 'grey', tag = 'Log', error = false } = {}) {

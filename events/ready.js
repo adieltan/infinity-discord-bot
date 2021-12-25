@@ -19,7 +19,7 @@ module.exports = {
     });
     const channel = client.channels.cache.get("813251835371454515");
     client.log_channel = client.channels.cache.get("874461656938340402");
-    channel.send('∞');
+    channel.send('`♾️`');
     const embedMsg = new MessageEmbed()
       .setColor("RANDOM")
       .setTitle("Infinity")

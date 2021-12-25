@@ -1,8 +1,8 @@
-const logger = require('././utils/logger')
+const logger = require('./utils/logger')
 const nodeMajorVersion = parseInt(process.versions.node.split('.')[0, 10]); // Get the Node version
 
 if (nodeMajorVersion < 10) { //This bot only works with a version 10 of Node.js/higher. So, stop running if this is the case 
-    logger.warn(`Version ${nodeMajorVersion} is an unsupported Node.JS version. Please install and use Node.JS 10 or newer.`);
+    logger.custom(`Version ${nodeMajorVersion} is an unsupported Node.JS version. Please install and use Node.JS 10 or newer.`, 'yellow', 'Check:Failed');
     process.exit(1);
 }
 
@@ -12,20 +12,9 @@ const path = require('path')
 try {
     accessSync(path.join(__dirname, './.', 'node_modules')); //Check if node_modules folder exists
 } catch (err) {
-    logger.warn('Please install all dependencies before starting the bot, the node_modules directory was not found.');
+    logger.custom('Please install all dependencies before starting the bot, the node_modules directory was not found.', 'yellow', 'Check:Failed');
     process.exit(1);
 }
-
-//* Error Handler
-process.on('uncaughtExeption', err => {
-    logger.stacktrace(err);
-    process.exit(1)
-})
-
-process.on('TypeError', err => {
-    logger.stacktrace(err);
-    process.exit(1)
-})
 
 
 try {
@@ -38,8 +27,7 @@ try {
 }
 //For each of these modules, check if they exist in the node_modules folder.
 catch (err) {
-    logger.warn('It appears that you have a missing package, do npm install.');
+    logger.custom('It appears that you have a missing package, do npm install.', 'yellow', 'Check:Failed');
     process.exit(1)
 }
-
 logger.custom('You have all the required modules installed!', 'green', 'Check') //Let the user know they're good to go!

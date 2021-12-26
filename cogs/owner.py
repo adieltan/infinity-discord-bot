@@ -72,15 +72,27 @@ class OwnerCog(commands.Cog, name='Owner'):
     @commands.is_owner()
     async def gg(self, ctx, invite:str):
         """Frames your discord invite link"""
+        # invite regex = (?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?
+        url = 'https://discord.gg/' + re.sub('(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/+/?', '', invite)
         try:
-            inv = await self.bot.fetch_invite(url=f'https://discord.gg/{invite}', with_counts=True)
+            inv: discord.Invite = await self.bot.fetch_invite(url=url)
         except:
-            member = 0
-            online = 0
-        else:
+            return await ctx.reply(f"Invalid link.")
+
+        e = discord.Embed(title=f'{inv.guild.name if inv.guild else inv.channel.name}',url=url, description=f"{url}\n", colour=discord.Color.random())
+        if inv.guild:
             member = format(inv.approximate_member_count,',')
             online = format(inv.approximate_presence_count, ',')
-        await ctx.reply(f'https://discord.gg/{invite}\nOnline: {online} Members: {member}')
+            e.description += f"Online Members: {online} / {member} members.\nChannel: {inv.channel.mention} `{inv.channel.name}`\nUses: {inv.uses} / {inv.max_uses}\nTemporary Membership: {True if inv.temporary else False}\nExpiry: {f'<t:{inv.expires_at.timestamp()}>' if inv.expires_at else 'None'}"
+            try:
+                e.set_thumbnail(url=inv.guild.icon)
+            except:
+                pass
+        if inv.inviter:
+            e.description += f"\nInvitor: {inv.inviter.mention} `{inv.inviter.id}`"
+        v = discord.ui.View()
+        v.add_item(discord.ui.Button(label='Link', url=url))
+        await ctx.reply(embed=e, view=v)
 
     @commands.command(name="chat", aliases=['broadcast'])
     @commands.is_owner()

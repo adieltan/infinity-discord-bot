@@ -68,8 +68,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         await ctx.reply(file=discord.File(buffer, filename='blacklisted.txt'))
 
     @commands.command(name="gg")
-    @commands.cooldown(1,0)
-    @commands.is_owner()
+    @is_manager()
     async def gg(self, ctx, invite:str):
         """Frames your discord invite link"""
         # invite regex = (?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?
@@ -83,7 +82,7 @@ class OwnerCog(commands.Cog, name='Owner'):
         if inv.guild:
             member = format(inv.approximate_member_count,',')
             online = format(inv.approximate_presence_count, ',')
-            e.description += f"Online Members: {online} / {member} members.\nChannel: {inv.channel.mention} `{inv.channel.name}`\nUses: {inv.uses} / {inv.max_uses}\nTemporary Membership: {True if inv.temporary else False}\nExpiry: {f'<t:{inv.expires_at.timestamp()}>' if inv.expires_at else 'None'}"
+            e.description += f"Online Members: {online} / {member} members.\nChannel: {inv.channel.mention} `{inv.channel.name}`\nUses: {inv.uses} / {inv.max_uses}\nTemporary Membership: {True if inv.temporary else False}\nExpiry: {f'<t:{round(inv.expires_at.timestamp())}>' if inv.expires_at else 'None'}"
             try:
                 e.set_thumbnail(url=inv.guild.icon)
             except:

@@ -422,7 +422,10 @@ class UtilityCog(commands.Cog, name='Utility'):
                 astraunauts += f"""\n**{astraunaut['craft']}**:{f" Position {iss.get('iss_position')['latitude']}, {iss.get('iss_position')['longitude']}"if astraunaut['craft'] == 'ISS' else ''}\n\u2800\u2800\u2800 {astraunaut['name']}"""
                 
         e = discord.Embed(title='Space', description=f"**People in Space Right Now:**\nNumber of people: {json.get('number')}\n{astraunauts}\n\n**Astronomy Picture of the Day**:\n{img.get('explanation', '')}\n{img.get('title', '')} [<:down:876079229744316456>]({img.get('hdurl')})", color=discord.Color.random())
-        e.set_image(url=img.get('hdurl'))
+        try:
+            e.set_image(url=img.get('hdurl'))
+        except:
+            pass
         await ctx.reply(embed=e)
 
     @commands.command(name="attachments", aliases=['attachment'])

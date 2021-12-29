@@ -12,4 +12,4 @@ thefuzz[speedup]
 pytz
 dnspython
 py-expression-eval
-aiohttp
+aiohttp >= 3.6.0, < 3.8.0

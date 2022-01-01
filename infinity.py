@@ -94,6 +94,8 @@ class Infinity(commands.Bot):
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self.db = motor.motor_asyncio.AsyncIOMotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE).infinity
         self.snipedb = dict({})
+
+        self.persistent_views_added = False
         
         self.errors = self.get_channel(926789023446499369)
         self.logs = self.get_channel(926789818455842876)

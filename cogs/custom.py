@@ -9,6 +9,30 @@ import collections
 
 from ._utils import Database, Confirm, NitroButtons, server
 
+class DropdownRoles(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.Select(custom_id='DarkNightLunaDropdownRoles', placeholder="Get/remove your roles here...", min_values=1, max_values=1, 
+    options=[
+        discord.SelectOption(label="News Ping", value="731723678164713554", description="Receives notifications for server related announcements or updates.", emoji='📢'),
+        discord.SelectOption(label="Bump Ping", value="782937437206609941", description="Receives notifications for bumping our server through DISBOARD every 2 hours.", emoji='⬆'),
+        discord.SelectOption(label="Chat Revival", value="848826846669439026", description="You will become the army that perform medical operations on dead chats.", emoji='💊'),
+        discord.SelectOption(label="Infinity Updates", value="926836460835991604", description="Receives notifications for Infinity bot's updates.", emoji='♾'),
+        discord.SelectOption(label="Karuta Access", value="926815232079314994", description="Shows the Karuta category for more fun..", emoji='♾'),
+        discord.SelectOption(label="Ultra Supporter", value="926834703506485309", description="Get this role to support Beggar's youtube.", emoji='<:tp_Youtube:848819450223788042>')
+    ])
+    async def select(self, select:discord.ui.Select, interaction:discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        selected = [interaction.guild.get_role(int(s.value)) for s in select.values]
+        for s in selected:
+            if s in interaction.user.roles:
+                await interaction.user.remove_roles(s)
+                await interaction.followup.send(f"Removed {s.mention} from you.", ephemeral=True)
+            else:
+                await interaction.user.add_roles(s)
+                await interaction.followup.send(f"Added {s.mention} to you.", ephemeral=True)
+
 class CustomCog(commands.Cog, name='Custom'):
     """Custom commands for server."""
     def __init__(self, bot):
@@ -47,79 +71,13 @@ class CustomCog(commands.Cog, name='Custom'):
             await Database.edit_server(self, ctx.guild.id, {'nitro':True})
             return await ctx.reply(f"Enabled `nitro` command for guild {ctx.guild.id}")
 
-    async def self_role(self, message:discord.Message):
-        """Adds a specific pickable role to the member (Typical Pandas)."""
-        if message.channel.id != 848892659828916274:
-            return
-        roles = {
-            'He/Him': 854353177804931083,
-            'She/Her': 854353177377898509,
-            'They/Them': 854353177184698418,
-            'Any Pronouns': 854353176169283644,
-            'Pronouns: Ask Me': 854353176697503785,
-            'Aries': 736915483651080202,
-            'Taurus': 807926824952266782,
-            'Gemini': 807925920404471808,
-            'Cancer': 736915593235529808,
-            'Leo': 736915617755561995,
-            'Virgo': 736915640039768064,
-            'Libra': 736915677079928915,
-            'Scorpio': 736915700014120960,
-            'Sagittarius': 736915732121649252,
-            'Capricorn': 736915778036695139,
-            'Aquarius': 807973226533224478,
-            'Pisces': 807926062855618600,
-            'News': 731723678164713554,
-            'Giveaway': 807926618223018015,
-            'Game/Event Time': 759685837088227328,
-            'Infinity Updates': 848814884330537020,
-            'Wishlist Ping': 890775726524104714,
-            'Bump Ping': 782937437206609941,
-            'Chat Revival': 848826846669439026,
-            'Poll Ping': 848807930085900320,
-            'Youtube Upload Pings': 848814523552366652,
-            'New Self Roles': 848814467412131850,
-            'Welcomer': 848824685222952980,
-            'Partnership Ping': 848784334747598908,
-            'No Partnership Ping': 848784758661185596,
-            'D Shop': 783133558172286977,
-            'D Giveaway': 783133954047213609,
-            'D Event': 807926892723437588,
-        }
-        if message.content=='list':
-            text = ''.join(f'{role} : <@&{value}>\n' for role, value in roles.items())
-            await message.reply(text, mention_author=False, allowed_mentions=discord.AllowedMentions.none(), delete_after=100)
-            return
-        try:
-            fuzzy = process.extractOne(message.content, roles.keys())
-            id = roles.get(fuzzy[0])
-            role = message.guild.get_role(id)
-            if fuzzy[1] < 70:
-                raise
-        except:
-            await message.reply(f"The code `{message.content}` is invalid.\nBe sure to check out <#723892038587646002> to see what roles you can get.")
-        else:
-            if role not in message.author.roles:
-                try:
-                    await message.author.add_roles(role, reason="Self role.")
-                    await message.reply(embed=discord.Embed(title="Roles add", description=f"Added {role.mention} to {message.author.mention}", color=discord.Color.green()).set_footer(text=f"{fuzzy[1]}%"))
-                except:
-                    await message.reply("Failed")
-            else:
-                try:
-                    await message.author.remove_roles(role, reason="Self roles.")
-                except:
-                    await message.reply(f"The code `{message.content}` is invalid.")
-                else:
-                    await message.reply(embed=discord.Embed(title="Roles add", description=f"Removed {role.mention} from {message.author.mention}", color=discord.Color.red()).set_footer(text=f"{fuzzy[1]}%"))
-
-    @commands.Cog.listener()
-    async def on_message(self, message:discord.Message):
-        if message.author.bot is True:
-            return
-        if message.channel.id == 848892659828916274:
-            await self.self_role(message=message)
-            return
+    @commands.command(name='dropdownroles')
+    @server([709711335436451901])
+    async def dropdownroles(self, ctx):
+        """Posts the Dropdown."""
+        await ctx.delete()
+        await ctx.send(embed=discord.Embed().set_image(url='https://us-east-1.tixte.net/uploads/u.very-stinky.com/de0tyff-9efba6d3-d8c0-44c9-b25f-9445d45b34ab.png'), view=DropdownRoles())
+    
 
     @commands.Cog.listener()
     @server([709711335436451901])

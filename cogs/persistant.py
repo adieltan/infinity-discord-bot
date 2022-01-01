@@ -4,7 +4,6 @@ from discord.ext import commands, tasks
 from thefuzz import process
 import collections
 
-from ._utils import Confirm, server, supporter
 from .custom import DropdownRoles
 
 class PersistantCog(commands.Cog, name='Persistant'):

@@ -22,7 +22,7 @@ class DropdownRoles(discord.ui.View):
         discord.SelectOption(label="Karuta Access", value="926815232079314994", description="Shows the Karuta category for more fun..", emoji='♾'),
         discord.SelectOption(label="Ultra Supporter", value="926834703506485309", description="Get this role to support Beggar's youtube.", emoji='<:tp_Youtube:848819450223788042>')
     ])
-    async def select(self, select:discord.ui.Select, interaction:discord.Interaction):
+    async def sel(self, select:discord.ui.Select, interaction:discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         selected = [interaction.guild.get_role(int(s.value)) for s in select.values]
         for s in selected:

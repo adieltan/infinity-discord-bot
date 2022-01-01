@@ -95,9 +95,9 @@ class Infinity(commands.Bot):
         self.db = motor.motor_asyncio.AsyncIOMotorClient(str(os.getenv("mongo_server")), ssl_cert_reqs=ssl.CERT_NONE).infinity
         self.snipedb = dict({})
         
-        self.errors = self.get_channel(825900714013360199)
-        self.logs = self.get_channel(874461656938340402)
-        self.changes = self.get_channel(859779506038505532)
+        self.errors = self.get_channel(926789023446499369)
+        self.logs = self.get_channel(926789818455842876)
+        self.changes = self.get_channel(926789039321919509)
         status.start()
         performance.start()
         delete_snipecache.start()

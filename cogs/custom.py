@@ -9,29 +9,35 @@ import collections
 
 from ._utils import Database, Confirm, NitroButtons, server
 
+
 class DropdownRoles(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
+        class Dropdown(discord.ui.Select):
+            def __init__(self):
+                options=[
+                    discord.SelectOption(label="News Ping", value="731723678164713554", description="Receives notifications for server related announcements or updates.", emoji='📢'),
+                    discord.SelectOption(label="Bump Ping", value="782937437206609941", description="Receives notifications for bumping our server through DISBOARD every 2 hours.", emoji='⬆'),
+                    discord.SelectOption(label="Chat Revival", value="848826846669439026", description="You will become the army that perform medical operations on dead chats.", emoji='💊'),
+                    discord.SelectOption(label="Infinity Updates", value="926836460835991604", description="Receives notifications for Infinity bot's updates.", emoji='♾'),
+                    discord.SelectOption(label="Karuta Access", value="926815232079314994", description="Shows the Karuta category for more fun..", emoji='♾'),
+                    discord.SelectOption(label="Ultra Supporter", value="926834703506485309", description="Get this role to support Beggar's youtube.", emoji='<:tp_Youtube:848819450223788042>')
+                ]
 
-    @discord.ui.Select(custom_id='DarkNightLunaDropdownRoles', placeholder="Get/remove your roles here...", min_values=1, max_values=1, 
-    options=[
-        discord.SelectOption(label="News Ping", value="731723678164713554", description="Receives notifications for server related announcements or updates.", emoji='📢'),
-        discord.SelectOption(label="Bump Ping", value="782937437206609941", description="Receives notifications for bumping our server through DISBOARD every 2 hours.", emoji='⬆'),
-        discord.SelectOption(label="Chat Revival", value="848826846669439026", description="You will become the army that perform medical operations on dead chats.", emoji='💊'),
-        discord.SelectOption(label="Infinity Updates", value="926836460835991604", description="Receives notifications for Infinity bot's updates.", emoji='♾'),
-        discord.SelectOption(label="Karuta Access", value="926815232079314994", description="Shows the Karuta category for more fun..", emoji='♾'),
-        discord.SelectOption(label="Ultra Supporter", value="926834703506485309", description="Get this role to support Beggar's youtube.", emoji='<:tp_Youtube:848819450223788042>')
-    ])
-    async def sel(self, select:discord.ui.Select, interaction:discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        selected = [interaction.guild.get_role(int(s.value)) for s in select.values]
-        for s in selected:
-            if s in interaction.user.roles:
-                await interaction.user.remove_roles(s)
-                await interaction.followup.send(f"Removed {s.mention} from you.", ephemeral=True)
-            else:
-                await interaction.user.add_roles(s)
-                await interaction.followup.send(f"Added {s.mention} to you.", ephemeral=True)
+                super().__init__(custom_id='DarkNightLunaDropdownRoles', placeholder="Get/remove your roles here...", min_values=1, max_values=6, options=options)
+
+            async def callback(self, interaction: discord.Interaction):
+                await interaction.response.defer(ephemeral=True)
+                selected = [interaction.guild.get_role(int(s)) for s in self.values]
+                for s in selected:
+                    if s in interaction.user.roles:
+                        await interaction.user.remove_roles(s)
+                        await interaction.followup.send(f"Removed {s.mention} from you.", ephemeral=True)
+                    else:
+                        await interaction.user.add_roles(s)
+                        await interaction.followup.send(f"Added {s.mention} to you.", ephemeral=True)
+                
+        self.add_item(Dropdown())
 
 class CustomCog(commands.Cog, name='Custom'):
     """Custom commands for server."""
@@ -40,6 +46,12 @@ class CustomCog(commands.Cog, name='Custom'):
         self.COG_EMOJI = '🔧'
         self.youtubeupdate.start()
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        """Loads the persistant stuff."""
+        if not self.bot.persistent_views_added:
+            self.bot.add_view(DropdownRoles())
+            self.bot.persistent_views_added = True
 
     @commands.group(name="nitro", hidden=True, invoke_without_command=True)
     @commands.guild_only()
@@ -75,8 +87,11 @@ class CustomCog(commands.Cog, name='Custom'):
     @server([709711335436451901])
     async def dropdownroles(self, ctx):
         """Posts the Dropdown."""
-        await ctx.delete()
+        await ctx.message.delete()
         await ctx.send(embed=discord.Embed().set_image(url='https://us-east-1.tixte.net/uploads/u.very-stinky.com/de0tyff-9efba6d3-d8c0-44c9-b25f-9445d45b34ab.png'), view=DropdownRoles())
+        if not self.bot.persistent_views_added:
+            self.bot.add_view(DropdownRoles())
+            self.bot.persistent_views_added = True
     
 
     @commands.Cog.listener()
@@ -104,8 +119,8 @@ class CustomCog(commands.Cog, name='Custom'):
                 json = await data.json()
                 items = json['items']
                 stats= items[0]['statistics']
-                await sub.edit(name=f"{format(int(stats['subscriberCount']), ',')} ⬅ Beggar's Subscribers")
-                await views.edit(name=f"{format(int(stats['viewCount']), ',')} ⬅ Beggar's Views")
+                await sub.edit(name=f"{format(int(stats['subscriberCount']), ',')} Subscribers")
+                await views.edit(name=f"{format(int(stats['viewCount']), ',')} Views")
 
     @commands.command(name="donolog", aliases=["dl"])
     @server([841654825456107530])
@@ -129,26 +144,26 @@ class CustomCog(commands.Cog, name='Custom'):
             return
         await interaction.response.defer(ephemeral=True)
         await interaction.followup.send(f"{interaction.data}\n{type(interaction.user)}", ephemeral=True)
-        if interaction.data.get('id') == '923799170702250054' and interaction.data.get('options', [])[0]['value'] == 4 and (interaction.guild.get_role(906556235040587836) in interaction.user.roles):
-            nxt: discord.TextChannel = self.bot.get_channel(906544174055186466)
-            role: discord.Role = interaction.guild.get_role(906402631818305568)
-            invite = await nxt.create_invite(max_uses=1)
-            await interaction.followup.send(str(invite), ephemeral=True)
-            await interaction.user.add_roles(role)
-        elif interaction.data.get('id') == '923799446079303710' and interaction.data.get('options', [])[0]['value'].lower() == 'waltdisneyworld' and (interaction.guild.get_role(906747055832186890) in interaction.user.roles):
-            nxt: discord.TextChannel = self.bot.get_channel(906544179319042057)
-            role: discord.Role = interaction.guild.get_role(906544173350535320)
-            invite = await nxt.create_invite(max_uses=1)
-            await interaction.followup.send(str(invite), ephemeral=True)
-            await interaction.user.add_roles(role)
-        elif interaction.data.get('id') == '923799659099607060' and interaction.data.get('options', [])[0]['value'].lower() == 'monday' and (interaction.guild.get_role(917653201178726410) in interaction.user.roles):
-            nxt: discord.TextChannel = self.bot.get_channel(906544180166262808)
-            role: discord.Role = interaction.guild.get_role(917653221353353226)
-            invite = await nxt.create_invite(max_uses=1)
-            await interaction.followup.send(str(invite), ephemeral=True)
-            await interaction.user.add_roles(role)
-        else:
-            await interaction.followup.send("Wrong", ephemeral=True)
+        # if interaction.data.get('id') == '923799170702250054' and interaction.data.get('options', [])[0]['value'] == 4 and (interaction.guild.get_role(906556235040587836) in interaction.user.roles):
+        #     nxt: discord.TextChannel = self.bot.get_channel(906544174055186466)
+        #     role: discord.Role = interaction.guild.get_role(906402631818305568)
+        #     invite = await nxt.create_invite(max_uses=1)
+        #     await interaction.followup.send(str(invite), ephemeral=True)
+        #     await interaction.user.add_roles(role)
+        # elif interaction.data.get('id') == '923799446079303710' and interaction.data.get('options', [])[0]['value'].lower() == 'waltdisneyworld' and (interaction.guild.get_role(906747055832186890) in interaction.user.roles):
+        #     nxt: discord.TextChannel = self.bot.get_channel(906544179319042057)
+        #     role: discord.Role = interaction.guild.get_role(906544173350535320)
+        #     invite = await nxt.create_invite(max_uses=1)
+        #     await interaction.followup.send(str(invite), ephemeral=True)
+        #     await interaction.user.add_roles(role)
+        # elif interaction.data.get('id') == '923799659099607060' and interaction.data.get('options', [])[0]['value'].lower() == 'monday' and (interaction.guild.get_role(917653201178726410) in interaction.user.roles):
+        #     nxt: discord.TextChannel = self.bot.get_channel(906544180166262808)
+        #     role: discord.Role = interaction.guild.get_role(917653221353353226)
+        #     invite = await nxt.create_invite(max_uses=1)
+        #     await interaction.followup.send(str(invite), ephemeral=True)
+        #     await interaction.user.add_roles(role)
+        # else:
+        #     await interaction.followup.send("Wrong", ephemeral=True)
 
 def setup(bot):
     bot.add_cog(CustomCog(bot))

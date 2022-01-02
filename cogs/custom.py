@@ -42,7 +42,7 @@ class DropdownRoles(discord.ui.View):
     @discord.ui.button(style=discord.ButtonStyle.green, label='Get Roles Here', emoji='<:Role_Icon:882098706437001276>', custom_id='DarkNightLunaGetRoles')
     async def start_dropdown(self, button:discord.ui.Button, interaction:discord.Interaction):
         await interaction.response.defer(ephemeral=True)
-        self_roles = [interaction.guild.get_role(x) for x in (731723678164713554, 782937437206609941, 848826846669439026, 926836460835991604)]
+        self_roles = [interaction.guild.get_role(x) for x in (731723678164713554, 782937437206609941, 848826846669439026, 926836460835991604, 927075608972914700)]
         pronoun_roles = [interaction.guild.get_role(x) for x in (854353177184698418, 854353177377898509, 854353177804931083)]
         colour_roles = [interaction.guild.get_role(x) for x in (927060469632622592, 927060567905153026, 927059794400014366, 927060210277814313, 927060146729922570, 927060083312033832, 927060324224483368, 927060023744528444)]
         access_roles = [interaction.guild.get_role(x) for x in (926815232079314994, 926834703506485309)]

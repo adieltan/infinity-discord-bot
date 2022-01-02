@@ -24,7 +24,7 @@ class DropdownRoles(discord.ui.View):
                     discord.SelectOption(label="Ultra Supporter", value="926834703506485309", description="Get this role to support Beggar's youtube.", emoji='<:tp_Youtube:848819450223788042>')
                 ]
 
-                super().__init__(custom_id='DarkNightLunaDropdownRoles', placeholder="Get/remove your roles here...", min_values=1, max_values=6, options=options)
+                super().__init__(placeholder="Get/remove your roles here...", min_values=1, max_values=6, options=options)
 
             async def callback(self, interaction: discord.Interaction):
                 await interaction.response.defer(ephemeral=True)
@@ -37,7 +37,141 @@ class DropdownRoles(discord.ui.View):
                         await interaction.user.add_roles(s)
                         await interaction.followup.send(f"Added {s.mention} to you.", ephemeral=True)
                 
-        self.add_item(Dropdown())
+        # self.add_item(Dropdown())
+    
+    @discord.ui.button(style=discord.ButtonStyle.green, label='Get Roles Here', emoji='<:Role_Icon:882098706437001276>', custom_id='DarkNightLunaGetRoles')
+    async def start_dropdown(self, button:discord.ui.Button, interaction:discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        self_roles = [interaction.guild.get_role(x) for x in (731723678164713554, 782937437206609941, 848826846669439026, 926836460835991604)]
+        pronoun_roles = [interaction.guild.get_role(x) for x in (854353177184698418, 854353177377898509, 854353177804931083)]
+        colour_roles = [interaction.guild.get_role(x) for x in (927060469632622592, 927060567905153026, 927059794400014366, 927060210277814313, 927060146729922570, 927060083312033832, 927060324224483368, 927060023744528444)]
+        access_roles = [interaction.guild.get_role(x) for x in (926815232079314994, 926834703506485309)]
+
+        class GetRoles(discord.ui.View):
+            def __init__(self, dropdown):
+                self.dropdown = dropdown
+                super().__init__(timeout=60)
+
+            async def on_timeout(self):
+                for ui in self.children:
+                    ui.disabled = True
+                return await self.dropdown.msg.edit(view=self)
+            
+            @discord.ui.select(
+                placeholder="Get self roles here...", 
+                min_values=1, 
+                max_values=len(self_roles), 
+                options =  [discord.SelectOption(label=s.name, value=str(s.id), default=s in interaction.user.roles) for s in self_roles] + [discord.SelectOption(label='None')]
+            )
+            async def process_self_roles(self, select: discord.ui.Select, interaction: discord.Interaction):
+                await interaction.response.defer()
+                select.options.pop()
+                for ui in self.children:
+                    if ui == select:
+                        ui.disabled = True
+                await self.dropdown.msg.edit(view=self)
+                if 'None' in select.values:
+                    for op in select.options:
+                        await interaction.user.remove_roles(interaction.guild.get_role(int(op.value)))
+                    return await interaction.followup.send(f"Removed all self roles.", ephemeral=True)
+                add = []
+                remove = []
+                for op in select.options:
+                    role = interaction.guild.get_role(int(op.value))
+                    if op.value in select.values and role not in interaction.user.roles:
+                        await interaction.user.add_roles(role)
+                        add.append(role)
+                    elif not op.value in select.values and role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        remove.append(role)
+                await self.dropdown.msg.edit(view=self)
+                await interaction.followup.send(f"""{f"Added {', '.join(r.mention for r in add)} to you." if add else '<a:qb_good:870818167935610900>'}\n{f"Removed {', '.join(r.mention for r in remove)} from you." if remove else '<a:qb_good:870818167935610900>'}""", ephemeral=True)
+
+            @discord.ui.select(
+                placeholder="Set your pronoun role here...", 
+                min_values=1, 
+                max_values=1, 
+                options =  [discord.SelectOption(label=s.name, value=str(s.id), default=s in interaction.user.roles) for s in pronoun_roles]
+            )
+            async def process_pronoun_roles(self, select: discord.ui.Select, interaction: discord.Interaction):
+                await interaction.response.defer()
+                for ui in self.children:
+                    if ui == select:
+                        ui.disabled = True
+                await self.dropdown.msg.edit(view=self)
+                add = []
+                remove = []
+                for op in select.options:
+                    role = interaction.guild.get_role(int(op.value))
+                    if op.value in select.values and role not in interaction.user.roles:
+                        await interaction.user.add_roles(role)
+                        add.append(role)
+                    elif not op.value in select.values and role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        remove.append(role)
+                await self.dropdown.msg.edit(view=self)
+                await interaction.followup.send(f"""{f"Added {', '.join(r.mention for r in add)} to you." if add else '<a:qb_good:870818167935610900>'}\n{f"Removed {', '.join(r.mention for r in remove)} from you." if remove else '<a:qb_good:870818167935610900>'}""", ephemeral=True)
+                
+            @discord.ui.select(
+                placeholder="Choose your colour here...", 
+                min_values=1, 
+                max_values=1, 
+                options =  [discord.SelectOption(label=s.name, value=str(s.id), default=s in interaction.user.roles) for s in colour_roles]  + [discord.SelectOption(label='None')]
+            )
+            async def process_colour_roles(self, select: discord.ui.Select, interaction: discord.Interaction):
+                await interaction.response.defer()
+                select.options.pop()
+                for ui in self.children:
+                    if ui == select:
+                        ui.disabled = True
+                await self.dropdown.msg.edit(view=self)
+                if 'None' in select.values:
+                    for op in select.options:
+                        await interaction.user.remove_roles(interaction.guild.get_role(int(op.value)))
+                    return await interaction.followup.send(f"Removed all colour roles.", ephemeral=True)
+                add = []
+                remove = []
+                for op in select.options:
+                    role = interaction.guild.get_role(int(op.value))
+                    if op.value in select.values and role not in interaction.user.roles:
+                        await interaction.user.add_roles(role)
+                        add.append(role)
+                    elif not op.value in select.values and role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        remove.append(role)
+                await interaction.followup.send(f"""{f"Added {', '.join(r.mention for r in add)} to you." if add else '<a:qb_good:870818167935610900>'}\n{f"Removed {', '.join(r.mention for r in remove)} from you." if remove else '<a:qb_good:870818167935610900>'}""", ephemeral=True)
+
+            @discord.ui.select(
+                placeholder="Get access to some categories here...", 
+                min_values=1, 
+                max_values=len(access_roles), 
+                options =  [discord.SelectOption(label=s.name, value=str(s.id), default=s in interaction.user.roles) for s in access_roles]  + [discord.SelectOption(label='None')]
+            )
+            async def process_access_roles(self, select: discord.ui.Select, interaction: discord.Interaction):
+                await interaction.response.defer()
+                select.options.pop()
+                for ui in self.children:
+                    if ui == select:
+                        ui.disabled = True
+                await self.dropdown.msg.edit(view=self)
+                if 'None' in select.values:
+                    for op in select.options:
+                        await interaction.user.remove_roles(interaction.guild.get_role(int(op.value)))
+                    return await interaction.followup.send(f"Removed all access roles.", ephemeral=True)
+                add = []
+                remove = []
+                for op in select.options:
+                    role = interaction.guild.get_role(int(op.value))
+                    if op.value in select.values and role not in interaction.user.roles:
+                        await interaction.user.add_roles(role)
+                        add.append(role)
+                    elif not op.value in select.values and role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        remove.append(role)
+                await interaction.followup.send(f"""{f"Added {', '.join(r.mention for r in add)} to you." if add else '<a:qb_good:870818167935610900>'}\n{f"Removed {', '.join(r.mention for r in remove)} from you." if remove else '<a:qb_good:870818167935610900>'}""", ephemeral=True)
+
+        v = GetRoles(self)
+        self.msg = await interaction.followup.send(f"Check roles you want and uncheck roles you wish to remove.", view=v, ephemeral=True)
 
 class CustomCog(commands.Cog, name='Custom'):
     """Custom commands for server."""
@@ -45,9 +179,7 @@ class CustomCog(commands.Cog, name='Custom'):
         self.bot = bot
         self.COG_EMOJI = '🔧'
         self.youtubeupdate.start()
-        if not self.bot.persistent_views_added:
-            self.bot.add_view(DropdownRoles())
-            self.bot.persistent_views_added = True
+        self.bot.add_view(DropdownRoles())
             
     @commands.group(name="nitro", hidden=True, invoke_without_command=True)
     @commands.guild_only()
@@ -79,16 +211,12 @@ class CustomCog(commands.Cog, name='Custom'):
             await Database.edit_server(self, ctx.guild.id, {'nitro':True})
             return await ctx.reply(f"Enabled `nitro` command for guild {ctx.guild.id}")
 
-    @commands.command(name='dropdownroles')
+    @commands.command(name='getroles')
     @server([709711335436451901])
-    async def dropdownroles(self, ctx):
-        """Posts the Dropdown."""
-        await ctx.message.delete()
+    async def getroles(self, ctx):
+        """Posts the View for self roles in DarkNight Luna 🌙 (709711335436451901)."""
+        await ctx.delete()
         await ctx.send(embed=discord.Embed().set_image(url='https://us-east-1.tixte.net/uploads/u.very-stinky.com/de0tyff-9efba6d3-d8c0-44c9-b25f-9445d45b34ab.png'), view=DropdownRoles())
-        if not self.bot.persistent_views_added:
-            self.bot.add_view(DropdownRoles())
-            self.bot.persistent_views_added = True
-    
 
     @commands.Cog.listener()
     @server([709711335436451901])

@@ -50,6 +50,13 @@ class Context(commands.Context):
         except:
             await super().send(content=content, **kwargs)
 
+    async def delete(self, wait_after:float=0.0):
+        await asyncio.sleep(wait_after)
+        try:
+            await super().message.delete()
+        except:
+            pass
+
 class Infinity(commands.Bot):
     def __init__(self):
         super().__init__(
@@ -166,7 +173,7 @@ async def performance():
     embed.timestamp=discord.utils.utcnow()
     await bot.logs.send(embed=embed)
 
-@tasks.loop(minutes=30, reconnect=True)
+@tasks.loop(hours=1, reconnect=True)
 async def delete_snipecache():
     for i in bot.snipedb.copy():
         if round(bot.snipedb[i].created_at.timestamp() + 60) < round(discord.utils.utcnow().timestamp()):

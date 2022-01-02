@@ -45,14 +45,10 @@ class CustomCog(commands.Cog, name='Custom'):
         self.bot = bot
         self.COG_EMOJI = '🔧'
         self.youtubeupdate.start()
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        """Loads the persistant stuff."""
         if not self.bot.persistent_views_added:
             self.bot.add_view(DropdownRoles())
             self.bot.persistent_views_added = True
-
+            
     @commands.group(name="nitro", hidden=True, invoke_without_command=True)
     @commands.guild_only()
     async def nitro(self, ctx):

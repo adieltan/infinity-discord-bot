@@ -212,11 +212,12 @@ class CustomCog(commands.Cog, name='Custom'):
             return await ctx.reply(f"Enabled `nitro` command for guild {ctx.guild.id}")
 
     @commands.command(name='getroles')
+    @commands.is_owner()
     @server([709711335436451901])
     async def getroles(self, ctx):
         """Posts the View for self roles in DarkNight Luna 🌙 (709711335436451901)."""
         await ctx.delete()
-        await ctx.send(embed=discord.Embed().set_image(url='https://us-east-1.tixte.net/uploads/u.very-stinky.com/de0tyff-9efba6d3-d8c0-44c9-b25f-9445d45b34ab.png'), view=DropdownRoles())
+        await ctx.send(embed=discord.Embed().set_image(url='https://us-east-1.tixte.net/uploads/u.very-stinky.com/DarkNight_Luna.png'), view=DropdownRoles())
 
     @commands.Cog.listener()
     @server([709711335436451901])

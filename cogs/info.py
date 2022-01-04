@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 from psutil._common import bytes2human
 
 from ._utils import Database
+
 class InfoCog(commands.Cog, name='Info'):
     """Info about bot and related servers."""
     def __init__(self, bot):
@@ -182,8 +183,8 @@ class InfoCog(commands.Cog, name='Info'):
         embed=discord.Embed(title="Suggestion", description=f"{suggestion}", color=discord.Color.blue())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         msg = await suggestchannel.send(embed=embed)
-        await msg.add_reaction('✅')
-        await msg.add_reaction('❌')
+        await msg.add_reaction('<:up:876079229748539393>')
+        await msg.add_reaction('<:down:876079229744316456>')
         await ctx.tick(True)
 
     @suggest.command(name='accept', aliases=['a'])

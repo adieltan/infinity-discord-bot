@@ -224,28 +224,25 @@ class CustomCog(commands.Cog, name='Custom'):
     async def on_member_join(self, member:discord.Member):
         if member.guild.id != 709711335436451901 or member.bot is True:
             return
-        bamboo_chat = self.bot.get_channel(717962272093372556)
+        gen = self.bot.get_channel(926810539722694676)
         bots = sum(m.bot for m in member.guild.members)
-        embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Pandas").set_thumbnail(url=member.display_avatar)
+        embed=discord.Embed(description=f"**Welcome to {member.guild.name}, {member.name} {member.mention}.**\nHave fun and enjoy your stay here.", color=discord.Color.random(), timestamp=member.created_at).set_footer(text=f"{member.guild.member_count - bots} Members").set_thumbnail(url=member.display_avatar)
         results = await Database.get_server(self, member.guild.id)
         dic = results.get('leaveleaderboard', {})
         leavetimes = dic.get(f"{member.id}")
         if leavetimes is not None:
             embed.description += f"\nLeft the server {leavetimes} times."
-        await bamboo_chat.send(f"<a:qb_hi:912918224411164682> <@&848824685222952980> <:tp_panda:839699254951804948> Welcome {member.mention}. <a:qb_clap:912917970337005618>", embed=embed, allowed_mentions=discord.AllowedMentions(roles=True))
+        await gen.send(f"<a:qb_hi:912918224411164682> Welcome {member.mention}. <a:qb_clap:912917970337005618>", embed=embed)
 
     @tasks.loop(hours=24, reconnect=True)
     async def youtubeupdate(self):
         await self.bot.wait_until_ready()
-        sub = self.bot.get_channel(861445998630273056)
-        views = self.bot.get_channel(861446020026466334)
         async with aiohttp.ClientSession() as cs:
             async with cs.get(url=f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id=UC52Xt2wq5H16HglMwNAvLeg&key={os.getenv('googleapi')}") as data:
                 json = await data.json()
-                items = json['items']
-                stats= items[0]['statistics']
-                await sub.edit(name=f"{format(int(stats['subscriberCount']), ',')} Subscribers")
-                await views.edit(name=f"{format(int(stats['viewCount']), ',')} Views")
+                stats = json['items'][0]['statistics']
+                await self.bot.get_channel(861445998630273056).edit(name=f"{format(int(stats['subscriberCount']), ',')} Subscribers")
+                await self.bot.get_channel(861446020026466334).edit(name=f"{format(int(stats['viewCount']), ',')} Views")
 
     @commands.command(name="donolog", aliases=["dl"])
     @server([841654825456107530])

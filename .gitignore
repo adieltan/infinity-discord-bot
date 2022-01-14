@@ -6,3 +6,4 @@ cogs/__pycache__/*.pyc
 .vscode
 desktop.ini
 desktop.ini
+node_modules

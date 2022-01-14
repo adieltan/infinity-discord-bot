@@ -85,8 +85,4 @@ for (const file of eventFiles) {
 });
 */
 
-<<<<<<< Updated upstream
 client.login(process.env.dc_beta);
-=======
-client.login(process.env.dc_beta);
->>>>>>> Stashed changes

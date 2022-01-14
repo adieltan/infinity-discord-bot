@@ -4,7 +4,7 @@ const logger = require("../utils/logger");
 module.exports = {
   name: "ready",
   once: true,
-  execute(client) {
+  async execute(client) {
     logger.custom('v'+Discord.version, 'grey', 'discord.js');
     logger.custom(process.version, 'grey', 'Node');
     logger.info(`${client.user.tag}`);
@@ -18,12 +18,17 @@ module.exports = {
       status: "dnd",
     });
     const channel = client.channels.cache.get("813251835371454515");
-    client.log_channel = client.channels.cache.get("874461656938340402");
     channel.send('`♾️`');
+    const logs = client.channels.cache.get("874461656938340402")
+    const thread = await logs.threads.fetch("931362898469601351", {archived:true});
+    client.log_channel = thread
+    if (thread.joinable) await thread.join();
+    if (thread.unarchivable && !thread.sendable) await thread.setArchived(false);
+    if (!thread.sendable) return logger.log(`Can't send in ${thread}`);
     const embedMsg = new MessageEmbed()
       .setColor("RANDOM")
       .setTitle("Infinity")
-      .setFooter(`${client.user.tag}`, client.user.avatarURL())
+      .setFooter({text:`${client.user.tag}`, iconURL:client.user.avatarURL()})
       .addField(
         `<:javascript:882621813291642921> Node version:`,
         "`" + process.version + "`",

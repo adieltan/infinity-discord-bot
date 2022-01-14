@@ -16,7 +16,8 @@ module.exports = {
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
 		const channel = interaction.client.channels.cache.get('874461656938340402');
-		channel.send(`${interaction.user.tag} in <#${interaction.channel.id}> triggered an interaction.`);
-		logger.log(`${interaction.user.tag} in #${interaction.channel.name} triggered an interaction.`)
+		const thread = channel.threads.cache.find(x => x.id === "931362898469601351")
+		thread.send(`${interaction.user.tag} triggered an interaction (${interaction.id}) in <#${interaction.channel.id}>.`);
+		logger.log(`${interaction.user.tag} triggered an interaction (${interaction.id}) in #${interaction.channel.name}.`)
 	},
 };

@@ -16,7 +16,7 @@ module.exports = {
       return process.kill(1);
     } else {
       return interaction.reply(
-        `You aren't owner ${owners}\n${interaction.member.id}`
+        `You aren't owner\nList of Owners: ${owners}`
       );
     }
   },

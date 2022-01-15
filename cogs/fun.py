@@ -223,8 +223,7 @@ class PetGameJoin(discord.ui.View):
     @discord.ui.button(label="Start", style=discord.ButtonStyle.red)
     async def skip(self, button: discord.ui.Button, interaction: discord.Interaction):
         if (
-            dict(iter(interaction.user.guild_permissions)).get("administrator")
-            is not True
+            not dict(iter(interaction.user.guild_permissions)).get("administrator")
         ):
             return await interaction.defer()
         for v in self.children:

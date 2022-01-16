@@ -7,7 +7,7 @@ import collections
 from PIL import Image
 import time
 
-from ._utils import Database, ThreeChoices
+from ._utils import *
 
 
 class TicTacToeButton(discord.ui.Button["TicTacToe"]):

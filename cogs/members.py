@@ -2,7 +2,7 @@ import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, 
 from discord.ext import commands, tasks
 
 import dateparser, pycountry
-from ._utils import Database
+from ._utils import *
 
 
 class UsersCog(commands.Cog, name="User"):
@@ -13,7 +13,7 @@ class UsersCog(commands.Cog, name="User"):
         self.COG_EMOJI = "👤"
 
     @commands.command(name="selfharm", aliases=["suicide", "die"])
-    async def selfharm(self, ctx, victim: discord.Member = None):
+    async def selfharm(self, ctx, victim: Member = None):
         """Gives you awareness about selfharm and useful contacts."""
         if not victim:
             victim = ctx.author

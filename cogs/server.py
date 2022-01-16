@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 
 from collections import Counter, OrderedDict
 from PIL import Image
-from ._utils import Database, Menu, Confirm, is_owner
+from ._utils import *
 
 
 class ServerCog(commands.Cog, name="Server"):
@@ -174,7 +174,7 @@ class ServerCog(commands.Cog, name="Server"):
         await ctx.tick(True)
 
     @commands.Cog.listener()
-    async def on_member_remove(self, member: discord.Member):
+    async def on_member_remove(self, member: Member):
         if member.bot is True:
             return
         results = await Database.get_server(self, member.guild.id)
@@ -291,7 +291,7 @@ class ServerCog(commands.Cog, name="Server"):
             await ctx.reply("Subcommands: `category` `channel` `allchannel`")
 
     @deletechannels.command(name="role", aliases=["r"])
-    async def roledel(self, ctx, roles: commands.Greedy[discord.Role] = None):
+    async def roledel(self, ctx, roles: commands.Greedy[Role] = None):
         """Deletes all roles."""
         if not roles:
             roles = ctx.guild.roles
@@ -368,7 +368,7 @@ class ServerCog(commands.Cog, name="Server"):
         ctx,
         channels: commands.Greedy[
             typing.Union[
-                discord.TextChannel,
+                TextChannel,
                 discord.VoiceChannel,
                 discord.StageChannel,
                 discord.Thread,
@@ -473,12 +473,12 @@ class ServerCog(commands.Cog, name="Server"):
         channels: commands.Greedy[
             typing.Union[
                 discord.CategoryChannel,
-                discord.TextChannel,
+                TextChannel,
                 discord.VoiceChannel,
                 discord.StageChannel,
             ]
         ] = [],
-        target: typing.Union[discord.Role, discord.Member] = None,
+        target: typing.Union[Role, Member] = None,
     ):
         """Hides a channel for a certain role / channel / member."""
 
@@ -516,12 +516,12 @@ class ServerCog(commands.Cog, name="Server"):
         channels: commands.Greedy[
             typing.Union[
                 discord.CategoryChannel,
-                discord.TextChannel,
+                TextChannel,
                 discord.VoiceChannel,
                 discord.StageChannel,
             ]
         ] = [],
-        target: typing.Union[discord.Role, discord.Member] = None,
+        target: typing.Union[Role, Member] = None,
     ):
         """Unhides a channel for a certain role / channel / member."""
 
@@ -559,12 +559,12 @@ class ServerCog(commands.Cog, name="Server"):
         channels: commands.Greedy[
             typing.Union[
                 discord.CategoryChannel,
-                discord.TextChannel,
+                TextChannel,
                 discord.VoiceChannel,
                 discord.StageChannel,
             ]
         ] = [],
-        target: typing.Union[discord.Role, discord.Member] = None,
+        target: typing.Union[Role, Member] = None,
     ):
         """Locks a channel for a certain role / channel / member."""
 
@@ -602,12 +602,12 @@ class ServerCog(commands.Cog, name="Server"):
         channels: commands.Greedy[
             typing.Union[
                 discord.CategoryChannel,
-                discord.TextChannel,
+                TextChannel,
                 discord.VoiceChannel,
                 discord.StageChannel,
             ]
         ] = [],
-        target: typing.Union[discord.Role, discord.Member] = None,
+        target: typing.Union[Role, Member] = None,
     ):
         """Unlocks a channel for a certain role / channel / member."""
 
@@ -761,7 +761,7 @@ class ServerCog(commands.Cog, name="Server"):
         self,
         ctx,
         channel: typing.Union[
-            discord.TextChannel,
+            TextChannel,
             discord.VoiceChannel,
             discord.StageChannel,
             discord.CategoryChannel,
@@ -828,12 +828,12 @@ class ServerCog(commands.Cog, name="Server"):
         channel: typing.Optional[
             typing.Union[
                 discord.CategoryChannel,
-                discord.TextChannel,
+                TextChannel,
                 discord.VoiceChannel,
                 discord.StageChannel,
             ]
         ] = None,
-        target: commands.Greedy[typing.Union[discord.Role, discord.Member]] = None,
+        target: commands.Greedy[typing.Union[Role, Member]] = None,
     ):
         """Lists out permission overwrites in this channel."""
         if not channel:
@@ -861,7 +861,7 @@ class ServerCog(commands.Cog, name="Server"):
         channel: typing.Optional[
             typing.Union[
                 discord.CategoryChannel,
-                discord.TextChannel,
+                TextChannel,
                 discord.VoiceChannel,
                 discord.StageChannel,
             ]

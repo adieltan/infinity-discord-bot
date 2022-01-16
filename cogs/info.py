@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 
 from psutil._common import bytes2human
 
-from ._utils import Database
+from ._utils import *
 
 
 class InfoCog(commands.Cog, name="Info"):

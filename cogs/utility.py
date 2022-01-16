@@ -9,7 +9,7 @@ from fractions import Fraction
 
 parser = Parser()
 
-from ._utils import file
+from ._utils import *
 
 
 class UtilityCog(commands.Cog, name="Utility"):
@@ -557,7 +557,7 @@ class UtilityCog(commands.Cog, name="Utility"):
     @amari.command(name="reward", aliases=["role", "r"])
     @commands.cooldown(10, 1, commands.BucketType.member)
     @commands.bot_has_permissions(manage_roles=True)
-    async def amari_reward(self, ctx, target: discord.Member = None):
+    async def amari_reward(self, ctx, target: Member = None):
         """Add and remove roles according to the member's rank in Amari's xp system."""
         if not target:
             target = ctx.author

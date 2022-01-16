@@ -2,7 +2,9 @@ import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, 
 from discord.ext import commands, tasks
 
 from unicodedata import normalize
-from ._utils import Menu, Database
+from ._utils import *
+
+from pytimeparse import parse
 
 
 class ModerationCog(commands.Cog, name="Moderation"):
@@ -12,11 +14,39 @@ class ModerationCog(commands.Cog, name="Moderation"):
         self.bot = bot
         self.COG_EMOJI = "🔨"
 
+    @commands.command(name="timeout", aliases=['to', 'mute', 'm'])
+    @commands.has_any_role(894844998464462878, 894844898086383666, 894844470749696010, 894850857122811925)
+    async def timeout(self, ctx, member:Member, duration:str, *, reason:str=None):
+        """Timeouts a member for a period of time."""
+        if (
+        ctx.author.top_role <= member.top_role
+            and ctx.author.id != ctx.guild.owner.id
+        ) or member.id == ctx.guild.owner.id:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        else:
+            await member.timeout_for(datetime.timedelta(seconds=parse(duration)), reason=reason)
+            await ctx.tick()
+
+    @commands.command(name="removetimeout", aliases=['rto', 'unmute', 'um', 'uto'])
+    @commands.has_any_role(894844998464462878, 894844898086383666, 894844470749696010, 894850857122811925)
+    async def removetimeout(self, ctx, member:Member, *, reason:str=None):
+        """Removes a timeout from a user."""
+        if (
+        ctx.author.top_role <= member.top_role
+            and ctx.author.id != ctx.guild.owner.id
+        ) or member.id == ctx.guild.owner.id:
+            await ctx.reply("Failed due to role hierarchy.")
+            return
+        else:
+            await member.remove_timeout(reason=reason)
+            await ctx.tick()
+
     @commands.command(name="decancer")
     @commands.guild_only()
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
-    async def decancer(self, ctx, member: discord.Member = None):
+    async def decancer(self, ctx, member: Member = None):
         """Changes the member's nickname to something pingable."""
         if not member:
             member = ctx.author
@@ -25,6 +55,61 @@ class ModerationCog(commands.Cog, name="Moderation"):
             nick=normalize("NFKD", member.nick).encode("ascii", "ignore").decode()
         )
         await ctx.reply(f"{member.mention}'s name edited from {ori} to {member.nick}.")
+
+    @commands.group(name="dehoist", invoke_without_command=True)
+    @commands.guild_only()
+    @commands.has_permissions(manage_nicknames=True)
+    @commands.bot_has_permissions(manage_nicknames=True)
+    async def dehoist(self, ctx, member: Member = None):
+        """Removes characters in member's nickname to prevent hoisting."""
+        if not member:
+            member = ctx.author
+        name = member.display_name
+        while name.startswith(tuple("!\"#$%&'()*+,-./:;<=>?@")):
+            name = name[1:]
+            if not name:
+                name = "Dehoisted name."
+        await member.edit(nick=name, reason="Dehoist")
+        await ctx.reply(
+            f"{member.mention} renamed to {name}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @dehoist.command(name="all")
+    async def dehoist_all(self, ctx):
+        """Scans the member list for hoisted names."""
+        hoisted = [
+            member
+            for member in ctx.guild.members
+            if member.display_name.startswith(tuple("!\"#$%&'()*+,-./:;<=>?@"))
+            and not member.bot
+        ]
+        v = Confirm(ctx)
+        v.msg = await ctx.reply(
+            f"Confirm to dehoist {len(hoisted)} members?",
+            file=file(
+                "\n".join(f"{m.id} {m.display_name}" for m in hoisted), "dehoist.txt"
+            ),
+            view=v,
+        )
+        await v.wait()
+        if v.value:
+            for m in hoisted:
+                name = m.display_name
+                while name.startswith(tuple("!\"#$%&'()*+,-./:;<=>?@")):
+                    name = name[1:]
+                    if not name:
+                        name = "Dehoisted name."
+                try:
+                    await m.edit(nick=name, reason="Dehoist")
+                except:
+                    await ctx.reply(
+                        f"Error while dehoisting {m.mention}",
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
+            await v.msg.edit("Success", view=None)
+        else:
+            await v.msg.edit("Timeout", view=None)
 
     @commands.command(name="ban")
     @commands.cooldown(1, 5)
@@ -113,7 +198,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 5)
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member, *, reason=None):
+    async def kick(self, ctx, member: Member, *, reason=None):
         """Kicks a user."""
         if member is None or member == ctx.message.author:
             await ctx.reply("You cannot kick yourself", mention_author=False)
@@ -177,7 +262,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
         )
 
     @purge.command()
-    async def user(self, ctx, user: discord.Member, no: int = 100):
+    async def user(self, ctx, user: Member, no: int = 100):
         """Purges messages from a user."""
 
         def pinc(msg):
@@ -241,12 +326,12 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     async def check_permissions(
-        self, ctx, object: typing.Union[discord.Member, discord.Role] = None
+        self, ctx, object: typing.Union[Member, Role] = None
     ):
         """Checks member's or role's permissions."""
         if not object:
             object = ctx.author
-        if type(object) == discord.Role:
+        if type(object) == Role:
             perms = "```"
             for perm, value in object.permissions:
                 emoji = "✅" if value is True else "❌"
@@ -276,7 +361,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.group(aliases=["r"], invoke_without_command=True)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def role(self, ctx, member: discord.Member, *, role: discord.Role):
+    async def role(self, ctx, member: Member, *, role: Role):
         """Role Utilities."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -310,7 +395,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
 
     @role.command(name="clearpermissions", aliases=["cp", "clearperms", "clearperm"])
     @commands.has_permissions(manage_roles=True)
-    async def role_clearpermissions(self, ctx, roles: commands.Greedy[discord.Role]):
+    async def role_clearpermissions(self, ctx, roles: commands.Greedy[Role]):
         """Clears role permissions for role(s)."""
         for role in roles:
             await role.edit(permissions=discord.Permissions.none())
@@ -323,7 +408,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
 
     @role.command(name="colour", aliases=["color", "c"])
     @commands.has_permissions(manage_roles=True)
-    async def role_colour(self, ctx, role: discord.Role, colour_hex: str = None):
+    async def role_colour(self, ctx, role: Role, colour_hex: str = None):
         "Changes/views the role colour."
         if not colour_hex:
             embed = discord.Embed(
@@ -354,7 +439,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @role.command()
     @commands.cooldown(1, 4)
     @commands.has_permissions(manage_roles=True)
-    async def delete(self, ctx, role: discord.Role, *, reason: str = None):
+    async def delete(self, ctx, role: Role, *, reason: str = None):
         """Deletes the role."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -395,7 +480,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @role.command()
     @commands.cooldown(1, 4)
     @commands.has_permissions(manage_roles=True)
-    async def add(self, ctx, member: discord.Member, *, role: discord.Role):
+    async def add(self, ctx, member: Member, *, role: Role):
         """Adds a role to a person."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -419,7 +504,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @role.command()
     @commands.cooldown(1, 4)
     @commands.has_permissions(manage_roles=True)
-    async def remove(self, ctx, member: discord.Member, *, role: discord.Role):
+    async def remove(self, ctx, member: Member, *, role: Role):
         """Removes a role from a person."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -443,7 +528,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @role.command(aliases=["i"])
     @commands.cooldown(1, 4)
     @commands.has_permissions(manage_roles=True)
-    async def info(self, ctx, *, role: discord.Role = None):
+    async def info(self, ctx, *, role: Role = None):
         """Shows infomation about a role."""
         if not role:
             role = ctx.guild.default_role
@@ -468,7 +553,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @role.command(aliases=["d"])
     @commands.cooldown(1, 4)
     @commands.has_permissions(manage_roles=True)
-    async def dump(self, ctx, *, role: discord.Role):
+    async def dump(self, ctx, *, role: Role):
         """Dumps members from the role."""
         people = role.members
         text = "```css\n" + "\n".join((f"{m.name} ({m.id})") for m in people) + "```"
@@ -499,7 +584,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @role.command(name="random", aliases=["randommember"])
     @commands.cooldown(1, 2)
     @commands.guild_only()
-    async def random(self, ctx, role: discord.Role = None, howmany: int = 1):
+    async def random(self, ctx, role: Role = None, howmany: int = 1):
         """Finds random peoples from the whole server or from roles."""
         if role is None:
             role = ctx.guild.default_role
@@ -525,7 +610,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def clear(self, ctx, *, member: discord.Member):
+    async def clear(self, ctx, *, member: Member):
         """Removes all role from a member."""
         if ctx.author.top_role < member.top_role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -548,7 +633,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def roleall(self, ctx, *, role: discord.Role):
+    async def roleall(self, ctx, *, role: Role):
         """Adds a role to all members in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -579,7 +664,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolebots(self, ctx, *, role: discord.Role):
+    async def rolebots(self, ctx, *, role: Role):
         """Adds a role to all bots in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -612,7 +697,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolehumans(self, ctx, *, role: discord.Role):
+    async def rolehumans(self, ctx, *, role: Role):
         """Adds a role to all humans in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -645,7 +730,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolerall(self, ctx, *, role: discord.Role):
+    async def rolerall(self, ctx, *, role: Role):
         """Removes a role from all members in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -676,7 +761,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolerbots(self, ctx, *, role: discord.Role):
+    async def rolerbots(self, ctx, *, role: Role):
         """Removes a role from all bots in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -709,7 +794,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.cooldown(1, 2)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def rolerhumans(self, ctx, *, role: discord.Role):
+    async def rolerhumans(self, ctx, *, role: Role):
         """Removes a role from all humans in the server."""
         if ctx.author.top_role < role and ctx.author != ctx.guild.owner:
             await ctx.reply("Failed due to role hierarchy.")
@@ -740,7 +825,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
 
     @commands.command(name="userinfo", aliases=["ui", "user", "whois", "i"])
     async def userinfo(
-        self, ctx, *, member: typing.Union[discord.Member, discord.User] = None
+        self, ctx, *, member: typing.Union[Member, discord.User] = None
     ):
         """Gets info about the user."""
         if not member:

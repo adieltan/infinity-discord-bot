@@ -1,6 +1,8 @@
 import discord, random, string, os, asyncio, sys, math, json, datetime, psutil, io, PIL, re, aiohttp, typing
 from discord.ext import commands, tasks
 
+from thefuzz import process
+
 
 class Database(commands.Cog):
     def __init__(self, bot):
@@ -207,3 +209,49 @@ def server(id: list):
 def file(content: str, file_name: str):
     buffer = io.BytesIO(content.encode("utf-8"))
     return discord.File(buffer, filename=file_name)
+
+class Member(commands.Converter):
+    async def convert(self, ctx: commands.Context, argument: str):
+        converter = commands.MemberConverter()
+        try:
+            member = await converter.convert(ctx, argument)
+        except:
+            fuz = process.extractOne(argument, [r.name for r in ctx.guild.members if argument.lower() in r.name.lower()]) or (None, 0)
+            if fuz[1] >= 75:
+                return discord.utils.get(ctx.guild.members, name=fuz[0])
+        else:
+            return member
+        raise commands.errors.BadArgument(
+            f'Member  "{argument}" not found.'
+        )
+
+class TextChannel(commands.Converter):
+    async def convert(self, ctx: commands.Context, argument:str):
+        converter = commands.TextChannelConverter()
+        try:
+            channel = await converter.convert(ctx, argument)
+        except:
+            fuz = process.extractOne(argument, [r.name for r in ctx.guild.channels if argument.lower() in r.name.lower()]) or (None, 0)
+            if fuz[1] >= 75:
+                return discord.utils.get(ctx.guild.channels, name=fuz[0])
+        else:
+            return channel
+        raise commands.errors.BadArgument(
+            f'Channel "{argument}" not found.'
+        )
+
+class Role(commands.Converter):
+    async def convert(self, ctx: commands.Context, argument:str):
+        converter = commands.RoleConverter()
+        try:
+            role = await converter.convert(ctx, argument)
+        except:
+            fuz = process.extractOne(argument, [r.name for r in ctx.guild.roles if argument.lower() in r.name.lower()]) or (None, 0)
+            if fuz[1] >= 75:
+                return discord.utils.get(ctx.guild.roles, name=fuz[0])
+        else:
+            return role
+        raise commands.errors.BadArgument(
+            f'Role "{argument}" not found.'
+        )
+

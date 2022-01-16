@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 
 from PIL import Image, ImageDraw, ImageFont
 import dateparser
-from ._utils import Database, is_manager
+from ._utils import *
 
 
 class OwnerCog(commands.Cog, name="Owner"):
@@ -139,7 +139,7 @@ class OwnerCog(commands.Cog, name="Owner"):
 
     @commands.command(name="chat", aliases=["broadcast"])
     @commands.is_owner()
-    async def chat(self, ctx, channel: discord.TextChannel):
+    async def chat(self, ctx, channel: TextChannel):
         to = 60
         await ctx.reply(
             f"Type messages that you want to send through the bot to {channel.mention}\nType `quit` to exit.\nSession will timeout after 60 seconds of inactivity.",
@@ -366,7 +366,7 @@ class OwnerCog(commands.Cog, name="Owner"):
 
     @commands.command(name="snipe", aliases=["sn"])
     @commands.is_owner()
-    async def snipe(self, ctx, channel: discord.TextChannel = None):
+    async def snipe(self, ctx, channel: TextChannel = None):
         """Snipes the last deleted message of the channel."""
         if not channel:
             channel = ctx.message.channel

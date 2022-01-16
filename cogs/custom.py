@@ -374,11 +374,7 @@ class CustomCog(commands.Cog, name="Custom"):
         embed.set_footer(
             text="\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800Expires in 46 hours."
         )
-        v = discord.ui.View()
-        v.add_item(discord.ui.Button(
-        label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800",
-        style=discord.ButtonStyle.green,
-        custom_id="RickrollHehe"))
+        v = NitroButtons()
         v.msg = await ctx.send(f"https://discord.gift\{text}", embed=embed, view=v)
 
     @nitro.command(name="toggle")

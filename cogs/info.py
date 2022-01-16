@@ -41,7 +41,7 @@ class InfoCog(commands.Cog, name="Info"):
                 permissions=discord.Permissions.all(),
                 scopes=("bot", "applications.commands"),
             ),
-            description="A multipurpose bot that helps automate actions in your server. Features many unique utility commands such as bookmarking system that makes our life easier.",
+            description="A multipurpose bot that helps automate actions in your server. Features many unique utility and fun commands.",
             color=discord.Color.random(),
             timestamp=discord.utils.utcnow(),
         ).set_author(name=self.bot.user, icon_url=self.bot.user.avatar)
@@ -88,20 +88,6 @@ class InfoCog(commands.Cog, name="Info"):
         v.add_item(
             discord.ui.Button(
                 emoji="🌐", label="Website", url="https://tynxen.netlify.app/"
-            )
-        )
-        v.add_item(
-            discord.ui.Button(
-                emoji="<a:infinity:874548940610097163>",
-                label="EmojiServer1",
-                url="https://discord.gg/hM67fpgM3y",
-            )
-        )
-        v.add_item(
-            discord.ui.Button(
-                emoji="<a:infinity:874548940610097163>",
-                label="EmojiServer2",
-                url="https://discord.gg/T6dJHppueq",
             )
         )
         await ctx.reply(embed=embed, mention_author=False, view=v)

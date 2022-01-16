@@ -17,7 +17,7 @@ class NitroButtons(discord.ui.View):
     @discord.ui.button(
         label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800",
         style=discord.ButtonStyle.green,
-        value="Rickroll hehe"
+        custom_id="Rickroll hehe"
     )
     async def accept(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message(
@@ -378,7 +378,7 @@ class CustomCog(commands.Cog, name="Custom"):
         v.add_item(discord.ui.Button(
         label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800",
         style=discord.ButtonStyle.green,
-        value="Rickroll hehe"))
+        custom_id="Rickroll hehe"))
         v.msg = await ctx.send(f"https://discord.gift\{text}", embed=embed, view=v)
 
     @nitro.command(name="toggle")

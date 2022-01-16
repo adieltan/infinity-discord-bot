@@ -37,7 +37,7 @@ class UsersCog(commands.Cog, name="User"):
         try:
             await victim.send(embed=embed)
         except:
-            await ctx.reply(f"Error sending message to {victim.mention}")
+            await ctx.reply(f"Error sending message to {victim.mention}", allowed_mentions=discord.AllowedMentions.none())
         else:
             await ctx.tick(True)
 

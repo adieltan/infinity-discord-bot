@@ -7,8 +7,22 @@ from discord.ext import commands, tasks
 from thefuzz import process
 import collections
 
-from ._utils import Database, Confirm, NitroButtons, server
+from ._utils import Database, Confirm, server
 
+
+class NitroButtons(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800",
+        style=discord.ButtonStyle.green,
+        value="Rickroll hehe"
+    )
+    async def accept(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            "https://imgur.com/NQinKJB", ephemeral=True
+        )
 
 class DropdownRoles(discord.ui.View):
     def __init__(self):
@@ -331,6 +345,7 @@ class CustomCog(commands.Cog, name="Custom"):
         self.COG_EMOJI = "🔧"
         self.youtubeupdate.start()
         self.bot.add_view(DropdownRoles())
+        self.bot.add_view(NitroButtons())
 
     @commands.group(name="nitro", hidden=True, invoke_without_command=True)
     @commands.guild_only()
@@ -359,7 +374,11 @@ class CustomCog(commands.Cog, name="Custom"):
         embed.set_footer(
             text="\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800\u2800Expires in 46 hours."
         )
-        v = NitroButtons(ctx)
+        v = discord.ui.View()
+        v.add_item(discord.ui.Button(
+        label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800",
+        style=discord.ButtonStyle.green,
+        value="Rickroll hehe"))
         v.msg = await ctx.send(f"https://discord.gift\{text}", embed=embed, view=v)
 
     @nitro.command(name="toggle")

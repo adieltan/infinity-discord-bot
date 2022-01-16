@@ -169,7 +169,7 @@ class ListenerCog(commands.Cog, name="Listener"):
             return await ctx.reply(
                 embed=discord.Embed(
                     title="Missing Required Argument",
-                    description=f"`{error.param.name}` is a required argument that is missing.\n\nUsage:\n```\n{ctx.prefix}{ctx.invoked_with} {ctx.command.signature}\n```",
+                    description=f"`{error.param.name}` is a required argument that is missing.\n\nUsage:\n```\n{ctx.prefix}{ctx.command.qualified_name} {ctx.command.signature}\n```",
                     color=discord.Color.dark_teal(),
                 )
             )

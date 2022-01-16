@@ -182,35 +182,6 @@ class ThreeChoices(discord.ui.View):
         self.stop()
 
 
-class NitroButtons(discord.ui.View):
-    def __init__(self, ctx):
-        super().__init__(timeout=30)
-        self.ctx = ctx
-        self.msg = None
-
-    async def on_timeout(self):
-        self.clear_items()
-        self.add_item(
-            discord.ui.Button(
-                label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800",
-                style=discord.ButtonStyle.gray,
-                disabled=True,
-            )
-        )
-        self.msg.embeds[
-            0
-        ].description = "Looks like someone already redeemed this gift."
-        await self.msg.edit(embed=self.msg.embeds[0], view=self)
-
-    @discord.ui.button(
-        label="\u2800\u2800\u2800\u2800\u2800Accept\u2800\u2800\u2800\u2800\u2800",
-        style=discord.ButtonStyle.green,
-    )
-    async def accept(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            "https://imgur.com/NQinKJB", ephemeral=True
-        )
-
 
 def is_owner():
     def predicate(ctx):

@@ -127,7 +127,6 @@ class Infinity(commands.Bot):
         self.errors = self.get_channel(926789023446499369)
         self.logs = self.get_channel(926789818455842876)
         self.changes = self.get_channel(926789039321919509)
-        status.start()
         performance.start()
         delete_snipecache.start()
 
@@ -156,6 +155,27 @@ class Infinity(commands.Bot):
                     print(e)
         await self.get_channel(813251835371454515).send(
             f"∞ Startup took {ready - ori :0.4f} seconds."
+        )
+        await self.change_status()
+
+    async def change_status(self):
+        status = await self.db.bot.find_one({"_id": "status"})
+        statustypes = {
+            "dnd": discord.Status.dnd,
+            "online": discord.Status.online,
+            "idle": discord.Status.idle,
+            "offline": discord.Status.invisible,
+        }
+        types = {
+            "playing": discord.ActivityType.playing,
+            "listening": discord.ActivityType.listening,
+            "watching": discord.ActivityType.watching,
+        }
+        await self.change_presence(
+            activity=discord.Activity(
+                type=types[status["activityType"]], name=status["activity"]
+            ),
+            status=statustypes[status["status"]],
         )
 
     async def on_error(self, event, *args, **kwargs):
@@ -187,20 +207,6 @@ def blacklisted(ctx) -> bool:
         or ctx.author.id in ctx.bot.owners
         or ctx.author.id in ctx.bot.managers
     )
-
-
-@tasks.loop(minutes=5, reconnect=True)
-async def status():
-    timenow = discord.utils.utcnow()
-    d = timenow - bot.startuptime
-    await bot.change_presence(
-        status=discord.Status.idle,
-        activity=discord.Activity(
-            type=discord.ActivityType.watching,
-            name=f"{len(bot.users)} members in {len(bot.guilds)} servers for {round(d.seconds/60/60,2)} hours.",
-        ),
-    )
-
 
 @tasks.loop(minutes=30, reconnect=True)
 async def performance():

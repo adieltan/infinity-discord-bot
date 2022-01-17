@@ -23,6 +23,40 @@ class OwnerCog(commands.Cog, name="Owner"):
         except:
             await ctx.tick(False)
 
+    @commands.command(name="status")
+    @commands.is_owner()
+    async def status(
+        self, ctx, status: typing.Literal["dnd", "online", "idle", "offline"]
+    ):
+        """Edit's the bot's status."""
+        await self.bot.db.bot.update_one(
+            {"_id": "status"}, {"$set": {"status": status}}, upsert=True
+        )
+        await self.bot.change_status()
+        await ctx.message.add_reaction("✅")
+
+    @commands.command(name="activity")
+    @commands.is_owner()
+    async def activity(self, ctx, *, activity=None):
+        """Edit's the bot's activity."""
+        await self.bot.db.bot.update_one(
+            {"_id": "status"}, {"$set": {"activity": activity}}, upsert=True
+        )
+        await self.bot.change_status()
+        await ctx.message.add_reaction("✅")
+
+    @commands.command(name="activitytype")
+    @commands.is_owner()
+    async def activitytype(
+        self, ctx, activityType: typing.Literal["playing", "listening", "watching"]
+    ):
+        """Edit's the bot's activityType."""
+        await self.bot.db.bot.update_one(
+            {"_id": "status"}, {"$set": {"activityType": activityType}}, upsert=True
+        )
+        await self.bot.change_status()
+        await ctx.message.add_reaction("✅")
+
     @commands.command(name="blacklist", aliases=["bl"])
     @is_manager()
     async def blacklist(self, ctx, user: discord.User, *, reason: str = None):

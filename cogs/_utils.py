@@ -246,7 +246,8 @@ class Role(commands.Converter):
         try:
             role = await converter.convert(ctx, argument)
         except:
-            fuz = process.extractOne(argument, [r.name for r in ctx.guild.roles if argument.lower() in r.name.lower()]) or (None, 0)
+            roles = sorted(ctx.guild.roles, key = lambda i: i.name)
+            fuz = process.extractOne(argument, [r.name for r in roles if argument.lower() in r.name.lower()]) or (None, 0)
             if fuz[1] >= 75:
                 return discord.utils.get(ctx.guild.roles, name=fuz[0])
         else:
@@ -254,4 +255,3 @@ class Role(commands.Converter):
         raise commands.errors.BadArgument(
             f'Role "{argument}" not found.'
         )
-

@@ -76,6 +76,7 @@ class ListenerCog(commands.Cog, name="Listener"):
             or msg.author.id == self.bot.user.id
             or msg.content.startswith("=")
             or str(msg.author.id) == msg.channel.name
+            or not msg.channel.name.isdigit()
         ):
             return
         try:
@@ -86,10 +87,10 @@ class ListenerCog(commands.Cog, name="Listener"):
             await msg.add_reaction("<a:verified:876075132114829342>")
 
             def check(reaction, user):
-                return str(reaction.emoji) == "<a:verified:876075132114829342>"
+                return str(reaction.emoji) == "<a:verified:876075132114829342>" and user.id == msg.author.id
 
             reaction, user = await self.bot.wait_for(
-                "reaction_add", timeout=10, check=check
+                "reaction_add", timeout=20, check=check
             )
             await supportuser.send(embeds=[e] + msg.embeds)
             await msg.clear_reactions()
@@ -131,13 +132,21 @@ class ListenerCog(commands.Cog, name="Listener"):
         if isinstance(error, commands.NoPrivateMessage):
             try:
                 return await ctx.author.send(
-                    f"`{ctx.command}` can not be used in Private Messages."
+                    f"`{ctx.command}` can not be used in Private Messages.",
+                    delete_after=8.0
                 )
             except discord.HTTPException:
                 return
         elif isinstance(error, commands.PrivateMessageOnly):
             return await ctx.reply(
-                f"`{ctx.command}` can only be used in Private Messages."
+                f"`{ctx.command}` can only be used in Private Messages.",
+                delete_after=8.0
+            )
+        elif isinstance(error, commands.NotOwner):
+            embed = discord.Embed(
+                title="Owner only command", description="Imagine using this.", colour=0x2F3136
+            ).set_thumbnail(
+                url="https://c.tenor.com/3Re6iufZ5TgAAAAd/hahaha-laugh.gif"
             )
         elif isinstance(error, commands.MissingPermissions):
             return await ctx.reply(
@@ -157,7 +166,7 @@ class ListenerCog(commands.Cog, name="Listener"):
                     description=f"Retry again in {round(error.retry_after)} seconds.",
                     color=discord.Color.dark_gold(),
                 ),
-                delete_after=4,
+                delete_after=6,
             )
         elif isinstance(error, commands.MaxConcurrencyReached):
             return await ctx.reply(
@@ -175,40 +184,33 @@ class ListenerCog(commands.Cog, name="Listener"):
                     color=discord.Color.dark_teal(),
                 )
             )
-        elif isinstance(error, commands.NotOwner):
-            embed = discord.Embed(
-                title="Owner only command", description="Imagine using this."
-            ).set_image(
-                url="https://media1.tenor.com/images/ee1ac104f196033fc373abb7754d84d2/tenor.gif?itemid=17900652"
-            )
-            return await ctx.reply(embed=embed)
         elif (
             isinstance(error, commands.CommandNotFound)
             and type(ctx.channel) is discord.DMChannel
         ):
-            channel = ctx.bot.get_channel(900699395639623711)
-            tchannel = channel.threads
-            tnames = [tc.name for tc in tchannel]
-            e = discord.Embed(
-                title="Support Ticket", description=ctx.message.content
-            ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
-            if str(ctx.author.id) in tnames:
-                await tchannel[tnames.index(str(ctx.author.id))].send(embed=e)
-            else:
-                msg = await channel.send(embed=e)
-                thread = await channel.create_thread(
-                    name=f"{ctx.author.id}", message=msg
-                )
-                await thread.send(
-                    f"<@&843375370627055637>\n{ctx.author.mention} opened a support ticket.\nDO NOT SPAM\nReact with <a:verified:876075132114829342> after the bot reacts to send your message.",
-                    allowed_mentions=discord.AllowedMentions.all(),
-                )
-            return await ctx.tick(True)
+            v = Confirm(ctx)
+            await ctx.reply("Are you sure you want to open a support ticket? / Send this message to the support team?", view=v)
+            await v.wait()
+            if v.value:
+                channel = ctx.bot.get_channel(900699395639623711)
+                tchannel = discord.utils.get(channel.threads, name=str(ctx.author.id))
+                e = discord.Embed(
+                    title="Support Ticket", description=ctx.message.content
+                ).set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
+                if tchannel:
+                    await tchannel.send(embed=e)
+                else:
+                    msg = await channel.send(embed=e)
+                    thread = await channel.create_thread(
+                        name=f"{ctx.author.id}", message=msg
+                    )
+                    await thread.send(
+                        f"<@&843375370627055637>\n{ctx.author.mention} opened a support ticket.\nReact with <a:verified:876075132114829342> after the bot reacts to send your message.",
+                        allowed_mentions=discord.AllowedMentions.all(),
+                    )
+                return await ctx.tick(True)
         elif isinstance(error, commands.CommandNotFound):
-            try:
-                return await ctx.tick(False)
-            except:
-                return
+            return await ctx.tick(False)
         elif isinstance(error, discord.errors.NotFound):
             codes = {10003}
             if error.code in codes:

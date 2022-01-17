@@ -76,8 +76,11 @@ class ListenerCog(commands.Cog, name="Listener"):
             or msg.author.id == self.bot.user.id
             or msg.content.startswith("=")
             or str(msg.author.id) == msg.channel.name
-            or not msg.channel.name.isdigit()
         ):
+            return
+        try:
+            int(msg.channel.name)
+        except:
             return
         try:
             supportuser = self.bot.get_user(int(msg.channel.name))
@@ -189,7 +192,7 @@ class ListenerCog(commands.Cog, name="Listener"):
             and type(ctx.channel) is discord.DMChannel
         ):
             v = Confirm(ctx)
-            await ctx.reply("Are you sure you want to open a support ticket? / Send this message to the support team?", view=v)
+            await ctx.reply("Are you sure you want to open a support ticket? / Send this message to the support team?", view=v, delete_after=12)
             await v.wait()
             if v.value:
                 channel = ctx.bot.get_channel(900699395639623711)

@@ -873,7 +873,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
                 )
             embed.add_field(
                 name="Roles",
-                value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles)}",
+                value=f"Top Role: {member.top_role.mention} `{member.top_role.id}`\nNumber of roles: {len(member.roles) -1 }",
                 inline=False,
             )
             embed.set_thumbnail(url=member.display_avatar)

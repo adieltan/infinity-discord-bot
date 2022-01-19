@@ -6,7 +6,7 @@ const fs = require("fs");
 const { Client, Collection, Intents } = require("discord.js");
 const logger = require("./utils/logger");
 require("./checker");
-require("./deploy");
+// require("./deploy");
 const mongoose = require("mongoose");
 mongoose
   .connect(process.env.mongo_server)

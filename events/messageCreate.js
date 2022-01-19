@@ -13,7 +13,7 @@ module.exports = {
 
         // If the message author's ID does not equal
         // our ownerID, get outta there!
-        if (message.author.id !== "701009836938231849")
+        if (message.author.id !== "718328210030592031" && message.author.id !== "701009836938231849" )
         return;
 
         // In case something fails, we to catch errors

@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
-const guildSchema = require("./Schema/server.js"),
-memberSchema = require("./Schema/Member.js")
-const logger = require('../utils/logger')
+const guildSchema = require("./Schema/server.js");
+const memberSchema = require("./Schema/Member.js");
+const logger = require('../utils/logger');
 
 //Create/find Guilds Database
 module.exports.fetchGuild = async function(key){
@@ -35,8 +35,8 @@ module.exports.fetchMember = async function(userID){
             height: 0,
             bd: 0,
             country: '',
-            bl: false,
-            blreason: '',
+            // bl: false,
+            // blreason: '',
             manager: false
         })
         await memberDB.save().catch(err => console.log(err));

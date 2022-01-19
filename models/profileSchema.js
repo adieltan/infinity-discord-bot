@@ -7,10 +7,12 @@ const profileSchema = new mongoose.Schema({
     bd: { type: Number},
     country: { type: String},
     bio: {type: String},
-    bl: {type: Boolean},
-    blreason: {type: String},
     manager: {type: Boolean},
-    premium: {type: Boolean/Number},
+    /* Premium */
+    premium: {type: Boolean},
+    premiumDuration: {type: Number},
+    /* Currency */
+    bal: {type: Number, default: 0}
 });
 
 const model = mongoose.model("profile", profileSchema);

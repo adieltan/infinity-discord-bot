@@ -15,7 +15,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
         self.COG_EMOJI = "🔨"
 
     @commands.command(name="timeout", aliases=['to', 'mute', 'm'])
-    @commands.has_any_role(894844998464462878, 894844898086383666, 894844470749696010, 894850857122811925)
+    @commands.bot_has_permissions(moderate_members=True)
     async def timeout(self, ctx, member:Member, duration:str, *, reason:str=None):
         """Timeouts a member for a period of time."""
         if (
@@ -29,7 +29,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
             await ctx.tick()
 
     @commands.command(name="removetimeout", aliases=['rto', 'unmute', 'um', 'uto'])
-    @commands.has_any_role(894844998464462878, 894844898086383666, 894844470749696010, 894850857122811925)
+    @commands.bot_has_permissions(moderate_members=True)
     async def removetimeout(self, ctx, member:Member, *, reason:str=None):
         """Removes a timeout from a user."""
         if (

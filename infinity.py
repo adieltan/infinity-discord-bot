@@ -36,7 +36,7 @@ intents.invites = False
 
 
 class Context(commands.Context):
-    async def tick(self, value):
+    async def tick(self, value=True):
         # reacts to the message with an emoji
         # depending on whether value is True or False
         # if its True, it'll add a green check mark

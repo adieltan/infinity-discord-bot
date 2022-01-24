@@ -18,6 +18,8 @@ class ListenerCog(commands.Cog, name="Listener"):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
+        if before.content == after.content:
+            return
         await self.bot.process_commands(after)
 
     @commands.Cog.listener()

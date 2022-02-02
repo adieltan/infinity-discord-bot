@@ -26,5 +26,8 @@
     "mongoose": "^6.0.4",
     "pm2": "^5.1.2",
     "update-notifier": "^5.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.5"
   }
 }

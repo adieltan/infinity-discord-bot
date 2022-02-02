@@ -13,6 +13,7 @@ module.exports = {
   async execute(interaction) {
     if (owners.indexOf(`${interaction.member.id}`) > -1) {
       await interaction.reply(`Success.`);
+      interaction.client.destroy()
       return process.kill(1);
     } else {
       return interaction.reply(

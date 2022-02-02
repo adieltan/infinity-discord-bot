@@ -37,6 +37,9 @@ const client = new Client({
     // Intents.FLAGS.DIRECT_MESSAGE_TYPING,
   ],
   allowedMentions: { parse: ["users"] },
+  presence: {status: "online", activities: [{name: "With Infinity", type: "PLAYING"}]},
+  ws: { properties: { $browser: "Discord iOS" }}
+
 });
 
 client.owner = [

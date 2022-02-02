@@ -8,15 +8,6 @@ module.exports = {
     logger.custom('v'+Discord.version, 'grey', 'discord.js');
     logger.custom(process.version, 'grey', 'Node');
     logger.info(`${client.user.tag}`);
-    client.user.setPresence({
-      activities: [
-        {
-          name: `with Infinity`,
-          type: "PLAYING",
-        },
-      ],
-      status: "dnd",
-    });
     const channel = client.channels.cache.get("813251835371454515");
     channel.send('`♾️`');
     const logs = client.channels.cache.get("874461656938340402")

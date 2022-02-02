@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder, time } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
@@ -13,11 +13,13 @@ module.exports = {
 		const embed = new MessageEmbed()
 			.setTitle('User Info')
 			.setDescription(`<@${user.id}> ${user.tag}`)
-			.setColor(user.hexAccentColor)
-			.setAuthor(user.username, user.displayAvatarURL())
+			.setColor(0x2F3136)
+			.setAuthor({name: user.username, avatar: user.displayAvatarURL()})
 			.setThumbnail(user.displayAvatarURL())
-			.setFooter(`${user.id}`)
-			.setTimestamp(user.createdAt);
+			.setFooter({text: `${user.id}`})
+			.setTimestamp(user.createdAt)
+			.addField("Registered", `${time(user.createdAt, "F")}\n${time(user.createdAt, "R")}`)
+			.addField("Joined", `${time(user.joinedAt, "F")}\n${time(user.joinedAt, "R")}`);
 			if (user.banner){embed.setImage(user.bannerURL())};
 		return interaction.reply({embeds:[embed]});
 	},

@@ -1,7 +1,9 @@
 const chalk = require("chalk");
 console.clear(); //clear the console before start logging
 console.log(chalk.bold("		          	  ♾️  Infinity")); //Infinity logo for fun
+
 require("dotenv").config();
+
 const fs = require("fs");
 const { Client, Collection, Intents } = require("discord.js");
 const logger = require("./utils/logger");

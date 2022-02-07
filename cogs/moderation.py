@@ -175,7 +175,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
     @commands.command(name="massban")
     @commands.cooldown(1, 10)
     @commands.guild_only()
-    @commands.has_permissions(ban_members=True)
+    @commands.has_permissions(administrator=True)
     async def massban(self, ctx, *, ids: str):
         """Massban users."""
         await ctx.trigger_typing()

@@ -10,9 +10,12 @@ const logger = require("./utils/logger");
 require("./checker");
 // require("./deploy");
 const mongoose = require("mongoose");
+const { AmariBot } = require("amaribot.js")
+
 mongoose
   .connect(process.env.mongo_server)
   .then(logger.custom("Connected!", "green", "MongoDB"));
+
 
 //Check for any package updates
 const updateNotifier = require("update-notifier");
@@ -50,6 +53,8 @@ client.owner = [
   "708233854640455740",
 ];
 client.commands = new Collection();
+client.amari = new AmariBot(process.env.amari);
+
 
 //commands
 const commandFiles = fs
@@ -61,11 +66,6 @@ for (const file of commandFiles) {
   // With the key as the command name and the value as the exported module
   client.commands.set(command.data.name, command);
 }
-//functions
-/* const functions = fs.readdirSync('./functions').filter(file => file.endsWith('.js'));
-for (file of functions) {
-	require(`./functions/${file}`)(client);
-} */
 //events
 const eventFiles = fs
   .readdirSync("./events")
@@ -79,15 +79,5 @@ for (const file of eventFiles) {
   }
 }
 
-/* mongoose.connect(process.env.mongo, {
-		useNewUrlParser: true,
-		useUnifiedTopology: true,
-		useFindAndModify: false
-}).then(()=>{
-	console.log('Connected to database.');
-}).catch((err)=>{
-	console.log(err);
-});
-*/
 
 client.login(process.env.dc_beta);

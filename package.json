@@ -7,14 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "pm2": "pm2 start index.js",
-    "getpm2": "npm i pm2 -g"
+    "pm2": "pm2 start index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^0.1.0-canary.0",
-    "amaribot.js": "^1.4.0",
+    "amaribot.js": "^1.4.2",
     "chalk": "^4.1.2",
     "cli-color": "^2.0.1",
     "discord-api-types": "^0.22.0",
@@ -24,6 +23,7 @@
     "moment": "^2.29.1",
     "mongodb": "^4.1.1",
     "mongoose": "^6.0.4",
+    "node-fetch": "^2.6.7",
     "pm2": "^5.1.2",
     "update-notifier": "^5.1.0"
   },

@@ -21,6 +21,12 @@ module.exports = {
 			.addField("Registered", `${time(user.createdAt, "F")}\n${time(user.createdAt, "R")}`)
 			.addField("Joined", `${time(user.joinedAt, "F")}\n${time(user.joinedAt, "R")}`);
 			if (user.banner){embed.setImage(user.bannerURL())};
+		try {
+			const UserAmariLevel = await interaction.client.amari.getUserLevel(interaction.guild.id, interaction.user.id);
+			embed.addField("Amari Level", value=`EXP: **${UserAmariLevel.exp}** (Level ${UserAmariLevel.level})\nWeekly EXP: **${UserAmariLevel.weeklyExp}**`);
+		} catch (error) {
+			error => error;
+		};
 		return interaction.reply({embeds:[embed]});
 	},
 };

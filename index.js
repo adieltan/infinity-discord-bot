@@ -54,8 +54,13 @@ client.owner = [
 ];
 client.commands = new Collection();
 client.amari = new AmariBot(process.env.amari);
-
-
+client.snipes = {
+  snipes: new Collection(),
+  esnipes: new Collection(),
+}
+client.db = {
+  status: {}
+}
 //commands
 const commandFiles = fs
   .readdirSync("./commands")
@@ -79,5 +84,14 @@ for (const file of eventFiles) {
   }
 }
 
+process.on('uncaughtException', (err) => {
+  console.log(err)
+})
 
+process.on('unhandledRejection', (err) => {
+  console.log(err)
+})
+client.on('error', (error) => {
+  console.log(error)
+})
 client.login(process.env.dc_beta);

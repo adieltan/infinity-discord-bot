@@ -1,6 +1,6 @@
 const chalk = require("chalk");
 console.clear(); //clear the console before start logging
-console.log(chalk.bold("		          	  ♾️  Infinity")); //Infinity logo for fun
+console.log(chalk.bold("♾️  Infinity")); //Infinity logo for fun
 
 require("dotenv").config();
 
@@ -45,7 +45,9 @@ const client = new Client({
   presence: {status: "online", activities: [{name: "With Infinity", type: "PLAYING"}]},
   ws: { properties: { $browser: "Discord iOS" }}
 
-});
+})
+.on("debug", console.log)
+.on("warn", console.log);
 
 client.owner = [
   "701009836938231849",

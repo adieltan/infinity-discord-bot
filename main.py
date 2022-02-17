@@ -123,7 +123,10 @@ class Infinity(commands.Bot):
         self.snipedb = dict({})
 
         self.persistent_views_added = False
-
+        logs = await self.fetch_channel(874461656938340402)
+        for thread in logs.threads:
+            if thread.archived:
+                await thread.unarchive()
         self.errors = self.get_channel(926789023446499369)
         self.logs = self.get_channel(926789818455842876)
         self.changes = self.get_channel(926789039321919509)
@@ -235,4 +238,3 @@ async def delete_snipecache():
 
 
 bot.run(os.getenv("DISCORD_TOKEN"), reconnect=True)
-# bot.run(os.getenv("dc_beta"), reconnect=True)

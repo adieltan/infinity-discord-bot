@@ -1,1 +1,1 @@
-web: python infinity.py
+web: python main.py
